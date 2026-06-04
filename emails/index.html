@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>PromptAI — Email System</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'DM Sans',sans-serif; background:#eef2f7; color:#0a1628; }
+  .wrap { max-width:1080px; margin:0 auto; padding:48px 24px 80px; }
+  .kicker { font-size:12px; font-weight:700; letter-spacing:1.6px; text-transform:uppercase; color:#2563eb; }
+  h1 { font-family:'DM Serif Display',serif; font-size:44px; line-height:1.12; margin:14px 0 14px; }
+  .lede { font-size:17px; line-height:1.7; color:#475569; max-width:660px; }
+  h2 { font-family:'DM Serif Display',serif; font-size:28px; margin:0 0 6px; }
+  .section { margin-top:56px; }
+  .sub { color:#64748b; font-size:15px; margin-bottom:24px; }
+
+  /* flow */
+  .flow { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; }
+  .step { background:#fff; border:1px solid #e2e8f0; border-radius:14px; padding:20px; position:relative; }
+  .step .n { width:30px; height:30px; border-radius:8px; background:#0a1628; color:#fff; font-weight:700; font-size:14px; display:flex; align-items:center; justify-content:center; margin-bottom:12px; }
+  .step h3 { font-size:15px; margin-bottom:6px; }
+  .step p { font-size:13.5px; line-height:1.6; color:#64748b; }
+  .step code { background:#f1f5f9; padding:1px 6px; border-radius:5px; font-size:12px; color:#2563eb; }
+
+  /* email previews */
+  .mails { display:grid; grid-template-columns:1fr 1fr; gap:28px; align-items:start; }
+  .mailcard { background:#fff; border:1px solid #e2e8f0; border-radius:16px; overflow:hidden; }
+  .mailhead { padding:18px 22px; border-bottom:1px solid #eef2f7; }
+  .badge { display:inline-block; font-size:11px; font-weight:700; letter-spacing:.5px; text-transform:uppercase; padding:4px 10px; border-radius:20px; }
+  .badge.now { background:#ecfdf5; color:#047857; }
+  .badge.wk { background:#eff6ff; color:#2563eb; }
+  .mailhead h3 { font-size:18px; margin:12px 0 4px; }
+  .mailhead .meta { font-size:13px; color:#94a3b8; }
+  .mailframe { width:100%; height:560px; border:0; display:block; background:#eef2f7; }
+  .mailfoot { display:flex; gap:10px; padding:14px 22px; border-top:1px solid #eef2f7; }
+  .mailfoot a { font-size:13px; font-weight:600; color:#2563eb; text-decoration:none; }
+
+  /* setup checklist */
+  .setup { background:#0a1628; border-radius:16px; padding:34px 36px; color:#cbd5e1; }
+  .setup h2 { color:#fff; }
+  .setup .sub { color:#94a3b8; }
+  .check { display:flex; gap:14px; padding:14px 0; border-top:1px solid rgba(255,255,255,.08); }
+  .check:first-of-type { border-top:0; }
+  .check .ic { flex-shrink:0; width:26px; height:26px; border-radius:7px; background:#2563eb; color:#fff; font-size:13px; display:flex; align-items:center; justify-content:center; font-weight:700; }
+  .check .t { font-size:14.5px; line-height:1.65; }
+  .check .t b { color:#fff; }
+  .check code { background:rgba(255,255,255,.08); padding:1px 7px; border-radius:5px; font-size:12.5px; color:#93c5fd; }
+  .note { margin-top:22px; font-size:13px; color:#64748b; line-height:1.6; }
+
+  @media (max-width:760px){ .flow{grid-template-columns:1fr 1fr;} .mails{grid-template-columns:1fr;} h1{font-size:34px;} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="kicker">Newsletter system</div>
+  <h1>How PromptAI email works</h1>
+  <p class="lede">Two emails power the whole program: a <b>Welcome</b> that fires the instant someone subscribes, and a <b>Weekly Digest</b> that's auto-built from the live feed and sent every Tuesday. Both are below — exactly as subscribers will see them.</p>
+
+  <!-- ─────────── FLOW ─────────── -->
+  <div class="section">
+    <h2>The flow</h2>
+    <p class="sub">From the subscribe box on the homepage to an inbox — fully automated.</p>
+    <div class="flow">
+      <div class="step">
+        <div class="n">1</div>
+        <h3>Subscribe</h3>
+        <p>Visitor enters their email on the site. It's saved server-side in <code>SUBSCRIBERS</code> KV — synced, not per-device.</p>
+      </div>
+      <div class="step">
+        <div class="n">2</div>
+        <h3>Welcome email</h3>
+        <p>Instantly, <code>/subscribe</code> sends the welcome email through Resend. Sets expectations and links back to the site.</p>
+      </div>
+      <div class="step">
+        <div class="n">3</div>
+        <h3>Weekly build</h3>
+        <p>Every Tuesday a scheduled call to <code>/send-digest</code> pulls the top HN story + arXiv papers + headlines live.</p>
+      </div>
+      <div class="step">
+        <div class="n">4</div>
+        <h3>Send to all</h3>
+        <p>The digest is rendered per-subscriber (own unsubscribe link) and sent in batches to the whole list.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────── PREVIEWS ─────────── -->
+  <div class="section">
+    <h2>The two emails</h2>
+    <p class="sub">Brand-matched, dark-mode-safe, and tested against the usual email-client quirks.</p>
+    <div class="mails">
+      <div class="mailcard">
+        <div class="mailhead">
+          <span class="badge now">⚡ Sent on signup</span>
+          <h3>Welcome to PromptAI</h3>
+          <div class="meta">Subject: Welcome to PromptAI 🎉 Your AI digest starts Tuesday</div>
+        </div>
+        <iframe class="mailframe" src="welcome.html" title="Welcome email"></iframe>
+        <div class="mailfoot"><a href="welcome.html" target="_blank">Open full size ↗</a></div>
+      </div>
+      <div class="mailcard">
+        <div class="mailhead">
+          <span class="badge wk">📅 Every Tuesday</span>
+          <h3>PromptAI Weekly</h3>
+          <div class="meta">Subject: PromptAI Weekly · {top headline}</div>
+        </div>
+        <iframe class="mailframe" src="weekly-digest.html" title="Weekly digest email"></iframe>
+        <div class="mailfoot"><a href="weekly-digest.html" target="_blank">Open full size ↗</a></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────── SETUP ─────────── -->
+  <div class="section">
+    <div class="setup">
+      <h2>To go fully live</h2>
+      <p class="sub">The code is wired and deployed. These are the account-level steps only you can do — about 15 minutes.</p>
+
+      <div class="check">
+        <div class="ic">1</div>
+        <div class="t"><b>Create a Resend account</b> (free up to 3,000 emails/mo) at resend.com and verify your sending domain so mail comes from <code>weekly@promptai.in</code>.</div>
+      </div>
+      <div class="check">
+        <div class="ic">2</div>
+        <div class="t"><b>Add the secrets</b> in Cloudflare Pages → Settings → Functions: <code>RESEND_API_KEY</code>, <code>FROM_EMAIL</code> (e.g. <code>PromptAI &lt;weekly@promptai.in&gt;</code>), and a random <code>CRON_SECRET</code>.</div>
+      </div>
+      <div class="check">
+        <div class="ic">3</div>
+        <div class="t"><b>Add the KV namespaces</b> — bindings named <code>SUBSCRIBERS</code> (already used) and <code>USERS</code> (for cross-device login).</div>
+      </div>
+      <div class="check">
+        <div class="ic">4</div>
+        <div class="t"><b>Schedule the weekly send</b> — point a free scheduler (cron-job.org) or a Cloudflare Worker cron at <code>/send-digest?key=CRON_SECRET</code>, Tuesdays at 8am.</div>
+      </div>
+
+      <p class="note">Until Resend keys are added, everything still works gracefully: subscriptions are saved, the site runs, and login falls back to local mode in preview. Nothing breaks — emails just don't send yet.</p>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>
