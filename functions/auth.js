@@ -130,10 +130,39 @@ export async function onRequest(context) {
       return json({ success: true });
     }
 
+    // ── GET USER DATA (saved / liked / history) ──────────
+    if (action === 'getdata') {
+      const email = await emailFromToken(env, body.token);
+      if (!email) return json({ error: 'Session expired' }, 401);
+      const raw = await env.USERS.get('data:' + email);
+      return json({ data: raw ? JSON.parse(raw) : { saved: [], liked: [], history: [] } });
+    }
+
+    // ── SAVE USER DATA ───────────────────────────────────
+    if (action === 'setdata') {
+      const email = await emailFromToken(env, body.token);
+      if (!email) return json({ error: 'Session expired' }, 401);
+      const data = body.data || { saved: [], liked: [], history: [] };
+      // basic shape guard + cap to keep values small
+      const clean = {
+        saved:   Array.isArray(data.saved)   ? data.saved.slice(0, 500)   : [],
+        liked:   Array.isArray(data.liked)   ? data.liked.slice(0, 500)   : [],
+        history: Array.isArray(data.history) ? data.history.slice(0, 200) : [],
+      };
+      await env.USERS.put('data:' + email, JSON.stringify(clean));
+      return json({ success: true });
+    }
+
     return json({ error: 'Unknown action' }, 400);
   } catch (err) {
     return json({ error: 'Server error', detail: err.message }, 500);
   }
+}
+
+// Resolve a session token → email (or null)
+async function emailFromToken(env, token) {
+  if (!token) return null;
+  return await env.USERS.get('session:' + token);
 }
 
 async function createSession(env, email) {
