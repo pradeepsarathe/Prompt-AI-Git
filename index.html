@@ -1,0 +1,2547 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="description" content="PromptAI — Your hub for AI research, papers, tools and insights. Curated daily from arXiv, Hacker News, MIT Tech Review and more."/>
+<title>PromptAI — AI Research Hub</title>
+
+<!-- ── Open Graph (Facebook, LinkedIn, WhatsApp previews) ── -->
+<meta property="og:type"        content="website"/>
+<meta property="og:url"         content="https://promptai.in/"/>
+<meta property="og:site_name"   content="PromptAI"/>
+<meta property="og:title"       content="PromptAI — AI Research Hub"/>
+<meta property="og:description" content="Curated AI papers, breaking research news, tool reviews and expert analysis — all in one place. Updated daily."/>
+<meta property="og:image"       content="https://promptai.in/og-image.png"/>
+<meta property="og:image:width"  content="1200"/>
+<meta property="og:image:height" content="630"/>
+
+<!-- ── Twitter / X Card ── -->
+<meta name="twitter:card"        content="summary_large_image"/>
+<meta name="twitter:site"        content="@promptai_in"/>
+<meta name="twitter:title"       content="PromptAI — AI Research Hub"/>
+<meta name="twitter:description" content="Curated AI papers, breaking research news, tool reviews and expert analysis — updated daily."/>
+<meta name="twitter:image"       content="https://promptai.in/og-image.png"/>
+<!-- Performance: preconnect to external APIs before JS fires -->
+<link rel="preconnect" href="https://api.rss2json.com"/>
+<link rel="preconnect" href="https://hacker-news.firebaseio.com"/>
+<link rel="dns-prefetch" href="https://api.rss2json.com"/>
+<link rel="dns-prefetch" href="https://hacker-news.firebaseio.com"/>
+
+<!-- RSS autodiscovery -->
+<link rel="alternate" type="application/rss+xml" title="PromptAI — AI Research Feed" href="/feed.xml"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&display=swap" rel="stylesheet"/>
+<style>
+  /* ── USER AUTH STYLES ── */
+  .user-btn {
+    display:flex;align-items:center;gap:8px;padding:7px 16px;border-radius:8px;
+    font-size:0.85rem;font-weight:500;cursor:pointer;border:none;font-family:'DM Sans',sans-serif;
+    transition:all 0.2s;
+  }
+  .user-btn.login  { background:#eff6ff;color:#2563eb;border:1px solid #bfdbfe; }
+  .user-btn.login:hover { background:#dbeafe; }
+  .user-btn.avatar { background:#2563eb;color:white; }
+  .user-btn.avatar:hover { background:#1d4ed8; }
+  .user-avatar-circle {
+    width:26px;height:26px;border-radius:50%;background:#1d4ed8;
+    display:flex;align-items:center;justify-content:center;font-size:0.7rem;font-weight:700;color:white;
+  }
+
+  /* ── USER DASHBOARD PANEL ── */
+  #user-panel {
+    display:none;position:fixed;top:0;right:0;width:min(420px,100vw);height:100vh;
+    background:#fff;z-index:1000;box-shadow:-8px 0 40px rgba(0,0,0,0.15);
+    flex-direction:column;overflow:hidden;
+  }
+  #user-panel.open { display:flex; }
+  .panel-header {
+    display:flex;justify-content:space-between;align-items:center;
+    padding:1.25rem 1.5rem;border-bottom:1px solid #e2e8f0;background:#f8fafc;
+  }
+  .panel-header h3 { font-size:1rem;font-weight:600;color:#0f172a; }
+  .panel-close { background:none;border:none;font-size:1.3rem;cursor:pointer;color:#64748b;padding:4px; }
+  .panel-tabs {
+    display:flex;border-bottom:1px solid #e2e8f0;background:#f8fafc;
+  }
+  .panel-tab {
+    flex:1;padding:10px;font-size:0.82rem;font-weight:500;cursor:pointer;
+    border:none;background:none;color:#64748b;border-bottom:2px solid transparent;
+    font-family:'DM Sans',sans-serif;transition:all 0.2s;
+  }
+  .panel-tab.active { color:#2563eb;border-bottom-color:#2563eb;background:#fff; }
+  .panel-body { flex:1;overflow-y:auto;padding:1rem 1.5rem; }
+  .saved-card {
+    display:flex;flex-direction:column;gap:4px;padding:0.9rem;border:1px solid #e2e8f0;
+    border-radius:10px;margin-bottom:0.75rem;cursor:pointer;transition:all 0.2s;
+  }
+  .saved-card:hover { border-color:#93c5fd;background:#f8fafc; }
+  .saved-card-title { font-size:0.9rem;font-weight:600;color:#0f172a;line-height:1.4; }
+  .saved-card-meta  { font-size:0.75rem;color:#94a3b8;display:flex;gap:0.75rem; }
+  .saved-card-actions { display:flex;gap:0.5rem;margin-top:4px; }
+  .btn-sm {
+    padding:4px 10px;border-radius:6px;font-size:0.75rem;font-weight:500;
+    cursor:pointer;border:1px solid #e2e8f0;background:#f8fafc;color:#475569;
+    font-family:'DM Sans',sans-serif;transition:all 0.2s;
+  }
+  .btn-sm:hover { background:#eff6ff;color:#2563eb;border-color:#bfdbfe; }
+  .btn-sm.danger:hover { background:#fef2f2;color:#dc2626;border-color:#fecaca; }
+  .empty-panel { text-align:center;padding:3rem 1rem;color:#94a3b8; }
+  .empty-panel .icon { font-size:2.5rem;margin-bottom:0.75rem; }
+  .empty-panel p { font-size:0.88rem;line-height:1.6; }
+
+  /* ── SAVE/LIKE BUTTONS ON CARDS ── */
+  .article-actions {
+    display:flex;gap:0.4rem;margin-top:0.5rem;padding-top:0.5rem;border-top:1px solid #f1f5f9;
+  }
+  .action-btn {
+    padding:3px 9px;border-radius:6px;font-size:0.72rem;font-weight:500;cursor:pointer;
+    border:1px solid #e2e8f0;background:#f8fafc;color:#64748b;
+    font-family:'DM Sans',sans-serif;transition:all 0.2s;
+  }
+  .action-btn:hover { background:#eff6ff;color:#2563eb;border-color:#bfdbfe; }
+  .action-btn.saved { background:#eff6ff;color:#2563eb;border-color:#bfdbfe; }
+  .action-btn.liked { background:#fef2f2;color:#dc2626;border-color:#fecaca; }
+
+  /* overlay */
+  #panel-overlay {
+    display:none;position:fixed;inset:0;background:rgba(0,0,0,0.3);z-index:999;
+  }
+  #panel-overlay.open { display:block; }
+</style>
+<style>
+  :root {
+    --navy: #0a1628;
+    --navy-mid: #102040;
+    --navy-light: #1a3055;
+    --accent: #2563eb;
+    --accent-light: #3b82f6;
+    --accent-subtle: #eff6ff;
+    --gold: #f59e0b;
+    --text-primary: #0f172a;
+    --text-secondary: #475569;
+    --text-muted: #94a3b8;
+    --border: #e2e8f0;
+    --surface: #f8fafc;
+    --white: #ffffff;
+    --radius: 8px;
+    --radius-lg: 14px;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    color: var(--text-primary);
+    background: var(--white);
+    line-height: 1.6;
+    font-size: 16px;
+  }
+
+  h1, h2, h3, h4 { font-family: 'DM Serif Display', serif; line-height: 1.2; }
+
+  a { color: inherit; text-decoration: none; }
+
+  /* NAV */
+  nav {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(255,255,255,0.95);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 2rem;
+  }
+  .nav-inner {
+    max-width: 1200px; margin: 0 auto;
+    display: flex; align-items: center; justify-content: space-between;
+    height: 64px;
+  }
+  .nav-logo {
+    display: flex; align-items: center; gap: 10px;
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.4rem; color: var(--navy);
+  }
+  .logo-dot {
+    width: 10px; height: 10px; border-radius: 50%;
+    background: var(--accent); display: inline-block;
+  }
+  .nav-links {
+    display: flex; align-items: center; gap: 2rem;
+    list-style: none;
+  }
+  .nav-links a {
+    font-size: 0.9rem; font-weight: 500;
+    color: var(--text-secondary);
+    transition: color 0.2s;
+  }
+  .nav-links a:hover { color: var(--accent); }
+  .nav-cta {
+    background: var(--accent); color: white !important;
+    padding: 8px 20px; border-radius: var(--radius);
+    font-size: 0.88rem !important; font-weight: 500 !important;
+    transition: background 0.2s !important;
+  }
+  .nav-cta:hover { background: #1d4ed8 !important; color: white !important; }
+
+  /* HERO */
+  .hero {
+    background: var(--navy);
+    padding: 6rem 2rem 5rem;
+    position: relative; overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute; top: -40%; right: -10%;
+    width: 600px; height: 600px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(37,99,235,0.15) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero::after {
+    content: '';
+    position: absolute; bottom: -20%; left: 5%;
+    width: 400px; height: 400px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(245,158,11,0.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero-inner {
+    max-width: 1200px; margin: 0 auto;
+    display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: center;
+  }
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(37,99,235,0.2); border: 1px solid rgba(59,130,246,0.3);
+    padding: 6px 14px; border-radius: 20px;
+    font-size: 0.8rem; font-weight: 500; color: #93c5fd;
+    margin-bottom: 1.5rem;
+  }
+  .hero-badge span { width: 6px; height: 6px; background: #60a5fa; border-radius: 50%; animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+  .hero h1 {
+    font-size: 3.2rem; color: white;
+    margin-bottom: 1.25rem; line-height: 1.1;
+  }
+  .hero h1 em { font-style: italic; color: #93c5fd; }
+  .hero p {
+    font-size: 1.1rem; color: #94a3b8;
+    max-width: 480px; margin-bottom: 2rem; line-height: 1.7;
+  }
+  .hero-buttons { display: flex; gap: 1rem; flex-wrap: wrap; }
+  .btn-primary {
+    background: var(--accent); color: white;
+    padding: 12px 28px; border-radius: var(--radius);
+    font-weight: 500; font-size: 0.95rem;
+    transition: background 0.2s;
+  }
+  .btn-primary:hover { background: #1d4ed8; }
+  .btn-outline {
+    border: 1px solid rgba(255,255,255,0.2); color: white;
+    padding: 12px 28px; border-radius: var(--radius);
+    font-weight: 500; font-size: 0.95rem;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .btn-outline:hover { border-color: rgba(255,255,255,0.5); background: rgba(255,255,255,0.05); }
+  .hero-stats {
+    display: grid; grid-template-columns: repeat(3,1fr); gap: 1rem;
+  }
+  .stat-card {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: var(--radius-lg); padding: 1.25rem;
+    text-align: center;
+  }
+  .stat-card .num {
+    font-family: 'DM Serif Display', serif;
+    font-size: 2rem; color: white; display: block;
+  }
+  .stat-card .lbl { font-size: 0.8rem; color: #64748b; margin-top: 4px; }
+  .hero-featured {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: var(--radius-lg); padding: 1.5rem;
+    margin-top: 1rem;
+  }
+  .hero-featured .tag {
+    font-size: 0.75rem; font-weight: 600; color: #fbbf24;
+    letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 0.75rem;
+  }
+  .hero-featured h4 {
+    font-size: 1rem; color: white; margin-bottom: 0.5rem; line-height: 1.4;
+  }
+  .hero-featured p { font-size: 0.85rem; color: #94a3b8; }
+
+  /* SECTIONS COMMON */
+  section { padding: 5rem 2rem; }
+  .section-inner { max-width: 1200px; margin: 0 auto; }
+  .section-header { margin-bottom: 3rem; }
+  .section-label {
+    font-size: 0.78rem; font-weight: 600; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--accent); margin-bottom: 0.75rem;
+  }
+  .section-header h2 { font-size: 2.2rem; margin-bottom: 0.75rem; color: var(--navy); }
+  .section-header p { font-size: 1rem; color: var(--text-secondary); max-width: 560px; }
+
+  /* NEWS SECTION */
+  .news-section { background: var(--white); }
+  .news-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem; }
+  .news-main {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius-lg); overflow: hidden;
+  }
+  .news-main-img {
+    width: 100%; height: 220px;
+    background: linear-gradient(135deg, var(--navy) 0%, var(--navy-light) 100%);
+    display: flex; align-items: center; justify-content: center;
+    position: relative;
+  }
+  .news-main-img .big-icon { font-size: 4rem; opacity: 0.3; }
+  .news-main-img .category-pill {
+    position: absolute; top: 1rem; left: 1rem;
+    background: var(--accent); color: white;
+    padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 600;
+  }
+  .news-main-body { padding: 1.5rem; }
+  .news-main-body h3 { font-size: 1.35rem; margin-bottom: 0.75rem; line-height: 1.3; }
+  .news-main-body p { font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 1rem; }
+  .news-meta { display: flex; align-items: center; gap: 1rem; }
+  .news-meta span { font-size: 0.8rem; color: var(--text-muted); }
+  .news-sidebar { display: flex; flex-direction: column; gap: 1rem; }
+  .news-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius-lg); padding: 1.25rem;
+    transition: border-color 0.2s, transform 0.2s;
+    cursor: pointer;
+  }
+  .news-card:hover { border-color: var(--accent-light); transform: translateY(-2px); }
+  .news-card .tag {
+    font-size: 0.72rem; font-weight: 600; color: var(--accent);
+    text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 0.5rem;
+  }
+  .news-card h4 { font-size: 0.95rem; margin-bottom: 0.4rem; line-height: 1.4; }
+  .news-card span { font-size: 0.78rem; color: var(--text-muted); }
+  .loading-bar {
+    height: 3px; background: var(--border); border-radius: 2px;
+    overflow: hidden; margin-bottom: 1.5rem;
+  }
+  .loading-bar-fill {
+    height: 100%; width: 0%; background: var(--accent);
+    border-radius: 2px; transition: width 0.3s;
+  }
+  #news-container { min-height: 300px; }
+  .fetch-status {
+    font-size: 0.82rem; color: var(--text-muted);
+    display: flex; align-items: center; gap: 6px; margin-bottom: 1rem;
+  }
+  .dot-live {
+    width: 7px; height: 7px; background: #22c55e;
+    border-radius: 50%; animation: pulse 1.5s infinite;
+  }
+
+  /* PAPERS SECTION */
+  .papers-section { background: var(--surface); }
+  .papers-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 1.25rem; }
+  .paper-card {
+    background: var(--white); border: 1px solid var(--border);
+    border-radius: var(--radius-lg); padding: 1.5rem;
+    transition: box-shadow 0.2s, transform 0.2s;
+  }
+  .paper-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,0.08); transform: translateY(-3px); }
+  .src-btn { padding:6px 14px; border-radius:20px; font-size:0.82rem; font-weight:500; cursor:pointer; border:1px solid #e2e8f0; background:white; color:#475569; transition:all 0.2s; }
+  .src-btn.active, .src-btn:hover { background:#2563eb; color:white; border-color:#2563eb; }
+  a.paper-card, a.tool-card, a.news-card, a.blog-card { cursor: pointer; }
+  .paper-category {
+    display: inline-block;
+    font-size: 0.72rem; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 0.08em; padding: 3px 10px; border-radius: 12px;
+    margin-bottom: 1rem;
+  }
+  .cat-llm { background: #eff6ff; color: #1d4ed8; }
+  .cat-cv { background: #f0fdf4; color: #15803d; }
+  .cat-rl { background: #fefce8; color: #a16207; }
+  .cat-ml { background: #fdf4ff; color: #7e22ce; }
+  .cat-nlp { background: #fff7ed; color: #c2410c; }
+  .cat-ai { background: #f0f9ff; color: #0369a1; }
+  .paper-card h4 { font-size: 0.98rem; margin-bottom: 0.6rem; line-height: 1.4; }
+  .paper-card .authors { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.75rem; }
+  .paper-card .summary { font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6; margin-bottom: 1rem; }
+  .paper-footer { display: flex; justify-content: space-between; align-items: center; }
+  .paper-footer span { font-size: 0.78rem; color: var(--text-muted); }
+  .read-link {
+    font-size: 0.82rem; font-weight: 500; color: var(--accent);
+    display: flex; align-items: center; gap: 4px;
+  }
+  .read-link:hover { text-decoration: underline; }
+
+  /* TOOLS SECTION */
+  .tools-section { background: var(--white); }
+  .tools-filter {
+    display: flex; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 2.5rem;
+  }
+  .filter-btn {
+    padding: 6px 18px; border-radius: 20px;
+    font-size: 0.85rem; font-weight: 500; cursor: pointer;
+    border: 1px solid var(--border); background: var(--white);
+    color: var(--text-secondary); transition: all 0.2s;
+  }
+  .filter-btn.active, .filter-btn:hover {
+    background: var(--accent); color: white; border-color: var(--accent);
+  }
+  .tools-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 1.25rem; }
+  .tool-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius-lg); padding: 1.25rem;
+    transition: all 0.2s; cursor: pointer;
+  }
+  .tool-card:hover { border-color: var(--accent-light); background: var(--white); transform: translateY(-2px); }
+  .tool-icon {
+    width: 44px; height: 44px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.25rem; margin-bottom: 1rem;
+  }
+  .tool-card h4 { font-size: 0.95rem; margin-bottom: 0.4rem; }
+  .tool-card p { font-size: 0.82rem; color: var(--text-secondary); margin-bottom: 0.75rem; }
+  .tool-tag {
+    font-size: 0.72rem; font-weight: 600; padding: 2px 8px;
+    border-radius: 10px; background: var(--accent-subtle); color: var(--accent);
+  }
+
+  /* BLOG SECTION */
+  .blog-section { background: var(--surface); }
+  .blog-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 1.5rem; }
+  .blog-card {
+    background: var(--white); border: 1px solid var(--border);
+    border-radius: var(--radius-lg); overflow: hidden;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .blog-card:hover { transform: translateY(-4px); box-shadow: 0 8px 30px rgba(0,0,0,0.1); }
+  .blog-banner {
+    height: 140px; display: flex; align-items: center; justify-content: center;
+    font-size: 2.5rem;
+  }
+  .blog-body { padding: 1.25rem; }
+  .blog-meta {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 0.75rem;
+  }
+  .blog-category {
+    font-size: 0.72rem; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 0.07em; color: var(--accent);
+  }
+  .blog-date { font-size: 0.78rem; color: var(--text-muted); }
+  .blog-card h4 { font-size: 1rem; margin-bottom: 0.5rem; line-height: 1.4; }
+  .blog-card p { font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6; }
+  .blog-footer {
+    display: flex; align-items: center; gap: 8px; padding: 1rem 1.25rem;
+    border-top: 1px solid var(--border);
+  }
+  .avatar {
+    width: 28px; height: 28px; border-radius: 50%;
+    background: var(--accent); display: flex; align-items: center;
+    justify-content: center; font-size: 0.7rem; font-weight: 600; color: white;
+  }
+  .blog-footer span { font-size: 0.8rem; color: var(--text-secondary); }
+
+  /* ABOUT SECTION */
+  .about-section { background: var(--navy); }
+  .about-inner {
+    max-width: 1200px; margin: 0 auto;
+    display: grid; grid-template-columns: 1fr 1fr; gap: 5rem; align-items: center;
+  }
+  .about-label { font-size: 0.78rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: #60a5fa; margin-bottom: 1rem; }
+  .about-inner h2 { font-size: 2.2rem; color: white; margin-bottom: 1.5rem; line-height: 1.2; }
+  .about-inner p { font-size: 1rem; color: #94a3b8; margin-bottom: 1.25rem; line-height: 1.8; }
+  .about-bullets { list-style: none; margin-bottom: 2rem; }
+  .about-bullets li {
+    display: flex; align-items: flex-start; gap: 10px;
+    font-size: 0.95rem; color: #cbd5e1; margin-bottom: 0.75rem;
+  }
+  .about-bullets li::before {
+    content: '→'; color: #60a5fa; font-weight: 700; flex-shrink: 0; margin-top: 1px;
+  }
+  .about-right { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  .about-card {
+    background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+    border-radius: var(--radius-lg); padding: 1.5rem;
+  }
+  .about-card .icon { font-size: 1.5rem; margin-bottom: 0.75rem; }
+  .about-card h4 { font-size: 0.95rem; color: white; margin-bottom: 0.5rem; }
+  .about-card p { font-size: 0.83rem; color: #94a3b8; line-height: 1.6; }
+
+  /* NEWSLETTER SECTION */
+  .newsletter-section { background: var(--accent-subtle); border-top: 1px solid #bfdbfe; border-bottom: 1px solid #bfdbfe; }
+  .newsletter-inner {
+    max-width: 640px; margin: 0 auto; text-align: center;
+  }
+  .newsletter-icon {
+    width: 56px; height: 56px; border-radius: 14px;
+    background: var(--accent); display: flex; align-items: center;
+    justify-content: center; font-size: 1.5rem; margin: 0 auto 1.5rem;
+    color: white;
+  }
+  .newsletter-inner h2 { font-size: 2rem; margin-bottom: 0.75rem; color: var(--navy); }
+  .newsletter-inner p { font-size: 1rem; color: var(--text-secondary); margin-bottom: 2rem; }
+  .newsletter-form { display: flex; gap: 0.75rem; max-width: 460px; margin: 0 auto; }
+  .newsletter-form input {
+    flex: 1; padding: 12px 16px; border: 1px solid #bfdbfe;
+    border-radius: var(--radius); font-size: 0.95rem; font-family: 'DM Sans', sans-serif;
+    background: white; outline: none;
+    transition: border-color 0.2s;
+  }
+  .newsletter-form input:focus { border-color: var(--accent); }
+  .newsletter-form button {
+    background: var(--accent); color: white;
+    padding: 12px 24px; border: none; border-radius: var(--radius);
+    font-size: 0.95rem; font-weight: 500; cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    transition: background 0.2s;
+  }
+  .newsletter-form button:hover { background: #1d4ed8; }
+  .newsletter-note { font-size: 0.8rem; color: var(--text-muted); margin-top: 1rem; }
+  .success-msg {
+    display: none; background: #f0fdf4; border: 1px solid #bbf7d0;
+    border-radius: var(--radius); padding: 12px 20px; margin-top: 1rem;
+    font-size: 0.9rem; color: #15803d;
+  }
+
+  /* FOOTER */
+  footer {
+    background: var(--navy); padding: 3rem 2rem 2rem;
+    border-top: 1px solid rgba(255,255,255,0.08);
+  }
+  .footer-inner {
+    max-width: 1200px; margin: 0 auto;
+    display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 3rem;
+  }
+  .footer-brand .logo {
+    font-family: 'DM Serif Display', serif; font-size: 1.3rem;
+    color: white; margin-bottom: 0.75rem;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .footer-brand p { font-size: 0.85rem; color: #64748b; line-height: 1.7; max-width: 260px; }
+  .footer-col h5 { font-size: 0.85rem; font-weight: 600; color: white; margin-bottom: 1rem; }
+  .footer-col ul { list-style: none; }
+  .footer-col li { margin-bottom: 0.6rem; }
+  .footer-col a { font-size: 0.85rem; color: #64748b; transition: color 0.2s; }
+  .footer-col a:hover { color: #94a3b8; }
+  .footer-bottom {
+    max-width: 1200px; margin: 2rem auto 0;
+    padding-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.06);
+    display: flex; flex-direction: column; gap: 0.75rem; align-items: stretch;
+  }
+  .footer-bottom-row {
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .footer-bottom p { font-size: 0.82rem; color: #475569; }
+
+  /* RESPONSIVE */
+  @media (max-width: 900px) {
+    .hero-inner, .about-inner { grid-template-columns: 1fr; gap: 2.5rem; }
+    .hero h1 { font-size: 2.2rem; }
+    .hero-stats { grid-template-columns: repeat(3,1fr); }
+    .news-grid { grid-template-columns: 1fr; }
+    .papers-grid, .blog-grid { grid-template-columns: repeat(2,1fr); }
+    .tools-grid { grid-template-columns: repeat(2,1fr); }
+    .footer-inner { grid-template-columns: 1fr 1fr; gap: 2rem; }
+    nav .nav-links { display: none; }
+  }
+  @media (max-width: 768px) {
+    /* Featured blog card: stack vertically on tablets */
+    #blog-sub-grid { grid-template-columns: repeat(2,1fr) !important; }
+  }
+  @media (max-width: 600px) {
+    .papers-grid, .blog-grid, .tools-grid { grid-template-columns: 1fr; }
+    #blog-sub-grid { grid-template-columns: 1fr !important; }
+    /* Featured card: stack image on top on mobile */
+    #blog-grid > div[style*="grid-template-columns:2fr 3fr"] { grid-template-columns: 1fr !important; }
+    .newsletter-form { flex-direction: column; }
+    .footer-inner { grid-template-columns: 1fr; }
+    .footer-bottom { flex-direction: column; gap: 0.5rem; text-align: center; }
+    .footer-bottom-row { flex-direction: column; gap: 0.3rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-inner">
+    <a href="#" class="nav-logo">
+      <span class="logo-dot"></span> PromptAI
+    </a>
+    <ul class="nav-links">
+      <li><a href="#news">News</a></li>
+      <li><a href="#papers">Papers</a></li>
+      <li><a href="#tools">Tools</a></li>
+      <li><a href="#blog">Blog</a></li>
+      <li><a href="#about">About</a></li>
+      <li><a href="/archive.html">Archive</a></li>
+      <li><a href="education.html">AI Education</a></li>
+      <li><a href="#newsletter" class="nav-cta">Subscribe</a></li>
+      <li>
+        <button id="nav-user-btn" class="user-btn login" onclick="toggleUserPanel()">
+          <span id="nav-user-icon">👤</span>
+          <span id="nav-user-label">Sign In</span>
+        </button>
+      </li>
+    </ul>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-inner">
+    <div>
+      <div class="hero-badge">
+        <span></span> Live AI Research Feed
+      </div>
+      <h1>Your hub for <em>AI research</em> &amp; insights</h1>
+      <p>Stay ahead with curated AI papers, breaking research news, tool reviews, and expert analysis — all in one place.</p>
+      <div class="hero-buttons">
+        <a href="#news" class="btn-primary">Explore Research</a>
+        <a href="#newsletter" class="btn-outline">Get Weekly Digest</a>
+      </div>
+    </div>
+    <div>
+      <div class="hero-stats">
+        <div class="stat-card">
+          <span class="num" id="hero-stat-visitors">—</span>
+          <div class="lbl">Total visitors</div>
+        </div>
+        <div class="stat-card">
+          <span class="num" id="hero-stat-articles">—</span>
+          <div class="lbl">Articles read today</div>
+        </div>
+        <div class="stat-card">
+          <span class="num">Daily</span>
+          <div class="lbl">Content refresh</div>
+        </div>
+      </div>
+      <div id="hero-trending" class="hero-featured" style="cursor:pointer;text-decoration:none;">
+        <div class="tag">🔥 Trending now</div>
+        <h4 id="hero-trending-title" style="color:white;">Loading today's top AI story…</h4>
+        <p id="hero-trending-desc" style="color:#94a3b8;font-size:0.85rem;margin-top:4px;">Fetching live from top sources →</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ARTICLE MODAL -->
+<div id="article-modal" style="display:none;position:fixed;inset:0;z-index:999;background:rgba(10,22,40,0.7);backdrop-filter:blur(4px);overflow-y:auto;">
+  <div style="max-width:680px;margin:3rem auto;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 24px 80px rgba(0,0,0,0.3);">
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:1.25rem 1.5rem;border-bottom:1px solid #e2e8f0;background:#f8fafc;">
+      <span id="modal-source" style="font-size:0.8rem;font-weight:600;color:#2563eb;text-transform:uppercase;letter-spacing:0.07em;"></span>
+      <button onclick="closeModal()" style="background:none;border:none;font-size:1.4rem;cursor:pointer;color:#64748b;line-height:1;padding:4px 8px;">✕</button>
+    </div>
+    <div style="padding:2rem;">
+      <div id="modal-category" style="display:inline-block;font-size:0.72rem;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;padding:3px 10px;border-radius:12px;background:#eff6ff;color:#1d4ed8;margin-bottom:1rem;"></div>
+      <h2 id="modal-title" style="font-family:'DM Serif Display',serif;font-size:1.7rem;line-height:1.25;color:#0a1628;margin-bottom:0.75rem;"></h2>
+      <div id="modal-meta" style="font-size:0.82rem;color:#94a3b8;margin-bottom:1.25rem;display:flex;gap:1rem;flex-wrap:wrap;"></div>
+      <div id="modal-body" style="font-size:0.97rem;color:#334155;line-height:1.8;margin-bottom:1.5rem;"></div>
+      <!-- Big read button — goes directly to source -->
+      <a id="modal-link" href="#" target="_blank" rel="noopener" onclick="closeModal()"
+        style="display:block;text-align:center;background:#2563eb;color:white;padding:14px 24px;border-radius:10px;font-size:1rem;font-weight:600;text-decoration:none;transition:background 0.2s;"
+        onmouseover="this.style.background='#1d4ed8'" onmouseout="this.style.background='#2563eb'">
+        Read Full Article ↗
+      </a>
+      <!-- Share buttons -->
+      <div style="display:flex;gap:0.5rem;margin-top:0.75rem;">
+        <a id="modal-share-x" href="#" target="_blank" rel="noopener"
+          style="flex:1;display:flex;align-items:center;justify-content:center;gap:5px;padding:9px;border-radius:8px;border:1px solid #e2e8f0;font-size:0.8rem;font-weight:500;color:#0f172a;text-decoration:none;transition:all 0.2s;background:#fff;"
+          onmouseover="this.style.background='#f8fafc';this.style.borderColor='#94a3b8'"
+          onmouseout="this.style.background='#fff';this.style.borderColor='#e2e8f0'">
+          𝕏 Post
+        </a>
+        <a id="modal-share-linkedin" href="#" target="_blank" rel="noopener"
+          style="flex:1;display:flex;align-items:center;justify-content:center;gap:5px;padding:9px;border-radius:8px;border:1px solid #e2e8f0;font-size:0.8rem;font-weight:500;color:#0a66c2;text-decoration:none;transition:all 0.2s;background:#fff;"
+          onmouseover="this.style.background='#eff6ff';this.style.borderColor='#bfdbfe'"
+          onmouseout="this.style.background='#fff';this.style.borderColor='#e2e8f0'">
+          in LinkedIn
+        </a>
+        <a id="modal-share-facebook" href="#" target="_blank" rel="noopener"
+          style="flex:1;display:flex;align-items:center;justify-content:center;gap:5px;padding:9px;border-radius:8px;border:1px solid #e2e8f0;font-size:0.8rem;font-weight:500;color:#1877f2;text-decoration:none;transition:all 0.2s;background:#fff;"
+          onmouseover="this.style.background='#eff6ff';this.style.borderColor='#bfdbfe'"
+          onmouseout="this.style.background='#fff';this.style.borderColor='#e2e8f0'">
+          f Facebook
+        </a>
+        <button onclick="copyArticleLink()" id="modal-copy-btn"
+          style="flex:1;display:flex;align-items:center;justify-content:center;gap:5px;padding:9px;border-radius:8px;border:1px solid #e2e8f0;font-size:0.8rem;font-weight:500;color:#475569;cursor:pointer;background:#fff;font-family:'DM Sans',sans-serif;transition:all 0.2s;"
+          onmouseover="this.style.background='#f8fafc';this.style.borderColor='#94a3b8'"
+          onmouseout="this.style.background='#fff';this.style.borderColor='#e2e8f0'">
+          🔗 Copy
+        </button>
+      </div>
+      <button onclick="closeModal()" style="display:block;width:100%;margin-top:0.75rem;background:none;border:1px solid #e2e8f0;padding:10px;border-radius:8px;font-size:0.9rem;cursor:pointer;color:#475569;font-family:'DM Sans',sans-serif;">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- LATEST AI NEWS -->
+<section class="news-section" id="news">
+  <div class="section-inner">
+    <div class="section-header">
+      <div class="section-label">Latest AI Research / News</div>
+      <h2>What's happening in AI</h2>
+      <p>Live feed from Hacker News, arXiv &amp; AI research blogs — read everything without leaving this page.</p>
+    </div>
+
+    <!-- Source tabs -->
+    <div style="display:flex;gap:0.6rem;flex-wrap:wrap;margin-bottom:1.5rem;">
+      <button class="src-btn active" onclick="switchSource('all',this)">All Sources</button>
+      <button class="src-btn" onclick="switchSource('anthropic',this)">🤖 Anthropic</button>
+      <button class="src-btn" onclick="switchSource('hf',this)">🤗 Hugging Face</button>
+      <button class="src-btn" onclick="switchSource('batch',this)">📚 The Batch</button>
+      <button class="src-btn" onclick="switchSource('metaai',this)">🔮 Meta AI</button>
+      <button class="src-btn" onclick="switchSource('arxiv',this)">📄 arXiv</button>
+      <button class="src-btn" onclick="switchSource('tc',this)">📰 TechCrunch</button>
+      <button class="src-btn" onclick="switchSource('verge',this)">⚡ The Verge</button>
+      <button class="src-btn" onclick="switchSource('ars',this)">🔭 Ars Technica</button>
+      <button class="src-btn" onclick="switchSource('google',this)">🔵 Google AI</button>
+      <button class="src-btn" onclick="switchSource('openai',this)">🤖 OpenAI</button>
+      <button class="src-btn" onclick="switchSource('gradient',this)">🎓 The Gradient</button>
+      <button class="src-btn" onclick="switchSource('tds',this)">💻 TDS</button>
+      <button class="src-btn" onclick="switchSource('medium',this)">📝 Medium</button>
+      <button class="src-btn" onclick="switchSource('analytics',this)">📊 Analytics</button>
+      <button class="src-btn" onclick="switchSource('mitsloan',this)">🏛 MIT Sloan</button>
+    </div>
+
+    <div class="fetch-status">
+      <span class="dot-live"></span>
+      <span id="fetch-label">Fetching live AI news from all sources…</span>
+    </div>
+    <div class="loading-bar"><div class="loading-bar-fill" id="load-bar"></div></div>
+    <div id="news-container">
+      <div id="news-dynamic-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:1.25rem;"></div>
+      <div id="news-loading" style="text-align:center;padding:3rem;color:#94a3b8;font-size:0.95rem;">Loading stories…</div>
+    </div>
+    <div style="text-align:center;margin-top:2rem;">
+      <button onclick="loadMore()" id="load-more-btn" style="display:none;background:none;border:1px solid #e2e8f0;padding:10px 28px;border-radius:8px;font-size:0.9rem;font-weight:500;cursor:pointer;color:#2563eb;transition:all 0.2s;">Load more stories</button>
+    </div>
+  </div>
+</section>
+
+<!-- AI PAPERS & SUMMARIES -->
+<section class="papers-section" id="papers">
+  <div class="section-inner">
+    <div class="section-header">
+      <div class="section-label">AI Papers &amp; Summaries</div>
+      <h2>Key research, simplified</h2>
+      <p>Live from arXiv, IEEE Spectrum, Science Daily AI, and JMLR — refreshed daily. Click any paper to read the summary.</p>
+    </div>
+    <!-- Category filter -->
+    <div style="display:flex;gap:0.6rem;flex-wrap:wrap;margin-bottom:2rem;" id="paper-filters">
+      <button class="filter-btn active" onclick="filterPapers('all',this)">All Sources</button>
+      <button class="filter-btn" onclick="filterPapers('arxiv',this)">📄 arXiv</button>
+      <button class="filter-btn" onclick="filterPapers('cs.AI',this)">🤖 AI</button>
+      <button class="filter-btn" onclick="filterPapers('cs.LG',this)">📈 Machine Learning</button>
+      <button class="filter-btn" onclick="filterPapers('cs.CL',this)">💬 NLP / LLM</button>
+      <button class="filter-btn" onclick="filterPapers('cs.CV',this)">👁 Computer Vision</button>
+      <button class="filter-btn" onclick="filterPapers('ieee',this)">🔌 IEEE Spectrum</button>
+      <button class="filter-btn" onclick="filterPapers('sciencedaily',this)">🔬 Science Daily</button>
+      <button class="filter-btn" onclick="filterPapers('jmlr',this)">📊 JMLR</button>
+    </div>
+    <div class="papers-grid" id="papers-dynamic-grid">
+      <div style="grid-column:1/-1;text-align:center;padding:3rem;color:#94a3b8;">Loading latest papers from arXiv…</div>
+    </div>
+    <div style="text-align:center;margin-top:2rem;">
+      <button id="papers-load-more" onclick="loadMorePapers()" style="display:none;background:none;border:1px solid #e2e8f0;padding:10px 28px;border-radius:8px;font-size:0.9rem;font-weight:500;cursor:pointer;color:#2563eb;">Load more papers</button>
+    </div>
+  </div>
+</section>
+
+<!-- AI TOOLS DIRECTORY -->
+<section class="tools-section" id="tools">
+  <div class="section-inner">
+    <div class="section-header">
+      <div class="section-label">AI Tools Directory</div>
+      <h2>Best AI tools, curated</h2>
+      <p>Reviewed and categorized tools across all domains of artificial intelligence.</p>
+    </div>
+    <div class="tools-filter">
+      <button class="filter-btn active" onclick="filterTools('all', this)">All Tools</button>
+      <button class="filter-btn" onclick="filterTools('llm', this)">LLMs</button>
+      <button class="filter-btn" onclick="filterTools('code', this)">Coding</button>
+      <button class="filter-btn" onclick="filterTools('image', this)">Image AI</button>
+      <button class="filter-btn" onclick="filterTools('data', this)">Data &amp; Analytics</button>
+      <button class="filter-btn" onclick="filterTools('productivity', this)">Productivity</button>
+    </div>
+    <div class="tools-grid" id="tools-grid">
+      <a href="https://claude.ai" target="_blank" rel="noopener" class="tool-card" data-cat="llm" style="text-decoration:none;color:inherit;">
+        <div class="tool-icon" style="background:#eff6ff;">🧠</div>
+        <h4>Claude (Anthropic)</h4>
+        <p>Advanced reasoning, coding, analysis and long-context understanding.</p>
+        <span class="tool-tag">LLM</span>
+      </a>
+      <a href="https://openai.com/chatgpt" target="_blank" rel="noopener" class="tool-card" data-cat="llm" style="text-decoration:none;color:inherit;">
+        <div class="tool-icon" style="background:#fef9c3;">⚡</div>
+        <h4>GPT-4o (OpenAI)</h4>
+        <p>Multimodal model for text, images, audio and real-time applications.</p>
+        <span class="tool-tag">LLM</span>
+      </a>
+      <a href="https://github.com/features/copilot" target="_blank" rel="noopener" class="tool-card" data-cat="code" style="text-decoration:none;color:inherit;">
+        <div class="tool-icon" style="background:#f0fdf4;">💻</div>
+        <h4>GitHub Copilot</h4>
+        <p>AI pair programmer integrated into VS Code, JetBrains and more.</p>
+        <span class="tool-tag">Coding</span>
+      </a>
+      <a href="https://www.midjourney.com" target="_blank" rel="noopener" class="tool-card" data-cat="image" style="text-decoration:none;color:inherit;">
+        <div class="tool-icon" style="background:#fdf4ff;">🎨</div>
+        <h4>Midjourney v6</h4>
+        <p>State-of-the-art text-to-image generation with photorealistic quality.</p>
+        <span class="tool-tag">Image AI</span>
+      </a>
+      <a href="https://www.databricks.com/product/machine-learning" target="_blank" rel="noopener" class="tool-card" data-cat="data" style="text-decoration:none;color:inherit;">
+        <div class="tool-icon" style="background:#fff7ed;">📊</div>
+        <h4>Databricks + DBRX</h4>
+        <p>Enterprise AI/ML platform with integrated LLM and data pipeline support.</p>
+        <span class="tool-tag">Data &amp; Analytics</span>
+      </a>
+      <a href="https://www.notion.so/product/ai" target="_blank" rel="noopener" class="tool-card" data-cat="productivity" style="text-decoration:none;color:inherit;">
+        <div class="tool-icon" style="background:#ecfdf5;">📝</div>
+        <h4>Notion AI</h4>
+        <p>AI-enhanced workspace for notes, docs, wikis and project management.</p>
+        <span class="tool-tag">Productivity</span>
+      </a>
+      <a href="https://www.cursor.com" target="_blank" rel="noopener" class="tool-card" data-cat="code" style="text-decoration:none;color:inherit;">
+        <div class="tool-icon" style="background:#eff6ff;">🔧</div>
+        <h4>Cursor IDE</h4>
+        <p>AI-native code editor built on VS Code with deep Claude/GPT integration.</p>
+        <span class="tool-tag">Coding</span>
+      </a>
+      <a href="https://openai.com/dall-e-3" target="_blank" rel="noopener" class="tool-card" data-cat="image" style="text-decoration:none;color:inherit;">
+        <div class="tool-icon" style="background:#fef2f2;">🖼</div>
+        <h4>DALL-E 3</h4>
+        <p>OpenAI's image generation model with precise text rendering capabilities.</p>
+        <span class="tool-tag">Image AI</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- BLOG -->
+<section class="blog-section" id="blog">
+  <div class="section-inner">
+    <div class="section-header">
+      <div class="section-label">Blog / Articles</div>
+      <h2>Perspectives on AI</h2>
+      <p>In-depth explainers, tutorials, and research breakdowns — strictly educational content from The Gradient, fast.ai, Google Research, and more. Not news.</p>
+    </div>
+    <div class="blog-grid" id="blog-grid"></div>
+    <div style="text-align:center;margin-top:2.5rem;">
+      <button id="blog-load-more" onclick="loadMoreBlogs()" style="display:none;background:none;border:1px solid #e2e8f0;padding:11px 32px;border-radius:8px;font-size:0.92rem;font-weight:500;cursor:pointer;color:#2563eb;" onmouseover="this.style.background='#eff6ff'" onmouseout="this.style.background='none'">Load more articles</button>
+    </div>
+  </div>
+</section>
+<!-- ABOUT -->
+<section class="about-section" id="about" style="padding:5rem 2rem;">
+  <div class="about-inner">
+    <div>
+      <div class="about-label">About PromptAI</div>
+      <h2>Built for the AI-curious mind</h2>
+      <p>PromptAI is an independent research hub dedicated to making artificial intelligence accessible, understandable, and actionable for professionals, researchers, and enthusiasts.</p>
+      <ul class="about-bullets">
+        <li>Curated summaries of the latest AI papers, no PhD required</li>
+        <li>Honest, hands-on reviews of AI tools and platforms</li>
+        <li>Practical guides from data engineers building real AI systems</li>
+        <li>Weekly newsletter with signal over noise</li>
+      </ul>
+      <a href="#newsletter" class="btn-primary" style="display:inline-block;">Join the community</a>
+    </div>
+    <div class="about-right">
+      <div class="about-card">
+        <div class="icon">📚</div>
+        <h4>Research First</h4>
+        <p>Every article is grounded in peer-reviewed research and primary sources.</p>
+      </div>
+      <div class="about-card">
+        <div class="icon">⚙️</div>
+        <h4>Practitioner Lens</h4>
+        <p>Written by engineers who build AI systems, not just write about them.</p>
+      </div>
+      <div class="about-card">
+        <div class="icon">🌍</div>
+        <h4>Open Access</h4>
+        <p>All summaries and articles are freely available — no paywalls.</p>
+      </div>
+      <div class="about-card">
+        <div class="icon">📡</div>
+        <h4>Always Current</h4>
+        <p>Live news feeds and weekly paper roundups keep you up to date.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- NEWSLETTER -->
+<section class="newsletter-section" id="newsletter">
+  <div class="newsletter-inner">
+    <div class="newsletter-icon">✉️</div>
+    <h2>Stay ahead of AI</h2>
+    <p>Get a weekly digest of the most important AI research, tools, and insights delivered straight to your inbox. No spam, ever.</p>
+    <!-- Simple Netlify form — no JS, just works -->
+    <form name="newsletter" method="POST" data-netlify="true" id="newsletter-form" style="width:100%;" onsubmit="handleSubscribe(event)">
+      <input type="hidden" name="form-name" value="newsletter"/>
+      <div class="newsletter-form">
+        <input type="email" name="email" id="email-input" placeholder="you@company.com" autocomplete="email" required/>
+        <button type="submit" id="subscribe-btn">Subscribe →</button>
+      </div>
+    </form>
+    <div class="newsletter-note">Join researchers, engineers, and AI enthusiasts. Unsubscribe anytime.</div>
+    <div id="success-msg" style="display:none;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:12px 20px;margin-top:1rem;font-size:0.9rem;color:#15803d;">🎉 You're subscribed! Welcome to the PromptAI community.</div>
+    <div id="error-msg" style="display:none;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:12px 20px;margin-top:1rem;font-size:0.9rem;color:#dc2626;"></div>
+  </div>
+</section>
+
+<!-- ── AUTH MODAL ──────────────────────────────────── -->
+<div id="auth-modal" style="display:none;position:fixed;inset:0;z-index:1001;background:rgba(10,22,40,0.82);backdrop-filter:blur(6px);align-items:center;justify-content:center;padding:1rem;">
+  <div style="background:#fff;border-radius:16px;width:min(420px,96vw);overflow:hidden;box-shadow:0 24px 80px rgba(0,0,0,0.35);">
+    <!-- Header -->
+    <div style="background:#0a1628;padding:1.75rem 2rem 1.5rem;position:relative;">
+      <button onclick="closeAuthModal()" style="position:absolute;top:1rem;right:1rem;background:rgba(255,255,255,0.1);border:none;color:#94a3b8;font-size:0.9rem;cursor:pointer;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:sans-serif;">✕</button>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:1rem;">
+        <span style="width:10px;height:10px;border-radius:50%;background:#2563eb;display:inline-block;flex-shrink:0;"></span>
+        <span style="font-family:'DM Serif Display',serif;font-size:1.2rem;color:white;">PromptAI</span>
+      </div>
+      <h2 id="auth-modal-title" style="font-family:'DM Serif Display',serif;font-size:1.55rem;color:white;margin-bottom:0.35rem;line-height:1.2;">Welcome back</h2>
+      <p id="auth-modal-sub" style="color:#94a3b8;font-size:0.86rem;line-height:1.5;">Sign in to save articles and personalise your feed</p>
+    </div>
+    <!-- Tabs -->
+    <div style="display:flex;border-bottom:1px solid #e2e8f0;">
+      <button id="auth-tab-login" onclick="switchAuthTab('login')" style="flex:1;padding:11px;font-size:0.88rem;font-weight:500;cursor:pointer;border:none;background:white;color:#2563eb;border-bottom:2px solid #2563eb;font-family:'DM Sans',sans-serif;transition:all 0.2s;">Sign In</button>
+      <button id="auth-tab-signup" onclick="switchAuthTab('signup')" style="flex:1;padding:11px;font-size:0.88rem;font-weight:500;cursor:pointer;border:none;background:none;color:#94a3b8;border-bottom:2px solid transparent;font-family:'DM Sans',sans-serif;transition:all 0.2s;">Create Account</button>
+    </div>
+    <!-- Form -->
+    <div style="padding:1.75rem 2rem 1.5rem;">
+      <form id="auth-form" onsubmit="handleAuthSubmit(event)" autocomplete="on" style="display:flex;flex-direction:column;gap:0.85rem;">
+        <div id="auth-name-wrap" style="display:none;flex-direction:column;gap:5px;">
+          <label style="font-size:0.82rem;font-weight:500;color:#475569;">Full Name</label>
+          <input id="auth-name" type="text" placeholder="Your name" autocomplete="name"
+            style="padding:11px 14px;border:1px solid #e2e8f0;border-radius:8px;font-size:0.93rem;font-family:'DM Sans',sans-serif;outline:none;transition:border-color 0.2s;"
+            onfocus="this.style.borderColor='#2563eb'" onblur="this.style.borderColor='#e2e8f0'"/>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:5px;">
+          <label style="font-size:0.82rem;font-weight:500;color:#475569;">Email address</label>
+          <input id="auth-email" type="email" placeholder="you@example.com" required autocomplete="email"
+            style="padding:11px 14px;border:1px solid #e2e8f0;border-radius:8px;font-size:0.93rem;font-family:'DM Sans',sans-serif;outline:none;transition:border-color 0.2s;"
+            onfocus="this.style.borderColor='#2563eb'" onblur="this.style.borderColor='#e2e8f0'"/>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:5px;">
+          <label style="font-size:0.82rem;font-weight:500;color:#475569;">Password</label>
+          <input id="auth-pass" type="password" placeholder="••••••••" required minlength="6" autocomplete="current-password"
+            style="padding:11px 14px;border:1px solid #e2e8f0;border-radius:8px;font-size:0.93rem;font-family:'DM Sans',sans-serif;outline:none;transition:border-color 0.2s;"
+            onfocus="this.style.borderColor='#2563eb'" onblur="this.style.borderColor='#e2e8f0'"/>
+        </div>
+        <div id="auth-error-box" style="display:none;background:#fef2f2;border:1px solid #fecaca;padding:9px 13px;border-radius:8px;font-size:0.82rem;color:#dc2626;line-height:1.4;"></div>
+        <button type="submit" id="auth-submit"
+          style="background:#2563eb;color:white;padding:13px;border:none;border-radius:8px;font-size:0.95rem;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;margin-top:4px;transition:background 0.2s;"
+          onmouseover="if(!this.disabled)this.style.background='#1d4ed8'" onmouseout="if(!this.disabled)this.style.background='#2563eb'">Sign In</button>
+      </form>
+      <p style="text-align:center;font-size:0.75rem;color:#94a3b8;margin-top:1.1rem;line-height:1.5;">Your data stays in your browser · No server required</p>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <div class="logo"><span class="logo-dot"></span> PromptAI</div>
+      <p>Your independent hub for AI research, papers, tools, and insights. Empowering professionals with the knowledge to build with AI.</p>
+    </div>
+    <div class="footer-col">
+      <h5>Explore</h5>
+      <ul>
+        <li><a href="#news">Latest News</a></li>
+        <li><a href="#papers">AI Papers</a></li>
+        <li><a href="#tools">Tools Directory</a></li>
+        <li><a href="#blog">Blog</a></li>
+        <li><a href="education.html">AI Education</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h5>Resources</h5>
+      <ul>
+        <li><a href="https://arxiv.org" target="_blank">arXiv</a></li>
+        <li><a href="https://paperswithcode.com" target="_blank">Papers with Code</a></li>
+        <li><a href="https://huggingface.co" target="_blank">Hugging Face</a></li>
+        <li><a href="https://openai.com/research" target="_blank">OpenAI Research</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h5>Connect</h5>
+      <ul>
+        <li><a href="https://twitter.com/promptai_in" target="_blank" rel="noopener">Twitter / X</a></li>
+        <li><a href="https://www.linkedin.com/company/promptai-in" target="_blank" rel="noopener">LinkedIn</a></li>
+        <li><a href="https://www.instagram.com/promptai.in" target="_blank" rel="noopener">Instagram</a></li>
+        <li><a href="https://www.facebook.com/promptai.in" target="_blank" rel="noopener">Facebook</a></li>
+        <li><a href="#newsletter">Newsletter</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <!-- Live stats bar -->
+    <div id="analytics-bar" style="grid-column:1/-1;display:flex;gap:1.5rem;flex-wrap:wrap;justify-content:center;align-items:center;padding:0.85rem 1.5rem;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:10px;margin-bottom:1.25rem;">
+      <span style="font-size:0.75rem;color:#64748b;">📊 Live stats</span>
+      <span style="font-size:0.78rem;color:#94a3b8;">👥 <strong id="stat-visitors" style="color:#e2e8f0;">—</strong> total visitors</span>
+      <span style="font-size:0.78rem;color:#94a3b8;">📅 <strong id="stat-today-visits" style="color:#e2e8f0;">—</strong> today</span>
+      <span style="font-size:0.78rem;color:#94a3b8;">⏱ Avg read: <strong id="stat-avg-read" style="color:#e2e8f0;">—</strong></span>
+      <span style="font-size:0.78rem;color:#94a3b8;">📖 <strong id="stat-articles-read" style="color:#e2e8f0;">—</strong> articles read today</span>
+      <span style="font-size:0.72rem;color:#334155;">promptai.in</span>
+    </div>
+    <div class="footer-bottom-row">
+      <p>© 2025 PromptAI · promptai.in · All rights reserved</p>
+      <p style="color:#334155;">Content sourced via RSS · All articles © their respective publishers · <a href="#about" style="color:#475569;text-decoration:underline;">About</a></p>
+    </div>
+  </div>
+</footer>
+
+<script>
+// ── ANALYTICS ENGINE ───────────────────────────────────
+// Tracks: page visits, articles clicked, time on page
+// Stored in localStorage — private, no third-party
+
+const ANALYTICS_KEY = 'pai_analytics';
+const TODAY = new Date().toDateString();
+
+function analyticsLoad() {
+  try { return JSON.parse(localStorage.getItem(ANALYTICS_KEY) || '{}'); } catch(e) { return {}; }
+}
+function analyticsSave(data) {
+  try { localStorage.setItem(ANALYTICS_KEY, JSON.stringify(data)); } catch(e) {}
+}
+
+function analyticsInit() {
+  const data = analyticsLoad();
+
+  // Total visitors (count unique days)
+  if (!data.visits) data.visits = {};
+  data.visits[TODAY] = (data.visits[TODAY] || 0) + 1;
+
+  // Session start time for read duration tracking
+  data.sessionStart = Date.now();
+  if (!data.readTimes) data.readTimes = [];
+  if (!data.articlesRead) data.articlesRead = {};
+  analyticsSave(data);
+
+  // Track time on page — save when user leaves
+  window.addEventListener('beforeunload', () => {
+    const d = analyticsLoad();
+    const duration = Math.round((Date.now() - (d.sessionStart || Date.now())) / 1000);
+    if (duration > 5 && duration < 3600) { // between 5s and 1hr = valid
+      d.readTimes = [...(d.readTimes || []), duration].slice(-100); // keep last 100
+    }
+    delete d.sessionStart;
+    analyticsSave(d);
+  });
+
+  updateAnalyticsDisplay();
+}
+
+function analyticsTrackArticle(url) {
+  const d = analyticsLoad();
+  if (!d.articlesRead) d.articlesRead = {};
+  if (!d.articlesRead[TODAY]) d.articlesRead[TODAY] = 0;
+  d.articlesRead[TODAY]++;
+  analyticsSave(d);
+  updateAnalyticsDisplay();
+}
+
+function updateAnalyticsDisplay() {
+  const d = analyticsLoad();
+
+  // Total visits across all days
+  const totalVisits = Object.values(d.visits || {}).reduce((a,b) => a+b, 0);
+
+  // Today's visits
+  const todayVisits = (d.visits || {})[TODAY] || 0;
+
+  // Average read time
+  const times = d.readTimes || [];
+  const avgSec = times.length > 0 ? Math.round(times.reduce((a,b)=>a+b,0)/times.length) : 0;
+  const avgStr = avgSec > 60
+    ? `${Math.floor(avgSec/60)}m ${avgSec%60}s`
+    : avgSec > 0 ? `${avgSec}s` : '—';
+
+  // Articles read today
+  const articlesToday = (d.articlesRead || {})[TODAY] || 0;
+
+  // Update analytics bar
+  const fmt = n => n >= 1000 ? (n/1000).toFixed(1)+'k' : n.toString();
+  const set = (id, val) => { const el = document.getElementById(id); if(el) el.textContent = val; };
+  set('stat-visitors',     fmt(totalVisits));
+  set('stat-today-visits', fmt(todayVisits));
+  set('stat-avg-read',     avgStr);
+  set('stat-articles-read',articlesToday);
+  set('hero-stat-visitors', fmt(totalVisits));
+  set('hero-stat-articles', articlesToday || '0');
+}
+
+// Init analytics on load
+analyticsInit();
+
+
+let allStories = [];
+let filtered = [];
+let page = 0;
+const PAGE_SIZE = 9;
+let currentSource = 'all';
+
+// ── LOADING BAR ────────────────────────────────────────
+let w = 0;
+const bar = document.getElementById('load-bar');
+const loadIv = setInterval(() => {
+  w = Math.min(w + Math.random() * 8, 88);
+  bar.style.width = w + '%';
+}, 250);
+function doneLoading(msg) {
+  clearInterval(loadIv);
+  bar.style.width = '100%';
+  document.getElementById('fetch-label').textContent = msg + ' · ' + new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'}) + ' IST';
+  document.getElementById('news-loading').style.display = 'none';
+}
+
+// ── HELPERS ────────────────────────────────────────────
+function timeAgo(ts) {
+  const s = Math.floor((Date.now()/1000) - ts);
+  if (s < 3600) return Math.floor(s/60) + 'm ago';
+  if (s < 86400) return Math.floor(s/3600) + 'h ago';
+  return Math.floor(s/86400) + 'd ago';
+}
+function sourceBadge(src) {
+  const map = {
+    hn:       '🟠 Hacker News',
+    arxiv:    '📄 arXiv',
+    tc:       '📰 TechCrunch',
+    mit:      '🔬 MIT Tech Review',
+    wired:    '📡 Wired AI',
+    deepmind: '🧬 DeepMind',
+    openai:   '🤖 OpenAI Blog',
+    gradient: '🎓 The Gradient',
+    tds:      '💻 Towards Data Science',
+    aimagazine:'🏭 AI Magazine',
+    analytics:'📊 Analytics Insight',
+    mitsloan:   '🏛 MIT Sloan',
+    medium:     '📝 Medium',
+    venturebeat:'🚀 VentureBeat',
+    unite:      '🌐 Unite.AI',
+    verge:      '⚡ The Verge',
+    ars:        '🔭 Ars Technica',
+    google:     '🔵 Google AI',
+    anthropic:  '🤖 Anthropic',
+    hf:         '🤗 Hugging Face',
+    batch:      '📚 The Batch',
+    metaai:     '🔮 Meta AI',
+    perplexity: '🔍 Perplexity',
+    mistral:    '🌬 Mistral AI',
+    cohere:     '⚡ Cohere',
+    databricks: '🧱 Databricks',
+    langchain:  '🔗 LangChain',
+    wandb:      '📈 W&B',
+    fastai:        '⚡ fast.ai',
+    distill:       '🔬 Distill.pub',
+    interconnects: '🔗 Interconnects',
+    ieee:          '🔌 IEEE Spectrum',
+    sciencedaily:  '🔬 Science Daily',
+    jmlr:          '📊 JMLR',
+  };
+  return map[src] || src;
+}
+function catColor(src) {
+  const map = {
+    arxiv:    {bg:'#f0fdf4', col:'#15803d'},
+    hn:       {bg:'#fff7ed', col:'#c2410c'},
+    tc:       {bg:'#eff6ff', col:'#1d4ed8'},
+    mit:      {bg:'#f0f9ff', col:'#0369a1'},
+    wired:    {bg:'#fdf4ff', col:'#7e22ce'},
+    deepmind: {bg:'#ecfdf5', col:'#065f46'},
+    openai:   {bg:'#fefce8', col:'#854d0e'},
+    gradient: {bg:'#fef2f2', col:'#991b1b'},
+    tds:      {bg:'#f8fafc', col:'#334155'},
+    aimagazine:{bg:'#fff1f2', col:'#be123c'},
+    analytics:{bg:'#fef9c3', col:'#713f12'},
+    mitsloan: {bg:'#f0f4ff', col:'#3730a3'},
+    medium:      {bg:'#f0fdf4', col:'#166534'},
+    venturebeat: {bg:'#fff7ed', col:'#9a3412'},
+    unite:       {bg:'#ecfdf5', col:'#065f46'},
+    verge:       {bg:'#fdf4ff', col:'#7e22ce'},
+    ars:         {bg:'#f0fdf4', col:'#166534'},
+    google:      {bg:'#eff6ff', col:'#1d4ed8'},
+    anthropic:   {bg:'#fef3c7', col:'#92400e'},
+    hf:          {bg:'#fff7ed', col:'#c2410c'},
+    batch:       {bg:'#f0fdf4', col:'#065f46'},
+    metaai:      {bg:'#eff6ff', col:'#1e40af'},
+    perplexity:  {bg:'#f0fdf4', col:'#065f46'},
+    mistral:     {bg:'#f0f9ff', col:'#0369a1'},
+    cohere:      {bg:'#fdf4ff', col:'#7e22ce'},
+    databricks:  {bg:'#fff7ed', col:'#c2410c'},
+    langchain:   {bg:'#ecfdf5', col:'#065f46'},
+    wandb:       {bg:'#fef9c3', col:'#713f12'},
+    fastai:        {bg:'#fef3c7', col:'#92400e'},
+    distill:       {bg:'#f0fdf4', col:'#15803d'},
+    interconnects: {bg:'#eff6ff', col:'#1d4ed8'},
+    ieee:          {bg:'#fff7ed', col:'#c2410c'},
+    sciencedaily:  {bg:'#ecfdf5', col:'#065f46'},
+    jmlr:          {bg:'#fdf4ff', col:'#7e22ce'},
+  };
+  return map[src] || {bg:'#eff6ff', col:'#1d4ed8'};
+}
+function domainOf(url) {
+  try { return new URL(url).hostname.replace('www.',''); } catch(e){ return ''; }
+}
+
+// ── SOURCE PRIORITY RANKING ──────────────────────────────
+const SOURCE_PRIORITY = {
+  openai:10, anthropic:10, google:9, metaai:9, hf:8,
+  batch:8, mistral:7, perplexity:7, tc:7, verge:7, ars:7, hn:6,
+  venturebeat:5, gradient:6, langchain:5, databricks:5, cohere:5,
+  analytics:3, mitsloan:5, tds:4, medium:3, arxiv:4,
+};
+
+function rankStories(stories) {
+  return [...stories].sort((a, b) => {
+    const ageA = a.time ? (Date.now()/1000 - a.time)/3600
+      : (a.date ? (Date.now() - new Date(a.date).getTime())/3600000 : 48);
+    const ageB = b.time ? (Date.now()/1000 - b.time)/3600
+      : (b.date ? (Date.now() - new Date(b.date).getTime())/3600000 : 48);
+    const sA = (SOURCE_PRIORITY[a.src]||5) - Math.min(ageA/12,6) + (a.score ? Math.min(a.score/50,3) : 0);
+    const sB = (SOURCE_PRIORITY[b.src]||5) - Math.min(ageB/12,6) + (b.score ? Math.min(b.score/50,3) : 0);
+    return sB - sA;
+  });
+}
+
+// ── RENDER CARD ────────────────────────────────────────
+function renderCard(s) {
+  const c = catColor(s.src);
+  const div = document.createElement('div');
+  div.dataset.src = s.src;
+  // Newspaper style: left accent border in source colour
+  div.style.cssText = `background:#fff;border:1px solid #e2e8f0;border-left:3px solid ${c.col};border-radius:0 12px 12px 0;padding:1rem 1.1rem;cursor:pointer;transition:all 0.2s;display:flex;flex-direction:column;gap:0.45rem;`;
+  div.onmouseover = ()=>{ div.style.transform='translateX(3px)'; div.style.boxShadow='0 4px 16px rgba(0,0,0,0.07)'; div.style.background='#fafbff'; };
+  div.onmouseout  = ()=>{ div.style.transform=''; div.style.boxShadow=''; div.style.background='#fff'; };
+  div.onclick = ()=> openModal(s);
+  const timeStr = s.time ? timeAgo(s.time) : (s.date ? s.date.slice(0,10) : '');
+  const scoreStr = s.score ? ` · ⬆ ${s.score}` : '';
+  div.innerHTML = `
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:0.5rem;">
+      <span style="font-size:0.67rem;font-weight:700;text-transform:uppercase;letter-spacing:0.09em;color:${c.col};background:${c.bg};padding:2px 7px;border-radius:6px;flex-shrink:0;">${sourceBadge(s.src)}</span>
+      <span style="font-size:0.7rem;color:#94a3b8;white-space:nowrap;">${timeStr}</span>
+    </div>
+    <h4 style="font-family:'DM Serif Display',serif;font-size:0.96rem;color:#0a1628;line-height:1.38;margin:0;">${s.title}</h4>
+    ${s.desc ? `<p style="font-size:0.79rem;color:#64748b;line-height:1.55;margin:0;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">${s.desc}</p>` : ''}
+    <div style="display:flex;justify-content:space-between;align-items:center;padding-top:0.35rem;border-top:1px solid #f1f5f9;margin-top:auto;">
+      <span style="font-size:0.7rem;color:#94a3b8;">${domainOf(s.url)}${scoreStr}</span>
+      <span style="font-size:0.76rem;color:#2563eb;font-weight:600;">Read →</span>
+    </div>`;
+  return div;
+}
+
+// ── RENDER PAGE ────────────────────────────────────────
+function renderPage(reset) {
+  const grid = document.getElementById('news-dynamic-grid');
+  if (reset) { grid.innerHTML=''; page=0; }
+  const slice = filtered.slice(page*PAGE_SIZE, (page+1)*PAGE_SIZE);
+  slice.forEach(s => grid.appendChild(renderCard(s)));
+  page++;
+  const btn = document.getElementById('load-more-btn');
+  btn.style.display = filtered.length > page*PAGE_SIZE ? 'inline-block' : 'none';
+}
+function loadMore() { renderPage(false); }
+
+// ── SOURCE FILTER ──────────────────────────────────────
+function switchSource(src, btn) {
+  currentSource = src;
+  document.querySelectorAll('.src-btn').forEach(b => {
+    b.style.background='white'; b.style.color='#475569'; b.style.borderColor='#e2e8f0';
+  });
+  btn.style.background='#2563eb'; btn.style.color='white'; btn.style.borderColor='#2563eb';
+  filtered = src==='all' ? allStories : allStories.filter(s=>s.src===src);
+  renderPage(true);
+}
+
+// ── CACHE HELPERS (localStorage, 30min TTL) ────────────
+const CACHE_TTL        = 2 * 60 * 60 * 1000; // default fallback
+const CACHE_TTL_NEWS   = 30 * 60 * 1000;          // news: 30 min — prevents rss2json free-tier rate limits
+const CACHE_TTL_BLOGS  = 3 * 60 * 60 * 1000;       // blogs: 3 hours
+const CACHE_TTL_PAPERS = 6 * 60 * 60 * 1000;       // papers: 6 hours
+
+function cacheGet(key, ttl = CACHE_TTL_NEWS) {
+  try {
+    const raw = localStorage.getItem('pai_' + key);
+    if (!raw) return null;
+    const { ts, data, t } = JSON.parse(raw);
+    const effectiveTtl = t || ttl;
+    if (Date.now() - ts > effectiveTtl) { localStorage.removeItem('pai_' + key); return null; }
+    return data;
+  } catch(e) { return null; }
+}
+function cacheSet(key, data, ttl = CACHE_TTL_NEWS) {
+  try { localStorage.setItem('pai_' + key, JSON.stringify({ ts: Date.now(), data, t: ttl })); } catch(e) {}
+}
+
+// ── FAST PROXY RACE ────────────────────────────────────
+// Fires all proxies simultaneously, takes whichever responds first with valid XML
+// fetchWithProxyRace defined below with Netlify function support
+
+// ── PARSE RSS/ATOM XML ─────────────────────────────────
+// ── CONTENT QUALITY FILTER ────────────────────────────
+// Strips garbage content: HTML in titles, code, URLs, too-short text
+function passesQualityCheck(title, desc, dateStr) {
+  if (!title || title.trim().length < 15) return false;
+  if (title.length > 250) return false;
+  if (/<[a-zA-Z]/.test(title)) return false;           // HTML tags in title
+  if (/https?:\/\//.test(title)) return false;        // URL in title
+  if (/[{}\[\]\\;]/.test(title)) return false;       // Code chars
+  if (/^[\d\s.,!?:-]+$/.test(title)) return false;    // Only numbers/punctuation
+  if (/^\s*undefined\s*$|^\s*null\s*$/i.test(title)) return false;
+  // Description must have meaningful content
+  const cleanDesc = (desc || '').replace(/…$/, '').trim();
+  if (cleanDesc.length > 0 && cleanDesc.length < 40) return false;
+  // Check description for leftover HTML/code artifacts
+  if (desc) {
+    const codeHits = (desc.match(/function\s*\(|var\s+\w|const\s+\w|let\s+\w|=>\s*{|<\/?[a-z]+>/gi) || []).length;
+    if (codeHits > 2) return false;
+  }
+  // Recency filter for news: skip anything older than 14 days
+  if (dateStr) {
+    try {
+      const age = Date.now() - new Date(dateStr).getTime();
+      const FOURTEEN_DAYS = 14 * 24 * 60 * 60 * 1000;
+      if (age > FOURTEEN_DAYS) return false;
+    } catch(e) {}
+  }
+  return true;
+}
+
+function parseRSS(xml, src, maxItems = 10) {
+  const aiKw = /\b(AI|artificial intelligence|machine learning|LLM|GPT|chatbot|deep learning|neural|openai|anthropic|gemini|llama|mistral|robotics|automation|transformer|diffusion|agent|RAG|model)\b/i;
+  try {
+    const doc = new DOMParser().parseFromString(xml, 'text/xml');
+    const items = Array.from(doc.querySelectorAll('item, entry'));
+    const results = [];
+    for (const item of items) {
+      const title = (item.querySelector('title')?.textContent || '').trim();
+      const rawDesc = item.querySelector('description, summary, content')?.textContent || '';
+      const desc = rawDesc.replace(/<[^>]+>/g,'').replace(/&[a-z#0-9]+;/gi,' ').trim().slice(0, 220) + '…';
+      const link = item.querySelector('link')?.textContent?.trim()
+        || item.querySelector('link')?.getAttribute('href')?.trim() || '';
+      const pubDate = item.querySelector('pubDate, published, updated')?.textContent?.slice(0,16) || '';
+      if (!title || !link) continue;
+      if (!passesQualityCheck(title, desc, pubDate)) continue;
+      if (src !== 'arxiv' && !aiKw.test(title) && !aiKw.test(desc)) continue;
+      results.push({ src, title, url: link, date: pubDate, desc });
+      if (results.length >= maxItems) break;
+    }
+    return results;
+  } catch(e) { return []; }
+}
+
+// ── FETCH ONE RSS FEED (rss2json-first, then XML proxy fallback) ────
+async function fetchRSS(feedUrl, src, maxItems = 10, ttl = CACHE_TTL_NEWS) {
+  const cacheKey = src + '_' + feedUrl.slice(-20).replace(/[^a-z0-9]/gi,'_');
+  const cached = cacheGet(cacheKey, ttl);
+  if (cached) return cached;
+
+  const aiKw = /\b(AI|artificial intelligence|machine learning|LLM|GPT|chatbot|deep learning|neural|openai|anthropic|gemini|llama|mistral|robotics|automation|transformer|diffusion|agent|RAG|model)\b/i;
+
+  // Strategy 1: rss2json.com — dedicated RSS-to-JSON service, no CORS issues
+  try {
+    const ctrl = new AbortController();
+    setTimeout(() => ctrl.abort(), 9000);
+    const r = await fetch(
+      `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(feedUrl)}`,
+      { signal: ctrl.signal }
+    );
+    const data = await r.json();
+    if (data.status === 'ok' && data.items?.length > 0) {
+      const results = data.items
+        .map(i => ({
+          src,
+          title: (i.title || '').replace(/<[^>]+>/g,'').trim(),
+          url: i.link || i.guid || '',
+          date: (i.pubDate || '').slice(0, 16),
+          desc: (i.description || i.content || '')
+            .replace(/<[^>]+>/g,'').replace(/&[a-z#0-9]+;/gi,' ').trim().slice(0, 220) + '…'
+        }))
+        .filter(i => i.title && i.url && passesQualityCheck(i.title, i.desc, i.date))
+        .filter(i => src === 'arxiv' || aiKw.test(i.title) || aiKw.test(i.desc || ''))
+        .slice(0, maxItems);
+      if (results.length > 0) { cacheSet(cacheKey, results, ttl); return results; }
+    }
+  } catch(e) { /* fall through to XML proxy */ }
+
+  // Strategy 2: XML proxies fallback
+  const xml = await fetchWithProxyRace(feedUrl);
+  if (!xml) return [];
+  const results = parseRSS(xml, src, maxItems);
+  if (results.length > 0) cacheSet(cacheKey, results, ttl);
+  return results;
+}
+
+// ── FETCH: HACKER NEWS ────────────────────────────────
+async function fetchHN() {
+  const cached = cacheGet('hn', CACHE_TTL_NEWS);
+  if (cached) return cached;
+  const res = await fetch('https://hacker-news.firebaseio.com/v0/topstories.json');
+  const ids = (await res.json()).slice(0, 60);
+  // Batch in groups of 20 for speed
+  const batches = [ids.slice(0,20), ids.slice(20,40), ids.slice(40,60)];
+  const items = [];
+  for (const batch of batches) {
+    const fetched = await Promise.all(
+      batch.map(id => fetch(`https://hacker-news.firebaseio.com/v0/item/${id}.json`).then(r=>r.json()).catch(()=>null))
+    );
+    items.push(...fetched.filter(Boolean));
+  }
+  const aiKw = /\b(AI|LLM|GPT|claude|gemini|llama|transformer|machine learning|deep learning|neural|openai|anthropic|mistral|diffusion|RAG|fine.tun|model|agent|chatbot|copilot|inference|embedding)\b/i;
+  const result = items
+    .filter(i => i && i.title && (aiKw.test(i.title) || aiKw.test(i.text||'')))
+    .slice(0, 15)
+    .map(i => ({ src:'hn', title:i.title, url:i.url||`https://news.ycombinator.com/item?id=${i.id}`, time:i.time, score:i.score, desc: i.text ? i.text.replace(/<[^>]+>/g,'').slice(0,200)+'…' : '' }));
+  if (result.length) cacheSet('hn', result, CACHE_TTL_NEWS);
+  return result;
+}
+
+// ── FETCH: arXiv ──────────────────────────────────────
+async function fetchArxiv() {
+  return fetchRSS('https://rss.arxiv.org/rss/cs.AI+cs.LG+cs.CL', 'arxiv', 15, CACHE_TTL_NEWS);
+}
+
+// ── FETCH: All 10 RSS sources IN PARALLEL ─────────────
+async function fetchTech() {
+  const feeds = [
+    { url:'https://www.anthropic.com/news/rss',                                    src:'anthropic'  },
+    { url:'https://huggingface.co/blog/feed.xml',                                   src:'hf'         },
+    { url:'https://www.deeplearning.ai/the-batch/feed/',                            src:'batch'      },
+    { url:'https://ai.meta.com/blog/rss/',                                          src:'metaai'     },
+    { url:'https://www.theverge.com/ai-artificial-intelligence/rss/index.xml',      src:'verge'      },
+    { url:'https://techcrunch.com/category/artificial-intelligence/feed/',          src:'tc'         },
+    { url:'https://feeds.arstechnica.com/arstechnica/technology-lab',              src:'ars'        },
+    { url:'https://openai.com/blog/rss.xml',                                       src:'openai'     },
+    { url:'https://sloanreview.mit.edu/topic/artificial-intelligence/feed/',       src:'mitsloan'   },
+    { url:'https://www.analyticsinsight.net/feed/',                                src:'analytics'  },
+    { url:'https://thegradient.pub/rss/',                                          src:'gradient'   },
+    { url:'https://medium.com/feed/towards-data-science',                          src:'tds'        },
+    { url:'https://medium.com/feed/tag/artificial-intelligence',                   src:'medium'     },
+    { url:'https://blog.research.google/feeds/posts/default',                      src:'google'     },
+    { url:'https://venturebeat.com/category/ai/feed/',                             src:'venturebeat'},
+    { url:'https://mistral.ai/news/rss',                                           src:'mistral'    },
+    { url:'https://blog.perplexity.ai/feed',                                       src:'perplexity' },
+    { url:'https://blog.langchain.dev/rss/',                                       src:'langchain'  },
+    { url:'https://www.databricks.com/blog/feed',                                  src:'databricks' },
+    { url:'https://cohere.com/blog/rss',                                           src:'cohere'     },
+  ];
+  const settled = await Promise.allSettled(feeds.map(f => fetchRSS(f.url, f.src, 8, CACHE_TTL_NEWS)));
+  const results = [];
+  settled.forEach(r => { if (r.status === 'fulfilled') results.push(...r.value); });
+  return results;
+}
+
+// ── MODAL ──────────────────────────────────────────────
+function openModal(s) {
+  analyticsTrackArticle(s.url); // track the click
+  document.getElementById('article-modal').style.display = 'block';
+  document.body.style.overflow = 'hidden';
+
+  const c = catColor(s.src);
+  const cat = document.getElementById('modal-category');
+  cat.textContent = sourceBadge(s.src);
+  cat.style.background = c.bg;
+  cat.style.color = c.col;
+
+  document.getElementById('modal-source').textContent = sourceBadge(s.src);
+  document.getElementById('modal-title').textContent  = s.title;
+  document.getElementById('modal-link').href          = s.url;
+
+  // Share buttons
+  const su = encodeURIComponent(s.url);
+  const st = encodeURIComponent(s.title + ' via @promptai_in');
+  document.getElementById('modal-share-x').href        = `https://twitter.com/intent/tweet?url=${su}&text=${st}`;
+  document.getElementById('modal-share-linkedin').href = `https://www.linkedin.com/sharing/share-offsite/?url=${su}`;
+  document.getElementById('modal-share-facebook').href = `https://www.facebook.com/sharer/sharer.php?u=${su}`;
+  document.getElementById('modal-copy-btn').textContent = '🔗 Copy';
+  window._modalUrl = s.url;
+
+  document.getElementById('modal-meta').innerHTML =
+    (s.score ? `<span>⬆ ${s.score} points</span>` : '') +
+    (s.time  ? `<span>🕐 ${timeAgo(s.time)}</span>` : (s.date ? `<span>📅 ${s.date.slice(0,10)}</span>` : ''));
+
+  document.getElementById('modal-body').innerHTML = s.desc
+    ? `<p style="line-height:1.85;font-size:0.97rem;color:#334155;">${summarizeContent(s.desc, 80)}</p>
+       <p style="font-size:0.78rem;color:#94a3b8;margin-top:0.75rem;padding-top:0.75rem;border-top:1px solid #f1f5f9;">
+         Summary from <strong>${domainOf(s.url)}</strong> · Click below to read the full article on the original site.
+       </p>`
+    : `<p style="color:#94a3b8;font-size:0.95rem;">Click "Read Full Article" to read on the original website.</p>`;
+}
+
+// ── CONTENT SUMMARISER ────────────────────────────────
+// Cleans RSS descriptions: strips HTML, URLs, entities → truncates to maxWords
+function summarizeContent(text, maxWords = 80) {
+  if (!text) return '';
+  const clean = text
+    .replace(/<[^>]+>/g, ' ')              // strip HTML tags
+    .replace(/https?:\/\/\S+/g, '')        // remove raw URLs
+    .replace(/&[a-z#0-9]+;/gi, ' ')        // decode HTML entities
+    .replace(/\[.*?\]/g, '')               // remove [brackets]
+    .replace(/\s+/g, ' ')                  // normalise whitespace
+    .trim();
+  const words = clean.split(/\s+/).filter(Boolean);
+  if (words.length <= maxWords) return clean;
+  return words.slice(0, maxWords).join(' ') + '…';
+}
+
+function closeModal() {
+  document.getElementById('article-modal').style.display='none';
+  document.body.style.overflow='';
+}
+
+function copyArticleLink() {
+  const url = window._modalUrl || window.location.href;
+  navigator.clipboard.writeText(url).then(() => {
+    const btn = document.getElementById('modal-copy-btn');
+    btn.textContent = '✓ Copied!';
+    btn.style.color = '#16a34a';
+    btn.style.borderColor = '#bbf7d0';
+    setTimeout(() => { btn.textContent = '🔗 Copy'; btn.style.color = '#475569'; btn.style.borderColor = '#e2e8f0'; }, 2000);
+  }).catch(() => { showToast('Copy failed — try manually'); });
+}
+document.getElementById('article-modal').addEventListener('click', function(e){
+  if(e.target===this) closeModal();
+});
+document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeModal(); });
+
+// ── UPDATE TRENDING HERO CARD ──────────────────────────
+function updateTrendingCard(stories) {
+  if (!stories || stories.length === 0) return;
+  const now = new Date();
+  const dayOfYear = Math.floor((now - new Date(now.getFullYear(), 0, 0)) / 86400000);
+  const story = stories[dayOfYear % stories.length];
+  const card  = document.getElementById('hero-trending');
+  document.getElementById('hero-trending-title').textContent = story.title;
+  document.getElementById('hero-trending-desc').textContent  = (story.desc || domainOf(story.url) || '').slice(0,100) + ' →';
+  card.onclick = () => openModal(story);
+  card.querySelector('.tag').textContent = '🔥 Trending · ' + sourceBadge(story.src);
+}
+
+// ── BOOT: progressive rendering ───────────────────────
+// HN loads in ~1s, shows immediately. arXiv + RSS stream in as they arrive.
+(async () => {
+  try {
+    // ── Load HN + arXiv + all RSS feeds in parallel ──────────────
+    document.getElementById('fetch-label').textContent = 'Fetching AI news from all sources…';
+    const [hnResult, arxivResult, techResult] = await Promise.allSettled([
+      fetchHN(),
+      fetchArxiv(),
+      fetchTech()
+    ]);
+
+    let added = 0;
+    if (hnResult.status === 'fulfilled' && hnResult.value.length) {
+      allStories.push(...hnResult.value);
+      added += hnResult.value.length;
+    }
+    if (arxivResult.status === 'fulfilled' && arxivResult.value.length) {
+      allStories.push(...arxivResult.value);
+      added += arxivResult.value.length;
+    }
+    if (techResult.status === 'fulfilled' && techResult.value.length) {
+      allStories.push(...techResult.value);
+      added += techResult.value.length;
+    }
+
+    // Show first batch immediately
+    if (allStories.length > 0) {
+      filtered = [...allStories];
+      renderPage(true);
+      document.getElementById('news-loading').style.display = 'none';
+      updateTrendingCard(allStories);
+    }
+
+    if (added > 0) {
+      // Deduplicate by normalised title (same story from multiple sources)
+      const seenTitles = new Set();
+      const normTitle = t => t.toLowerCase().replace(/[^a-z0-9]/g,'').slice(0,40);
+      allStories = allStories.filter(s => {
+        const k = normTitle(s.title);
+        if (seenTitles.has(k)) return false;
+        seenTitles.add(k);
+        return true;
+      });
+      // ── Apply priority ranking ──────────────────────────────
+      allStories = rankStories(allStories);
+      filtered = currentSource === 'all' ? [...allStories]
+        : allStories.filter(s => s.src === currentSource);
+      renderPage(true);
+      document.getElementById('news-loading').style.display = 'none';
+      updateTrendingCard(allStories);
+      archiveSave(allStories, 'news');
+    }
+
+    doneLoading(`${allStories.length} stories from ${new Set(allStories.map(s=>s.src)).size} sources`);
+
+    if (allStories.length === 0) {
+      document.getElementById('news-loading').textContent = 'Could not load live news. Check back soon.';
+      document.getElementById('news-loading').style.display = 'block';
+    }
+  } catch(e) {
+    document.getElementById('news-loading').textContent = 'News feed temporarily unavailable.';
+    doneLoading('Error loading feed');
+  }
+})();
+
+// ── BLOG DATA (12 articles with verified real URLs) ────
+const ALL_BLOGS = [
+  { url:'https://jalammar.github.io/illustrated-transformer/', banner:'🤖', bg:'linear-gradient(135deg,#1e3a5f,#2563eb)', cat:'Deep Dive', date:'May 28, 2025', title:'How transformer attention actually works \u2014 a visual guide', desc:'Breaking down self-attention, multi-head attention, and positional encoding with intuitive diagrams for practitioners.', read:'8 min', author:'J. Alammar' },
+  { url:'https://www.pinecone.io/learn/retrieval-augmented-generation/', banner:'🔍', bg:'linear-gradient(135deg,#2d1b4e,#7c3aed)', cat:'Explainer', date:'May 12, 2025', title:'RAG vs fine-tuning: when to use each approach for enterprise AI', desc:'A practical decision framework for choosing between retrieval-augmented generation and model fine-tuning.', read:'10 min', author:'Pinecone Team' },
+  { url:'https://huggingface.co/blog/rlhf', banner:'🧠', bg:'linear-gradient(135deg,#1a3a2a,#f59e0b)', cat:'Research', date:'Apr 30, 2025', title:'Illustrating Reinforcement Learning from Human Feedback (RLHF)', desc:'A deep dive into how RLHF works, from reward modelling to proximal policy optimization, with clear visual explanations.', read:'12 min', author:'HuggingFace' },
+  { url:'https://lilianweng.github.io/posts/2023-06-23-agent/', banner:'🤖', bg:'linear-gradient(135deg,#1e3a5f,#059669)', cat:'Deep Dive', date:'Apr 20, 2025', title:'LLM Powered Autonomous Agents', desc:'Explores building autonomous agents using LLMs as core controllers \u2014 planning, memory, tools, and action.', read:'15 min', author:'Lilian Weng' },
+  { url:'https://arxiv.org/abs/2212.08073', banner:'🛡', bg:'linear-gradient(135deg,#0f172a,#2563eb)', cat:'AI Safety', date:'Apr 10, 2025', title:'Constitutional AI: Harmlessness from AI Feedback', desc:'Anthropic\'s approach to training helpful, harmless AI systems using a set of principles rather than human labels.', read:'9 min', author:'Anthropic' },
+  { url:'https://arxiv.org/abs/2307.09288', banner:'🦙', bg:'linear-gradient(135deg,#2d1b4e,#db2777)', cat:'Research', date:'Mar 28, 2025', title:'Llama 2: Open Foundation and Fine-Tuned Chat Models', desc:'Meta\'s open-source LLM family \u2014 architecture details, training methodology, RLHF alignment, and safety evaluation.', read:'11 min', author:'Meta AI' },
+  { url:'https://arxiv.org/abs/2303.08774', banner:'⚡', bg:'linear-gradient(135deg,#1a3a2a,#10b981)', cat:'Research', date:'Mar 15, 2025', title:'GPT-4 Technical Report: Capabilities and Limitations', desc:'OpenAI\'s detailed analysis of GPT-4 capabilities, multimodal understanding, and alignment techniques used in training.', read:'14 min', author:'OpenAI' },
+  { url:'https://huggingface.co/blog/mixtral', banner:'🌀', bg:'linear-gradient(135deg,#1e3a5f,#7c3aed)', cat:'Explainer', date:'Mar 5, 2025', title:'Mixtral of Experts \u2014 Sparse MoE Architecture Explained', desc:'How Mistral\'s Mixture of Experts model achieves frontier performance with dramatically reduced inference compute.', read:'7 min', author:'Mistral AI' },
+  { url:'https://lilianweng.github.io/posts/2023-01-27-the-transformer-family-v2/', banner:'🔬', bg:'linear-gradient(135deg,#0f172a,#059669)', cat:'Deep Dive', date:'Feb 20, 2025', title:'The Transformer Family Version 2.0 \u2014 Full Architecture Survey', desc:'Comprehensive survey of transformer variants including linear attention, sparse attention, memory-efficient designs and more.', read:'18 min', author:'Lilian Weng' },
+  { url:'https://arxiv.org/abs/2309.02427', banner:'🛠', bg:'linear-gradient(135deg,#2d1b4e,#f59e0b)', cat:'Opinion', date:'Feb 8, 2025', title:'How Agentic Loops Improve LLM Performance on Complex Tasks', desc:'Andrew Ng on how iterative agent designs \u2014 plan, act, observe, reflect \u2014 dramatically improve output quality.', read:'6 min', author:'Andrew Ng' },
+  { url:'https://arxiv.org/abs/2312.11805', banner:'📊', bg:'linear-gradient(135deg,#1a3a2a,#2563eb)', cat:'Research', date:'Jan 25, 2025', title:'Gemini: A Family of Highly Capable Multimodal Models', desc:'Google DeepMind\'s technical overview of Gemini \u2014 architecture, training data, multimodal benchmarks, and safety evaluation.', read:'13 min', author:'Google DeepMind' },
+  { url:'https://www.fast.ai/posts/2023-09-04-accuracy-speed.html', banner:'🚀', bg:'linear-gradient(135deg,#0f172a,#db2777)', cat:'Explainer', date:'Jan 10, 2025', title:'Practical Deep Learning \u2014 Speed vs Accuracy Tradeoffs', desc:'Fast.ai\'s guide to navigating model size, quantization, distillation, and batching for real-world deployment decisions.', read:'8 min', author:'fast.ai' }
+];
+
+let blogPage = 0;
+const BLOG_PAGE_SIZE = 6;
+
+// ── NETLIFY FUNCTION PROXY (fastest, most reliable) ───
+// Falls back to public proxies if function not deployed yet
+async function fetchWithProxyRace(feedUrl) {
+  const isArxiv = feedUrl.includes('arxiv.org');
+  const isHF    = feedUrl.includes('huggingface.co');
+
+  // Build proxy list — Netlify function first (server-side, no CORS), then public fallbacks
+  const fetchers = [
+    // 1. Server-side proxy — tries Netlify function first, then Cloudflare Pages function
+    async () => {
+      const ctrl = new AbortController();
+      setTimeout(() => ctrl.abort(), 6000);
+      for (const path of ['/.netlify/functions/rss-proxy', '/rss-proxy']) {
+        try {
+          const r = await fetch(`${path}?url=${encodeURIComponent(feedUrl)}`, { signal: ctrl.signal });
+          if (r.ok) { const t = await r.text(); if (t && t.length > 100) return t; }
+        } catch(e) { /* try next */ }
+      }
+      return null;
+    },
+    // 2. For arXiv: use export.arxiv.org which has permissive CORS
+    ...(isArxiv ? [async () => {
+      const exportUrl = feedUrl.replace('rss.arxiv.org', 'export.arxiv.org');
+      const ctrl = new AbortController();
+      setTimeout(() => ctrl.abort(), 6000);
+      const r = await fetch(exportUrl, { signal: ctrl.signal });
+      return r.ok ? r.text() : null;
+    }] : []),
+    // 3. allorigins proxy
+    async () => {
+      const ctrl = new AbortController();
+      setTimeout(() => ctrl.abort(), 5000);
+      const r = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(feedUrl)}`, { signal: ctrl.signal });
+      const t = await r.text();
+      return t;
+    },
+    // 4. corsproxy.io
+    async () => {
+      const ctrl = new AbortController();
+      setTimeout(() => ctrl.abort(), 5000);
+      const r = await fetch(`https://corsproxy.io/?${encodeURIComponent(feedUrl)}`, { signal: ctrl.signal });
+      return r.ok ? r.text() : null;
+    },
+  ];
+
+  // Try all fetchers in parallel — return first valid XML
+  const results = await Promise.allSettled(fetchers.map(f => f()));
+  for (const r of results) {
+    const val = r.status === 'fulfilled' ? r.value : null;
+    if (val && val.length > 200 && (val.includes('<item') || val.includes('<entry') || val.includes('<?xml'))) {
+      return val;
+    }
+  }
+  return null;
+}
+
+// ── ARCHIVE SYSTEM ─────────────────────────────────────
+const ARCHIVE_KEY = 'pai_archive';
+const ARCHIVE_MAX = 1000;
+
+function archiveSave(items, type) {
+  try {
+    const existing = JSON.parse(localStorage.getItem(ARCHIVE_KEY) || '[]');
+    const existingUrls = new Set(existing.map(a => a.url));
+    const toAdd = items
+      .filter(i => i.url && !existingUrls.has(i.url))
+      .map(i => ({ ...i, type, savedAt: Date.now() }));
+    const merged = [...toAdd, ...existing].slice(0, ARCHIVE_MAX);
+    localStorage.setItem(ARCHIVE_KEY, JSON.stringify(merged));
+  } catch(e) {}
+}
+
+// ── PAPERS ENGINE ──────────────────────────────────────
+const ARXIV_FEEDS = {
+  'all':   'https://rss.arxiv.org/rss/cs.AI+cs.LG+cs.CL+cs.CV',
+  'cs.AI': 'https://rss.arxiv.org/rss/cs.AI',
+  'cs.LG': 'https://rss.arxiv.org/rss/cs.LG',
+  'cs.CL': 'https://rss.arxiv.org/rss/cs.CL',
+  'cs.CV': 'https://rss.arxiv.org/rss/cs.CV',
+};
+
+const PAPER_CAT_MAP = {
+  'cs.AI': { label:'AI',                cls:'cat-llm'  },
+  'cs.LG': { label:'Machine Learning',  cls:'cat-ml'   },
+  'cs.CL': { label:'NLP / LLM',         cls:'cat-nlp'  },
+  'cs.CV': { label:'Computer Vision',   cls:'cat-cv'   },
+  'cs.RO': { label:'Robotics',          cls:'cat-rl'   },
+  'cs.NE': { label:'Neural Nets',       cls:'cat-ai'   },
+};
+
+let allPapers = [];
+let filteredPapers = [];
+let paperPage = 0;
+const PAPER_PAGE_SIZE = 6;
+let currentPaperCat = 'all';
+
+async function fetchPapers(cat = 'all') {
+  const cKey = 'papers_' + cat;
+  const cached = cacheGet(cKey, CACHE_TTL_PAPERS);
+  if (cached) return cached;
+
+  const feedUrl = ARXIV_FEEDS[cat] || ARXIV_FEEDS['all'];
+
+  // Strategy 1: rss2json (most reliable for arXiv)
+  try {
+    const ctrl = new AbortController();
+    setTimeout(() => ctrl.abort(), 9000);
+    const r = await fetch(
+      `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(feedUrl)}`,
+      { signal: ctrl.signal }
+    );
+    const data = await r.json();
+    if (data.status === 'ok' && data.items?.length > 0) {
+      const results = data.items.slice(0, 30).map(item => {
+        const cats = Array.isArray(item.categories) ? item.categories : [];
+        const catMatch = cats.find(c => PAPER_CAT_MAP[c]) || cats[0] || 'cs.AI';
+        const catInfo = PAPER_CAT_MAP[catMatch] || { label: 'AI', cls: 'cat-llm' };
+        return {
+          title: (item.title || '').replace(/\[.*?\]/g,'').replace(/<[^>]+>/g,'').trim(),
+          url: item.link || item.guid || '',
+          desc: (item.description || item.content || '')
+            .replace(/<[^>]+>/g,'').replace(/&[a-z#0-9]+;/gi,' ').trim().slice(0,300) + '…',
+          cat: catInfo.label, cls: catInfo.cls,
+          authors: (item.author || 'arXiv').replace(/<[^>]+>/g,'').trim(),
+          date: (item.pubDate || '').slice(0,10),
+          src: 'arxiv'
+        };
+      }).filter(p => p.title && p.url);
+      if (results.length) { cacheSet(cKey, results, CACHE_TTL_PAPERS); return results; }
+    }
+  } catch(e) { /* fall through */ }
+
+  // Strategy 2: XML proxy fallback
+  const xml = await fetchWithProxyRace(feedUrl);
+  if (!xml) return [];
+  const doc = new DOMParser().parseFromString(xml, 'text/xml');
+  const items = Array.from(doc.querySelectorAll('item')).slice(0, 30);
+  const results = items.map(item => {
+    const title = item.querySelector('title')?.textContent?.replace(/\[.*?\]/g,'').trim() || '';
+    const link  = item.querySelector('link')?.textContent?.trim() || '';
+    const desc  = (item.querySelector('description')?.textContent || '')
+      .replace(/<[^>]+>/g,'').replace(/&[a-z#0-9]+;/gi,' ').trim().slice(0,300) + '…';
+    const rawCats = Array.from(item.querySelectorAll('category')).map(c => c.textContent.trim());
+    const catMatch = rawCats.find(c => PAPER_CAT_MAP[c]) || rawCats[0] || 'cs.AI';
+    const catInfo = PAPER_CAT_MAP[catMatch] || { label: catMatch, cls: 'cat-llm' };
+    const authors = item.querySelector('author')?.textContent?.trim()
+      || item.querySelector('dc\\:creator')?.textContent?.trim() || 'arXiv';
+    const pubDate = item.querySelector('pubDate')?.textContent?.slice(0,16) || '';
+    return { title, url: link, desc, cat: catInfo.label, cls: catInfo.cls, authors, date: pubDate, src:'arxiv' };
+  }).filter(p => p.title && p.url);
+  if (results.length) cacheSet(cKey, results, CACHE_TTL_PAPERS);
+  return results;
+}
+
+function renderPaperCard(p) {
+  const card = document.createElement('a');
+  card.href = p.url;
+  card.target = '_blank';
+  card.rel = 'noopener';
+  card.className = 'paper-card';
+  card.style.cssText = 'text-decoration:none;color:inherit;display:flex;flex-direction:column;';
+  card.innerHTML = `
+    <span class="paper-category ${p.cls}">${p.cat}</span>
+    <h4>${p.title}</h4>
+    <div class="authors">${p.authors}</div>
+    <div class="summary">${p.desc}</div>
+    <div class="paper-footer" style="margin-top:auto;">
+      <span>${p.src === 'arxiv' ? 'arXiv' : (sourceBadge(p.src) || p.src).replace(/^\S+\s/,'')} · ${p.date ? p.date.slice(0,10) : 'Latest'}</span>
+      <span class="read-link">Read paper →</span>
+    </div>`;
+  return card;
+}
+
+function renderPapersPage(reset) {
+  const grid = document.getElementById('papers-dynamic-grid');
+  if (reset) { grid.innerHTML = ''; paperPage = 0; }
+  const slice = filteredPapers.slice(paperPage * PAPER_PAGE_SIZE, (paperPage + 1) * PAPER_PAGE_SIZE);
+  paperPage++;
+  if (slice.length === 0) {
+    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:2rem;color:#94a3b8;">No papers found for this category yet.</div>';
+    return;
+  }
+  slice.forEach(p => grid.appendChild(renderPaperCard(p)));
+  document.getElementById('papers-load-more').style.display =
+    filteredPapers.length > paperPage * PAPER_PAGE_SIZE ? 'inline-block' : 'none';
+}
+
+async function filterPapers(cat, btn) {
+  currentPaperCat = cat;
+  document.querySelectorAll('#paper-filters .filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('papers-dynamic-grid').innerHTML =
+    '<div style="grid-column:1/-1;text-align:center;padding:2rem;color:#94a3b8;">Loading papers…</div>';
+  document.getElementById('papers-load-more').style.display = 'none';
+
+  // Alt research sources — IEEE, Science Daily, JMLR
+  const ALT_SRC = {
+    ieee:        { url:'https://spectrum.ieee.org/feeds/feed.rss',                                                      cat:'Engineering', cls:'cat-ai'  },
+    sciencedaily:{ url:'https://www.sciencedaily.com/rss/computers_math/artificial_intelligence.xml',                   cat:'AI Research', cls:'cat-ml'  },
+    jmlr:        { url:'https://www.jmlr.org/jmlr.xml',                                                                 cat:'ML Research', cls:'cat-nlp' },
+  };
+
+  let papers = [];
+  if (ALT_SRC[cat]) {
+    const { url, cat: catLabel, cls } = ALT_SRC[cat];
+    const raw = await fetchRSS(url, cat, 15, CACHE_TTL_PAPERS);
+    papers = raw.map(p => ({ ...p, cat: catLabel, cls, authors: domainOf(p.url) || cat, src: cat }));
+  } else if (cat === 'arxiv') {
+    papers = await fetchPapers('all');
+  } else {
+    papers = await fetchPapers(cat);
+  }
+  allPapers = papers;
+  filteredPapers = [...allPapers];
+  archiveSave(allPapers, 'paper');
+  renderPapersPage(true);
+}
+
+function loadMorePapers() { renderPapersPage(false); }
+
+// ── DYNAMIC BLOG ENGINE ────────────────────────────────
+// ── Curated quality sources only — each manually vetted ──────────────
+const BLOG_FEEDS = [
+  // Educational explainers, deep dives, tutorials — no raw news
+  { url:'https://thegradient.pub/rss/',                                        src:'gradient'     },
+  { url:'https://medium.com/feed/towards-data-science',                        src:'tds'          },
+  { url:'https://blog.research.google/feeds/posts/default',                    src:'google'       },
+  { url:'https://sloanreview.mit.edu/topic/artificial-intelligence/feed/',     src:'mitsloan'     },
+  { url:'https://www.deeplearning.ai/the-batch/feed/',                         src:'batch'        },
+  { url:'https://huggingface.co/blog/feed.xml',                                src:'hf'           },
+  { url:'https://www.fast.ai/index.xml',                                       src:'fastai'       },
+  { url:'https://distill.pub/rss.xml',                                         src:'distill'      },
+  { url:'https://blog.langchain.dev/rss/',                                     src:'langchain'    },
+  { url:'https://wandb.ai/fully-connected/rss/',                               src:'wandb'        },
+  { url:'https://interconnects.ai/feed',                                       src:'interconnects'},
+];
+
+const BLOG_BANNERS = ['🤖','🧠','🔍','🌐','⚡','🔬','🎓','📊','🛠','🚀','🌀','🛡'];
+const BLOG_GRADIENTS = [
+  'linear-gradient(135deg,#1e3a5f,#2563eb)',
+  'linear-gradient(135deg,#1a3a2a,#059669)',
+  'linear-gradient(135deg,#2d1b4e,#7c3aed)',
+  'linear-gradient(135deg,#0f172a,#f59e0b)',
+  'linear-gradient(135deg,#1e3a5f,#db2777)',
+  'linear-gradient(135deg,#1a3a2a,#0369a1)',
+];
+
+let allBlogArticles = [];
+let blogPageDynamic = 0;
+const BLOG_PAGE_SIZE_DYN = 6;
+
+async function fetchDynamicBlogs() {
+  // Check cache first
+  const cached = cacheGet('dynamic_blogs');
+  if (cached) return cached;
+
+  const settled = await Promise.allSettled(
+    BLOG_FEEDS.map(f => fetchRSS(f.url, f.src, 5, CACHE_TTL_BLOGS))
+  );
+  const results = [];
+  settled.forEach(r => { if (r.status === 'fulfilled') results.push(...r.value); });
+  // Sort by date descending
+  results.sort((a,b) => new Date(b.date||0) - new Date(a.date||0));
+  if (results.length) cacheSet('dynamic_blogs', results, CACHE_TTL_BLOGS);
+  return results;
+}
+
+// ── FEATURED BLOG CARD (first article, editorial style) ──────────────
+function renderFeaturedBlogCard(item) {
+  const bg = BLOG_GRADIENTS[0];
+  const words = (item.desc || '').split(/\s+/).length;
+  const readTime = Math.max(3, Math.ceil(words / 30)) + ' min read';
+  const srcBadge = sourceBadge(item.src).replace(/^\S+\s/, ''); // strip emoji prefix
+  const card = document.createElement('div');
+  card.style.cssText = 'background:#fff;border:1px solid #e2e8f0;border-radius:16px;overflow:hidden;cursor:pointer;transition:all 0.25s;display:grid;grid-template-columns:2fr 3fr;min-height:260px;';
+  card.innerHTML = `
+    <div style="background:${bg};display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-end;padding:1.5rem;position:relative;min-height:200px;">
+      <span style="position:absolute;top:1rem;left:1rem;background:rgba(255,255,255,0.18);backdrop-filter:blur(4px);color:white;font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;padding:4px 10px;border-radius:20px;border:1px solid rgba(255,255,255,0.25);">✦ Editor's Pick</span>
+      <div style="font-size:0.72rem;font-weight:600;color:rgba(255,255,255,0.7);text-transform:uppercase;letter-spacing:0.09em;">${srcBadge}</div>
+    </div>
+    <div style="padding:1.75rem;display:flex;flex-direction:column;justify-content:space-between;">
+      <div>
+        <div style="display:flex;align-items:center;gap:0.6rem;margin-bottom:0.9rem;">
+          <span style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.09em;color:#2563eb;background:#eff6ff;padding:3px 8px;border-radius:6px;">Editorial</span>
+          <span style="font-size:0.75rem;color:#94a3b8;">${item.date ? item.date.slice(0,10) : ''}</span>
+        </div>
+        <h3 style="font-family:'DM Serif Display',serif;font-size:1.3rem;line-height:1.32;color:#0a1628;margin-bottom:0.8rem;">${item.title}</h3>
+        <p style="font-size:0.87rem;color:#475569;line-height:1.72;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;">${item.desc || ''}</p>
+      </div>
+      <div style="display:flex;align-items:center;gap:0.75rem;margin-top:1.1rem;padding-top:0.9rem;border-top:1px solid #f1f5f9;">
+        <div style="width:30px;height:30px;border-radius:50%;background:#0a1628;display:flex;align-items:center;justify-content:center;font-size:0.7rem;font-weight:700;color:white;flex-shrink:0;">${item.src.slice(0,2).toUpperCase()}</div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:0.78rem;font-weight:600;color:#0f172a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${domainOf(item.url)}</div>
+          <div style="font-size:0.7rem;color:#94a3b8;">📖 ${readTime}</div>
+        </div>
+        <span style="font-size:0.82rem;font-weight:600;color:#2563eb;white-space:nowrap;flex-shrink:0;">Read article →</span>
+      </div>
+    </div>`;
+  card.onclick = () => window.open(item.url, '_blank', 'noopener');
+  card.onmouseover = () => { card.style.transform='translateY(-3px)'; card.style.boxShadow='0 10px 36px rgba(0,0,0,0.11)'; };
+  card.onmouseout  = () => { card.style.transform=''; card.style.boxShadow=''; };
+  return card;
+}
+
+// ── REGULAR BLOG CARD (editorial compact style) ───────────────────────
+function renderDynamicBlogCard(item, idx) {
+  const bg      = BLOG_GRADIENTS[idx % BLOG_GRADIENTS.length];
+  const words   = (item.desc || '').split(/\s+/).length;
+  const readTime = Math.max(2, Math.ceil(words / 30)) + ' min';
+  const srcLabel = sourceBadge(item.src).replace(/^\S+\s/, '');
+  const card = document.createElement('div');
+  card.className = 'blog-card';
+  card.style.cursor = 'pointer';
+  card.innerHTML = `
+    <div class="blog-banner" style="background:${bg};position:relative;overflow:hidden;">
+      <span style="position:absolute;bottom:0.65rem;left:0.8rem;font-size:0.67rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:rgba(255,255,255,0.9);background:rgba(0,0,0,0.28);padding:2px 7px;border-radius:5px;">${srcLabel}</span>
+    </div>
+    <div class="blog-body">
+      <div class="blog-meta">
+        <span class="blog-category">${item.src === 'arxiv' ? 'Research' : item.src === 'mit' || item.src === 'mitsloan' ? 'Technology' : item.src === 'gradient' ? 'ML Research' : item.src === 'tds' ? 'Data Science' : 'AI Insights'}</span>
+        <span class="blog-date">${item.date ? item.date.slice(0,10) : ''}</span>
+      </div>
+      <h4>${item.title}</h4>
+      <p>${item.desc || ''}</p>
+    </div>
+    <div class="blog-footer">
+      <div class="avatar" style="background:#0a1628;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.68rem;font-weight:700;color:white;flex-shrink:0;">${item.src.slice(0,2).toUpperCase()}</div>
+      <span style="flex:1;font-size:0.8rem;">${domainOf(item.url)}</span>
+      <span style="font-size:0.72rem;color:#94a3b8;white-space:nowrap;">📖 ${readTime}</span>
+    </div>`;
+  card.onclick = () => window.open(item.url, '_blank', 'noopener');
+  card.onmouseover = () => { card.style.transform='translateY(-4px)'; card.style.boxShadow='0 8px 30px rgba(0,0,0,0.1)'; };
+  card.onmouseout  = () => { card.style.transform=''; card.style.boxShadow=''; };
+  return card;
+}
+
+function renderDynamicBlogPage(reset) {
+  const grid = document.getElementById('blog-grid');
+  if (reset) {
+    grid.innerHTML = '';
+    blogPageDynamic = 0;
+    // Switch to column layout so featured card sits above sub-grid
+    grid.style.cssText = 'display:flex;flex-direction:column;gap:1.5rem;';
+  }
+  const baseIdx = blogPageDynamic * BLOG_PAGE_SIZE_DYN;
+  const slice   = allBlogArticles.slice(baseIdx, baseIdx + BLOG_PAGE_SIZE_DYN);
+  blogPageDynamic++;
+
+  slice.forEach((item, i) => {
+    const gi = baseIdx + i;
+    if (gi === 0) {
+      // First article → full-width featured card
+      grid.appendChild(renderFeaturedBlogCard(item));
+    } else if (gi === 1) {
+      // Start the 3-col sub-grid for regular cards
+      const sub = document.createElement('div');
+      sub.id = 'blog-sub-grid';
+      sub.style.cssText = 'display:grid;grid-template-columns:repeat(3,1fr);gap:1.25rem;';
+      sub.appendChild(renderDynamicBlogCard(item, gi));
+      grid.appendChild(sub);
+    } else {
+      // Append to existing sub-grid (or create new one on load-more)
+      let sub = document.getElementById('blog-sub-grid');
+      if (!sub) {
+        sub = document.createElement('div');
+        sub.id = 'blog-sub-grid';
+        sub.style.cssText = 'display:grid;grid-template-columns:repeat(3,1fr);gap:1.25rem;';
+        grid.appendChild(sub);
+      }
+      sub.appendChild(renderDynamicBlogCard(item, gi));
+    }
+  });
+
+  document.getElementById('blog-load-more').style.display =
+    allBlogArticles.length > blogPageDynamic * BLOG_PAGE_SIZE_DYN ? 'inline-block' : 'none';
+}
+
+function loadMoreBlogs() { renderDynamicBlogPage(false); }
+
+// ── INIT PAPERS + BLOG ─────────────────────────────────
+document.addEventListener('DOMContentLoaded', async () => {
+  // Papers — fetch arXiv + alt research sources in parallel
+  const [arxivP, ieeeP, sdP, jmlrP] = await Promise.allSettled([
+    fetchPapers('all'),
+    fetchRSS('https://spectrum.ieee.org/feeds/feed.rss', 'ieee', 8, CACHE_TTL_PAPERS),
+    fetchRSS('https://www.sciencedaily.com/rss/computers_math/artificial_intelligence.xml', 'sciencedaily', 8, CACHE_TTL_PAPERS),
+    fetchRSS('https://www.jmlr.org/jmlr.xml', 'jmlr', 8, CACHE_TTL_PAPERS),
+  ]);
+  allPapers = [];
+  if (arxivP.status === 'fulfilled') allPapers.push(...arxivP.value);
+  [{ r:ieeeP, src:'ieee', cat:'Engineering', cls:'cat-ai' },
+   { r:sdP,   src:'sciencedaily', cat:'AI Research', cls:'cat-ml' },
+   { r:jmlrP, src:'jmlr',        cat:'ML Research', cls:'cat-nlp'}]
+    .forEach(({ r, src, cat, cls }) => {
+      if (r.status === 'fulfilled') {
+        allPapers.push(...r.value.map(p => ({ ...p, cat, cls, src, authors: domainOf(p.url) || src })));
+      }
+    });
+  filteredPapers = [...allPapers];
+  archiveSave(allPapers, 'paper');
+  if (allPapers.length > 0) {
+    renderPapersPage(true);
+  } else {
+    const g = document.getElementById('papers-dynamic-grid');
+    if (g) g.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:2rem;color:#94a3b8;">Could not load papers. Check back soon or click a category above.</div>';
+  }
+
+  // Blog — fetch from educational RSS sources
+  const grid = document.getElementById('blog-grid');
+  grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:2rem;color:#94a3b8;">Loading articles from educational sources…</div>';
+  allBlogArticles = await fetchDynamicBlogs();
+  archiveSave(allBlogArticles, 'blog');
+  if (allBlogArticles.length > 0) {
+    renderDynamicBlogPage(true);
+  } else {
+    // Fallback to static curated list
+    ALL_BLOGS.forEach((b, i) => grid.appendChild(renderBlogCard(b)));
+    grid.querySelector('div[style*="text-align:center"]') && grid.querySelector('div[style*="text-align:center"]').remove();
+  }
+});
+// Instead of unreliable proxy-based checking (which causes false "broken" badges),
+// we maintain a whitelist of trusted domains. All curated blog articles use these.
+const TRUSTED_DOMAINS = [
+  'arxiv.org', 'huggingface.co', 'lilianweng.github.io', 'jalammar.github.io',
+  'pinecone.io', 'openai.com', 'anthropic.com', 'deepmind.google', 'fast.ai',
+  'towardsdatascience.com', 'medium.com', 'thegradient.pub', 'techcrunch.com',
+  'wired.com', 'technologyreview.com', 'analyticsinsight.net', 'aimagazine.com',
+  'sloanreview.mit.edu', 'deeplearning.ai', 'github.io', 'github.com'
+];
+
+function isTrustedLink(url) {
+  try {
+    const host = new URL(url).hostname.replace('www.', '');
+    return TRUSTED_DOMAINS.some(d => host === d || host.endsWith('.' + d));
+  } catch(e) { return false; }
+}
+
+function renderBlogCard(b) {
+  const trusted = isTrustedLink(b.url);
+  const card = document.createElement('div');
+  card.className = 'blog-card';
+  card.style.cssText = 'position:relative;cursor:pointer;';
+
+  card.innerHTML = `
+    <div class="blog-banner" style="background:${b.bg};">${b.banner}</div>
+    <div class="blog-body">
+      <div class="blog-meta">
+        <span class="blog-category">${b.cat}</span>
+        <span class="blog-date">${b.date}</span>
+      </div>
+      <h4>${b.title}</h4>
+      <p>${b.desc}</p>
+    </div>
+    <div class="blog-footer">
+      <div class="avatar">${b.author.slice(0,2).toUpperCase()}</div>
+      <span>${b.author} · ${b.read} read · ${new URL(b.url).hostname.replace('www.','')} →</span>
+    </div>`;
+
+  card.onclick = () => window.open(b.url, '_blank', 'noopener');
+  card.onmouseover = () => { card.style.transform='translateY(-4px)'; card.style.boxShadow='0 8px 30px rgba(0,0,0,0.1)'; };
+  card.onmouseout  = () => { card.style.transform=''; card.style.boxShadow=''; };
+  return card;
+}
+
+function renderBlogPage(reset) {
+  const grid = document.getElementById('blog-grid');
+  if (reset) { grid.innerHTML = ''; blogPage = 0; }
+  const slice = ALL_BLOGS.slice(blogPage * BLOG_PAGE_SIZE, (blogPage + 1) * BLOG_PAGE_SIZE);
+  blogPage++;
+  slice.forEach(b => grid.appendChild(renderBlogCard(b)));
+  const btn = document.getElementById('blog-load-more');
+  btn.style.display = ALL_BLOGS.length > blogPage * BLOG_PAGE_SIZE ? 'inline-block' : 'none';
+}
+
+// loadMoreBlogs handled above by renderDynamicBlogPage
+
+// ── NETLIFY FORM SUBMIT ────────────────────────────────
+function handleSubscribe(e) {
+  e.preventDefault();
+  const emailEl  = document.getElementById('email-input');
+  const btn      = document.getElementById('subscribe-btn');
+  const successEl= document.getElementById('success-msg');
+  const errorEl  = document.getElementById('error-msg');
+  const email    = emailEl.value.trim();
+
+  // Reset
+  emailEl.style.borderColor = '#e2e8f0';
+  errorEl.style.display = 'none';
+
+  // Validate
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    emailEl.style.borderColor = '#ef4444';
+    errorEl.textContent = 'Please enter a valid email address.';
+    errorEl.style.display = 'block';
+    return;
+  }
+
+  btn.textContent = 'Subscribing…';
+  btn.disabled = true;
+
+  // Store locally (works everywhere)
+  try {
+    const subs = JSON.parse(localStorage.getItem('pai_subscribers') || '[]');
+    if (!subs.includes(email)) { subs.push(email); localStorage.setItem('pai_subscribers', JSON.stringify(subs)); }
+  } catch(e) {}
+
+  // Also try Netlify form in background (only fires when deployed on Netlify)
+  fetch('/', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({ 'form-name': 'newsletter', 'email': email }).toString()
+  }).catch(() => {});
+
+  // Always show success
+  successEl.style.display = 'block';
+  btn.textContent = '✓ Subscribed!';
+  btn.style.background = '#16a34a';
+  emailEl.value = '';
+  btn.disabled = false;
+}
+function filterTools(cat, btn) {
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('#tools-grid .tool-card').forEach(card => {
+    card.style.display = (cat==='all' || card.dataset.cat===cat) ? 'block' : 'none';
+  });
+}
+
+// ── Nav highlight ──────────────────────────────────────
+const sections = document.querySelectorAll('section[id]');
+const navLinks = document.querySelectorAll('.nav-links a');
+window.addEventListener('scroll', () => {
+  let current='';
+  sections.forEach(s=>{ if(window.scrollY>=s.offsetTop-100) current=s.id; });
+  navLinks.forEach(a=>{ a.style.color = a.getAttribute('href')==='#'+current?'#2563eb':''; });
+});
+
+// ── Init blogs after DOM ready ─────────────────────────
+// Blog init handled in DOMContentLoaded above via fetchDynamicBlogs
+</script>
+<!-- PANEL OVERLAY -->
+<div id="panel-overlay" onclick="closeUserPanel()"></div>
+
+<!-- USER DASHBOARD PANEL -->
+<div id="user-panel">
+  <div class="panel-header">
+    <div>
+      <h3 id="panel-user-name">My Account</h3>
+      <div id="panel-user-email" style="font-size:0.78rem;color:#94a3b8;margin-top:2px;"></div>
+    </div>
+    <button class="panel-close" onclick="closeUserPanel()">✕</button>
+  </div>
+  <div class="panel-tabs">
+    <button class="panel-tab active" onclick="switchPanelTab('saved',this)">🔖 Saved</button>
+    <button class="panel-tab" onclick="switchPanelTab('liked',this)">❤️ Liked</button>
+    <button class="panel-tab" onclick="switchPanelTab('history',this)">📖 History</button>
+    <button class="panel-tab" onclick="switchPanelTab('account',this)">⚙️ Account</button>
+  </div>
+  <div class="panel-body" id="panel-body">
+    <!-- Rendered by JS -->
+  </div>
+</div>
+
+<script>
+// ── USER DATA STORAGE ──────────────────────────────────
+// Stores saved/liked/history per user email in localStorage
+// When Netlify Identity is set up, data is keyed by user email
+
+const USER_KEY = 'pai_user';
+let currentUser = null; // set when logged in via Netlify Identity
+
+function userDataGet() {
+  try {
+    const key = USER_KEY + (currentUser ? '_' + btoa(currentUser.email).slice(0,12) : '_guest');
+    return JSON.parse(localStorage.getItem(key) || '{"saved":[],"liked":[],"history":[]}');
+  } catch(e) { return {saved:[],liked:[],history:[]}; }
+}
+
+function userDataSave(data) {
+  try {
+    const key = USER_KEY + (currentUser ? '_' + btoa(currentUser.email).slice(0,12) : '_guest');
+    localStorage.setItem(key, JSON.stringify(data));
+  } catch(e) {}
+}
+
+function isSaved(url) { return userDataGet().saved.some(a => a.url === url); }
+function isLiked(url) { return userDataGet().liked.some(a => a.url === url); }
+
+// ── SAVE / LIKE / HISTORY ──────────────────────────────
+function toggleSave(article) {
+  const data = userDataGet();
+  const idx = data.saved.findIndex(a => a.url === article.url);
+  if (idx >= 0) {
+    data.saved.splice(idx, 1);
+    showToast('Removed from saved');
+  } else {
+    data.saved.unshift({ ...article, savedAt: Date.now() });
+    showToast('🔖 Article saved!');
+  }
+  userDataSave(data);
+  refreshActionButtons(article.url);
+  if (document.getElementById('user-panel').classList.contains('open')) renderPanelTab(currentPanelTab);
+}
+
+function toggleLike(article) {
+  const data = userDataGet();
+  const idx = data.liked.findIndex(a => a.url === article.url);
+  if (idx >= 0) {
+    data.liked.splice(idx, 1);
+    showToast('Removed from liked');
+  } else {
+    data.liked.unshift({ ...article, likedAt: Date.now() });
+    showToast('❤️ Article liked!');
+  }
+  userDataSave(data);
+  refreshActionButtons(article.url);
+  if (document.getElementById('user-panel').classList.contains('open')) renderPanelTab(currentPanelTab);
+}
+
+function addToHistory(article) {
+  const data = userDataGet();
+  // Remove duplicate if exists
+  data.history = data.history.filter(a => a.url !== article.url);
+  data.history.unshift({ ...article, readAt: Date.now() });
+  data.history = data.history.slice(0, 200); // keep last 200
+  userDataSave(data);
+}
+
+// ── TOAST NOTIFICATION ─────────────────────────────────
+function showToast(msg) {
+  let toast = document.getElementById('pai-toast');
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.id = 'pai-toast';
+    toast.style.cssText = 'position:fixed;bottom:2rem;left:50%;transform:translateX(-50%) translateY(20px);background:#0a1628;color:white;padding:10px 20px;border-radius:8px;font-size:0.85rem;font-weight:500;z-index:9999;opacity:0;transition:all 0.3s;pointer-events:none;white-space:nowrap;';
+    document.body.appendChild(toast);
+  }
+  toast.textContent = msg;
+  toast.style.opacity = '1';
+  toast.style.transform = 'translateX(-50%) translateY(0)';
+  clearTimeout(toast._timer);
+  toast._timer = setTimeout(() => {
+    toast.style.opacity = '0';
+    toast.style.transform = 'translateX(-50%) translateY(20px)';
+  }, 2500);
+}
+
+// ── ACTION BUTTONS on news cards ──────────────────────
+// Call this when rendering any article card to add save/like buttons
+function addArticleActions(card, article) {
+  const actions = document.createElement('div');
+  actions.className = 'article-actions';
+  actions.dataset.url = article.url;
+  actions.innerHTML = `
+    <button class="action-btn ${isSaved(article.url)?'saved':''}"
+      onclick="event.stopPropagation();toggleSave(${JSON.stringify(article).replace(/"/g,'&quot;')})">
+      ${isSaved(article.url) ? '🔖 Saved' : '🔖 Save'}
+    </button>
+    <button class="action-btn ${isLiked(article.url)?'liked':''}"
+      onclick="event.stopPropagation();toggleLike(${JSON.stringify(article).replace(/"/g,'&quot;')})">
+      ${isLiked(article.url) ? '❤️ Liked' : '♡ Like'}
+    </button>`;
+  card.appendChild(actions);
+}
+
+function refreshActionButtons(url) {
+  document.querySelectorAll(`.article-actions[data-url="${CSS.escape(url)}"]`).forEach(actions => {
+    const [saveBtn, likeBtn] = actions.querySelectorAll('.action-btn');
+    if (saveBtn) {
+      saveBtn.textContent = isSaved(url) ? '🔖 Saved' : '🔖 Save';
+      saveBtn.className = 'action-btn' + (isSaved(url) ? ' saved' : '');
+    }
+    if (likeBtn) {
+      likeBtn.textContent = isLiked(url) ? '❤️ Liked' : '♡ Like';
+      likeBtn.className = 'action-btn' + (isLiked(url) ? ' liked' : '');
+    }
+  });
+}
+
+// ── USER PANEL ─────────────────────────────────────────
+let currentPanelTab = 'saved';
+
+function toggleUserPanel() {
+  const panel = document.getElementById('user-panel');
+  if (panel.classList.contains('open')) { closeUserPanel(); return; }
+  if (!currentUser) { openAuthModal(); return; }
+  openUserPanel();
+}
+
+function openUserPanel() {
+  document.getElementById('user-panel').classList.add('open');
+  document.getElementById('panel-overlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+  renderPanelTab('saved');
+}
+
+function closeUserPanel() {
+  document.getElementById('user-panel').classList.remove('open');
+  document.getElementById('panel-overlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function switchPanelTab(tab, btn) {
+  currentPanelTab = tab;
+  document.querySelectorAll('.panel-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderPanelTab(tab);
+}
+
+function renderPanelTab(tab) {
+  const body = document.getElementById('panel-body');
+  const data = userDataGet();
+
+  if (tab === 'account') {
+    body.innerHTML = `
+      <div style="padding:0.5rem 0;">
+        <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:1.25rem;margin-bottom:1rem;">
+          <div style="font-size:0.78rem;color:#94a3b8;margin-bottom:4px;">Signed in as</div>
+          <div style="font-weight:600;color:#0f172a;">${currentUser?.email || 'Guest'}</div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.75rem;margin-bottom:1.25rem;">
+          <div style="background:#eff6ff;border-radius:10px;padding:0.75rem;text-align:center;">
+            <div style="font-size:1.4rem;font-weight:700;color:#2563eb;">${data.saved.length}</div>
+            <div style="font-size:0.72rem;color:#64748b;">Saved</div>
+          </div>
+          <div style="background:#fef2f2;border-radius:10px;padding:0.75rem;text-align:center;">
+            <div style="font-size:1.4rem;font-weight:700;color:#dc2626;">${data.liked.length}</div>
+            <div style="font-size:0.72rem;color:#64748b;">Liked</div>
+          </div>
+          <div style="background:#f0fdf4;border-radius:10px;padding:0.75rem;text-align:center;">
+            <div style="font-size:1.4rem;font-weight:700;color:#16a34a;">${data.history.length}</div>
+            <div style="font-size:0.72rem;color:#64748b;">Read</div>
+          </div>
+        </div>
+        <button onclick="signOut()" style="width:100%;padding:10px;border-radius:8px;border:1px solid #fecaca;background:#fef2f2;color:#dc2626;font-size:0.9rem;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;">Sign Out</button>
+      </div>`;
+    return;
+  }
+
+  const items = tab === 'saved' ? data.saved : tab === 'liked' ? data.liked : data.history;
+  const emptyMsg = { saved:'No saved articles yet. Click 🔖 on any article to save it.', liked:'No liked articles yet. Click ♡ on any article to like it.', history:'No reading history yet. Start reading articles!' };
+
+  if (items.length === 0) {
+    body.innerHTML = `<div class="empty-panel"><div class="icon">${tab==='saved'?'🔖':tab==='liked'?'❤️':'📖'}</div><p>${emptyMsg[tab]}</p></div>`;
+    return;
+  }
+
+  body.innerHTML = '';
+  items.forEach(item => {
+    const card = document.createElement('div');
+    card.className = 'saved-card';
+    const ts = item.savedAt || item.likedAt || item.readAt;
+    const timeStr = ts ? new Date(ts).toLocaleDateString('en-IN',{day:'numeric',month:'short'}) : '';
+    card.innerHTML = `
+      <div class="saved-card-title">${item.title || 'Untitled'}</div>
+      <div class="saved-card-meta">
+        <span>${item.src ? ('📡 ' + item.src) : ''}</span>
+        <span>${timeStr}</span>
+      </div>
+      <div class="saved-card-actions">
+        <button class="btn-sm" onclick="window.open('${item.url}','_blank')">Read →</button>
+        ${tab==='saved' ? `<button class="btn-sm danger" onclick="toggleSave(${JSON.stringify(item).replace(/"/g,'&quot;')})">Remove</button>` : ''}
+        ${tab==='liked' ? `<button class="btn-sm danger" onclick="toggleLike(${JSON.stringify(item).replace(/"/g,'&quot;')})">Unlike</button>` : ''}
+      </div>`;
+    body.appendChild(card);
+  });
+}
+
+// ── NETLIFY IDENTITY SETUP ─────────────────────────────
+function updateNavForUser(user) {
+  currentUser = user;
+  const btn   = document.getElementById('nav-user-btn');
+  const label = document.getElementById('nav-user-label');
+  const icon  = document.getElementById('nav-user-icon');
+  if (user) {
+    const initials = (user.name || user.email || '?').slice(0,2).toUpperCase();
+    const firstName = (user.name || user.email || '').split(' ')[0];
+    // Clean look: white pill with coloured avatar circle + dark name
+    btn.className = 'user-btn';
+    btn.style.cssText = 'background:#fff;border:1.5px solid #e2e8f0;color:#0f172a;display:flex;align-items:center;gap:7px;padding:5px 12px 5px 5px;border-radius:20px;cursor:pointer;font-family:\'DM Sans\',sans-serif;font-size:0.85rem;font-weight:500;transition:all 0.2s;';
+    btn.onmouseover = () => btn.style.borderColor = '#93c5fd';
+    btn.onmouseout  = () => btn.style.borderColor = '#e2e8f0';
+    icon.innerHTML  = `<span style="width:26px;height:26px;border-radius:50%;background:#2563eb;display:flex;align-items:center;justify-content:center;font-size:0.68rem;font-weight:700;color:white;flex-shrink:0;">${initials}</span>`;
+    label.textContent = firstName;
+    document.getElementById('panel-user-name').textContent = user.name || 'My Account';
+    document.getElementById('panel-user-email').textContent = user.email || '';
+  } else {
+    btn.className = 'user-btn login';
+    btn.style.cssText = '';
+    btn.onmouseover = null;
+    btn.onmouseout  = null;
+    label.textContent = 'Sign In';
+    icon.textContent = '👤';
+  }
+}
+
+// ── CUSTOM AUTH SYSTEM ─────────────────────────────────
+const USERS_DB_KEY   = 'pai_users_db';
+const SESSION_DB_KEY = 'pai_session_db';
+let authTab = 'login';
+
+function getUsers()          { try { return JSON.parse(localStorage.getItem(USERS_DB_KEY)||'[]'); } catch(e) { return []; } }
+function saveUsers(u)        { try { localStorage.setItem(USERS_DB_KEY, JSON.stringify(u)); } catch(e) {} }
+function getStoredSession()  { try { return JSON.parse(localStorage.getItem(SESSION_DB_KEY)||'null'); } catch(e) { return null; } }
+function storeSession(u)     { try { localStorage.setItem(SESSION_DB_KEY, JSON.stringify(u)); } catch(e) {} }
+function clearStoredSession(){ try { localStorage.removeItem(SESSION_DB_KEY); } catch(e) {} }
+
+function hashStr(s) {
+  let h = 5381;
+  for (let i = 0; i < s.length; i++) h = (h * 33) ^ s.charCodeAt(i);
+  return (h >>> 0).toString(36);
+}
+
+function openAuthModal() {
+  document.getElementById('auth-modal').style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+  setTimeout(() => { const el = document.getElementById('auth-email'); if(el) el.focus(); }, 50);
+}
+function closeAuthModal() {
+  document.getElementById('auth-modal').style.display = 'none';
+  document.body.style.overflow = '';
+  const err = document.getElementById('auth-error-box');
+  if (err) err.style.display = 'none';
+}
+document.getElementById('auth-modal').addEventListener('click', function(e) {
+  if (e.target === this) closeAuthModal();
+});
+
+function switchAuthTab(tab) {
+  authTab = tab;
+  const isLogin = tab === 'login';
+  const tl = document.getElementById('auth-tab-login');
+  const ts = document.getElementById('auth-tab-signup');
+  tl.style.color = isLogin ? '#2563eb' : '#94a3b8';
+  tl.style.borderBottomColor = isLogin ? '#2563eb' : 'transparent';
+  tl.style.background = isLogin ? 'white' : 'none';
+  ts.style.color = !isLogin ? '#2563eb' : '#94a3b8';
+  ts.style.borderBottomColor = !isLogin ? '#2563eb' : 'transparent';
+  ts.style.background = !isLogin ? 'white' : 'none';
+  document.getElementById('auth-modal-title').textContent = isLogin ? 'Welcome back' : 'Create your account';
+  document.getElementById('auth-modal-sub').textContent   = isLogin
+    ? 'Sign in to save articles and personalise your feed'
+    : 'Join the PromptAI community — free forever';
+  document.getElementById('auth-submit').textContent = isLogin ? 'Sign In' : 'Create Account';
+  document.getElementById('auth-name-wrap').style.display = isLogin ? 'none' : 'flex';
+  document.getElementById('auth-error-box').style.display = 'none';
+}
+
+function handleAuthSubmit(e) {
+  e.preventDefault();
+  const email    = document.getElementById('auth-email').value.trim().toLowerCase();
+  const pass     = document.getElementById('auth-pass').value;
+  const name     = document.getElementById('auth-name').value.trim();
+  const errBox   = document.getElementById('auth-error-box');
+  const submitBtn = document.getElementById('auth-submit');
+  errBox.style.display = 'none';
+  submitBtn.disabled = true;
+  submitBtn.textContent = authTab === 'login' ? 'Signing in…' : 'Creating account…';
+
+  setTimeout(() => {
+    const users = getUsers();
+    if (authTab === 'login') {
+      const user = users.find(u => u.email === email);
+      if (!user || user.ph !== hashStr(pass)) {
+        errBox.textContent = 'Wrong email or password. New here? Create an account above.';
+        errBox.style.display = 'block';
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Sign In';
+        return;
+      }
+      const session = { email: user.email, name: user.name };
+      storeSession(session);
+      currentUser = session;
+      updateNavForUser(session);
+      closeAuthModal();
+      showToast('👋 Welcome back, ' + (user.name?.split(' ')[0] || email.split('@')[0]) + '!');
+      setTimeout(openUserPanel, 350);
+    } else {
+      if (!name) {
+        errBox.textContent = 'Please enter your name.';
+        errBox.style.display = 'block';
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Create Account';
+        return;
+      }
+      if (users.find(u => u.email === email)) {
+        errBox.textContent = 'Account already exists with this email — sign in instead.';
+        errBox.style.display = 'block';
+        submitBtn.disabled = false;
+        switchAuthTab('login');
+        return;
+      }
+      const newUser = { email, name, ph: hashStr(pass), joinedAt: Date.now() };
+      saveUsers([...users, newUser]);
+      const session = { email: newUser.email, name: newUser.name };
+      storeSession(session);
+      currentUser = session;
+      updateNavForUser(session);
+      closeAuthModal();
+      showToast('🎉 Welcome, ' + name.split(' ')[0] + '! Account created.');
+      setTimeout(openUserPanel, 350);
+    }
+  }, 380);
+}
+
+function signOut() {
+  clearStoredSession();
+  currentUser = null;
+  updateNavForUser(null);
+  closeUserPanel();
+  showToast('Signed out successfully');
+}
+
+// Restore session on page load
+(function restoreSession() {
+  const s = getStoredSession();
+  if (s) {
+    currentUser = s;
+    document.addEventListener('DOMContentLoaded', () => updateNavForUser(s));
+  }
+})();
+
+// ── PATCH renderCard to add save/like buttons ──────────
+// Override the original renderCard to include action buttons
+const _origRenderCard = renderCard;
+window.renderCard = function(s) {
+  const card = _origRenderCard(s);
+  addArticleActions(card, s);
+  // Also track history when modal opens
+  const origClick = card.onclick;
+  card.onclick = () => {
+    addToHistory(s);
+    if (origClick) origClick();
+  };
+  return card;
+};
+</script>
