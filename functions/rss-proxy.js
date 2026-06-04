@@ -1,7 +1,6 @@
 // functions/rss-proxy.js
 // Cloudflare Pages Function — RSS proxy, bypasses CORS
 // Deployed at: /rss-proxy?url=<encoded_feed_url>
-// Mirrors the same allowlist as netlify/functions/rss-proxy.js
 
 const ALLOWED = [
   'rss.arxiv.org', 'export.arxiv.org',
