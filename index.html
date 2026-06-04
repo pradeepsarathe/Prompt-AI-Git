@@ -2284,6 +2284,60 @@ function userDataSave(data) {
     const key = USER_KEY + (currentUser ? '_' + btoa(currentUser.email).slice(0,12) : '_guest');
     localStorage.setItem(key, JSON.stringify(data));
   } catch(e) {}
+  // Push to backend so saved/liked/history sync across devices (debounced)
+  pushUserData(data);
+}
+
+// ── CROSS-DEVICE DATA SYNC ─────────────────────────────
+let _pushTimer = null;
+function pushUserData(data) {
+  const token = localStorage.getItem(AUTH_TOKEN_KEY);
+  if (!currentUser || !token) return;            // only sync signed-in users
+  clearTimeout(_pushTimer);
+  _pushTimer = setTimeout(() => {
+    apiAuth('setdata', { token, data }).catch(() => {}); // best-effort
+  }, 600);
+}
+
+// Pull this account's data from the backend and merge with whatever is local,
+// then refresh the UI. Called right after login + on session restore.
+async function pullUserData() {
+  const token = localStorage.getItem(AUTH_TOKEN_KEY);
+  if (!currentUser || !token) return;
+  let remote;
+  try {
+    const res = await apiAuth('getdata', { token });
+    remote = res.data;
+  } catch (e) { return; }                          // offline → keep local
+  if (!remote) return;
+
+  const local = userDataGet();
+  const mergeBy = (a = [], b = [], stamp) => {
+    const map = new Map();
+    [...a, ...b].forEach(it => {
+      if (!it || !it.url) return;
+      const prev = map.get(it.url);
+      if (!prev || (it[stamp] || 0) > (prev[stamp] || 0)) map.set(it.url, it);
+    });
+    return [...map.values()].sort((x, y) => (y[stamp] || 0) - (x[stamp] || 0));
+  };
+  const merged = {
+    saved:   mergeBy(local.saved,   remote.saved,   'savedAt'),
+    liked:   mergeBy(local.liked,   remote.liked,   'likedAt'),
+    history: mergeBy(local.history, remote.history, 'readAt').slice(0, 200),
+  };
+  // write merged result locally + back to server so both ends converge
+  try {
+    const key = USER_KEY + '_' + btoa(currentUser.email).slice(0,12);
+    localStorage.setItem(key, JSON.stringify(merged));
+  } catch(e) {}
+  apiAuth('setdata', { token, data: merged }).catch(() => {});
+  // refresh any open UI
+  if (document.getElementById('user-panel')?.classList.contains('open')) {
+    renderPanelTab(currentPanelTab);
+  }
+  document.querySelectorAll('.article-actions[data-url]').forEach(el =>
+    refreshActionButtons(el.getAttribute('data-url')));
 }
 
 function isSaved(url) { return userDataGet().saved.some(a => a.url === url); }
@@ -2606,6 +2660,7 @@ async function handleAuthSubmit(e) {
     storeSession(session);            // local cache for instant restore
     updateNavForUser(session);
     closeAuthModal();
+    pullUserData();                   // sync saved/liked/history across devices
     showToast(isLogin
       ? '👋 Welcome back, ' + (session.name?.split(' ')[0] || email.split('@')[0]) + '!'
       : '🎉 Welcome, ' + (session.name?.split(' ')[0] || email.split('@')[0]) + '! Account created.');
@@ -2667,7 +2722,10 @@ async function signOut() {
     try {
       const data = await apiAuth('session', { token });
       storeSession(data.user);
-      return apply(data.user);
+      currentUser = data.user;
+      apply(data.user);
+      pullUserData();                 // sync saved/liked/history across devices
+      return;
     } catch (err) {
       if (!err.offline) { localStorage.removeItem(AUTH_TOKEN_KEY); clearStoredSession(); }
       // offline → fall through to cached session below
