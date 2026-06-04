@@ -1,0 +1,6 @@
+# Cloudflare Pages redirects
+# Routes /feed.xml to the live Cloudflare Pages Function
+/feed.xml /feed 200
+
+# www → apex redirect
+https://www.promptai.in/* https://promptai.in/:splat 301

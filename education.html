@@ -47,6 +47,14 @@
   .nav-cta { background: var(--accent); color: white !important; padding: 8px 20px; border-radius: var(--radius); font-size: 0.88rem !important; font-weight: 500 !important; transition: background 0.2s !important; }
   .nav-cta:hover { background: #1d4ed8 !important; }
 
+  /* Hamburger */
+  .nav-toggle { display: none; background: none; border: none; cursor: pointer; flex-direction: column; justify-content: center; gap: 5px; width: 42px; height: 42px; padding: 9px; border-radius: 8px; }
+  .nav-toggle:hover { background: var(--surface); }
+  .nav-toggle span { display: block; width: 22px; height: 2px; border-radius: 2px; background: var(--text-primary); transition: transform 0.28s ease, opacity 0.2s ease; }
+  #site-nav.open .nav-toggle span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+  #site-nav.open .nav-toggle span:nth-child(2) { opacity: 0; }
+  #site-nav.open .nav-toggle span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
   /* HERO */
   .hero { background: var(--navy); padding: 5rem 2rem 4.5rem; position: relative; overflow: hidden; }
   .hero::before { content:''; position:absolute; top:-40%; right:-10%; width:600px; height:600px; border-radius:50%; background:radial-gradient(circle,rgba(37,99,235,0.18) 0%,transparent 70%); pointer-events:none; }
@@ -118,6 +126,8 @@
   .path-steps { list-style: none; display: flex; flex-direction: column; gap: 0.5rem; }
   .path-steps li { font-size: 0.84rem; color: var(--text-secondary); display: flex; align-items: flex-start; gap: 8px; }
   .path-steps li::before { content: '→'; color: var(--accent); font-weight: 700; flex-shrink: 0; margin-top: 1px; }
+  .path-steps a { color: var(--accent); font-weight: 600; text-decoration: none; border-bottom: 1px solid transparent; transition: border-color 0.15s; }
+  .path-steps a:hover { border-bottom-color: var(--accent); }
 
   /* FOOTER */
   footer { background: var(--navy); padding: 3rem 2rem 2rem; border-top: 1px solid rgba(255,255,255,0.08); }
@@ -139,7 +149,21 @@
     .guides-grid { grid-template-columns: repeat(2, 1fr); }
     .paths-grid { grid-template-columns: 1fr; }
     .footer-inner { grid-template-columns: 1fr 1fr; gap: 2rem; }
-    nav .nav-links { display: none; }
+    .nav-toggle { display: flex; }
+    .nav-links {
+      position: absolute; top: 64px; left: 0; right: 0;
+      flex-direction: column; align-items: stretch; gap: 0;
+      background: #ffffff; border-top: 1px solid var(--border);
+      box-shadow: 0 18px 44px rgba(10,22,40,0.14);
+      padding: 6px 0; margin: 0;
+      max-height: 0; overflow: hidden; opacity: 0; pointer-events: none;
+      transition: max-height 0.32s ease, opacity 0.22s ease;
+    }
+    #site-nav.open .nav-links { max-height: calc(100vh - 64px); overflow-y: auto; opacity: 1; pointer-events: auto; }
+    .nav-links li { width: 100%; }
+    .nav-links li a { display: block; padding: 14px 26px; font-size: 1rem; border-bottom: 1px solid var(--surface); }
+    .nav-links li a:hover { background: var(--surface); }
+    .nav-cta { display: block !important; text-align: center; margin: 12px 26px 8px !important; padding: 13px 20px !important; border-bottom: none !important; }
   }
   @media (max-width: 600px) {
     .course-grid, .prompt-grid, .guides-grid { grid-template-columns: 1fr; }
@@ -152,17 +176,20 @@
 <body>
 
 <!-- NAV -->
-<nav>
+<nav id="site-nav">
   <div class="nav-inner">
     <a href="index.html" class="nav-logo">
       <span class="logo-dot"></span> PromptAI
     </a>
-    <ul class="nav-links">
+    <button class="nav-toggle" id="nav-toggle" onclick="toggleMobileNav()" aria-label="Toggle menu" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+    <ul class="nav-links" id="nav-links">
       <li><a href="index.html#news">News</a></li>
-      <li><a href="index.html#papers">Papers</a></li>
-      <li><a href="index.html#tools">Tools</a></li>
-      <li><a href="index.html#blog">Blog</a></li>
+      <li><a href="index.html#blog">Blogs</a></li>
       <li><a href="education.html" class="active">AI Education</a></li>
+      <li><a href="index.html#tools">Tools</a></li>
+      <li><a href="archive.html">Archive</a></li>
       <li><a href="index.html#about">About</a></li>
       <li><a href="index.html#newsletter" class="nav-cta">Subscribe</a></li>
     </ul>
@@ -358,11 +385,11 @@
         <h3>Use AI Productively</h3>
         <p>For professionals who want to integrate AI tools into their daily workflow — no coding required.</p>
         <ul class="path-steps">
-          <li>Start with <strong>AI for Everyone</strong> (Andrew Ng)</li>
-          <li>Learn <strong>Google AI Essentials</strong> for workplace tools</li>
-          <li>Master prompt engineering via <strong>Learn Prompting</strong></li>
-          <li>Pick 1–2 tools: Claude, ChatGPT, Perplexity</li>
-          <li>Follow <strong>The Batch</strong> newsletter weekly</li>
+          <li>Start with <a href="https://www.coursera.org/learn/ai-for-everyone" target="_blank" rel="noopener">AI for Everyone</a> (Andrew Ng)</li>
+          <li>Learn <a href="https://www.coursera.org/learn/google-ai-essentials" target="_blank" rel="noopener">Google AI Essentials</a> for workplace tools</li>
+          <li>Master prompt engineering via <a href="https://learnprompting.org/" target="_blank" rel="noopener">Learn Prompting</a></li>
+          <li>Pick 1–2 tools: <a href="https://claude.ai" target="_blank" rel="noopener">Claude</a>, <a href="https://chatgpt.com" target="_blank" rel="noopener">ChatGPT</a>, <a href="https://www.perplexity.ai" target="_blank" rel="noopener">Perplexity</a></li>
+          <li>Follow <a href="https://www.deeplearning.ai/the-batch/" target="_blank" rel="noopener">The Batch</a> newsletter weekly</li>
         </ul>
       </div>
       <div class="path-card">
@@ -370,11 +397,11 @@
         <h3>Build AI Applications</h3>
         <p>For developers who want to build products using AI APIs, fine-tuning, and deployment pipelines.</p>
         <ul class="path-steps">
-          <li>Complete <strong>ML Specialization</strong> (Andrew Ng)</li>
-          <li>Do <strong>Practical Deep Learning</strong> (fast.ai)</li>
-          <li>Study <strong>HuggingFace NLP Course</strong></li>
-          <li>Build with LangChain &amp; vector databases</li>
-          <li>Deploy: <strong>LLMs in Production</strong> (Databricks)</li>
+          <li>Complete <a href="https://www.deeplearning.ai/courses/machine-learning-specialization/" target="_blank" rel="noopener">ML Specialization</a> (Andrew Ng)</li>
+          <li>Do <a href="https://course.fast.ai/" target="_blank" rel="noopener">Practical Deep Learning</a> (fast.ai)</li>
+          <li>Study the <a href="https://huggingface.co/learn/nlp-course/chapter1/1" target="_blank" rel="noopener">HuggingFace NLP Course</a></li>
+          <li>Build with <a href="https://python.langchain.com/docs/introduction/" target="_blank" rel="noopener">LangChain</a> &amp; vector databases</li>
+          <li>Deploy: <a href="https://www.deeplearning.ai/courses/large-language-models-application-through-production/" target="_blank" rel="noopener">LLMs in Production</a> (Databricks)</li>
         </ul>
       </div>
       <div class="path-card">
@@ -382,11 +409,11 @@
         <h3>Research AI Systems</h3>
         <p>For those aiming to understand, replicate, or advance the state of the art in machine learning.</p>
         <ul class="path-steps">
-          <li>Study <strong>Deep Learning Specialization</strong> rigorously</li>
-          <li>Complete <strong>Stanford CS224N</strong> or <strong>CS231N</strong></li>
-          <li>Rebuild GPT from scratch — <strong>Karpathy's Zero to Hero</strong></li>
-          <li>Read arXiv papers daily via PromptAI Papers section</li>
-          <li>Follow <strong>The Gradient</strong> and <strong>Distill.pub</strong></li>
+          <li>Study the <a href="https://www.deeplearning.ai/courses/deep-learning-specialization/" target="_blank" rel="noopener">Deep Learning Specialization</a> rigorously</li>
+          <li>Complete <a href="https://web.stanford.edu/class/cs224n/" target="_blank" rel="noopener">Stanford CS224N</a> or <a href="http://cs231n.stanford.edu/" target="_blank" rel="noopener">CS231N</a></li>
+          <li>Rebuild GPT from scratch — <a href="https://karpathy.ai/zero-to-hero.html" target="_blank" rel="noopener">Karpathy's Zero to Hero</a></li>
+          <li>Read arXiv papers daily via <a href="index.html#papers">PromptAI Papers</a></li>
+          <li>Follow <a href="https://thegradient.pub/" target="_blank" rel="noopener">The Gradient</a> and <a href="https://distill.pub/" target="_blank" rel="noopener">Distill.pub</a></li>
         </ul>
       </div>
     </div>
@@ -544,6 +571,22 @@ function filterCourses(level, btn) {
     card.style.display = (level === 'all' || card.dataset.level === level) ? 'flex' : 'none';
   });
 }
+
+// ── Mobile menu ──
+function toggleMobileNav() {
+  const nav = document.getElementById('site-nav');
+  const open = nav.classList.toggle('open');
+  document.getElementById('nav-toggle').setAttribute('aria-expanded', open ? 'true' : 'false');
+}
+function closeMobileNav() {
+  document.getElementById('site-nav').classList.remove('open');
+  document.getElementById('nav-toggle').setAttribute('aria-expanded', 'false');
+}
+document.querySelectorAll('#nav-links a').forEach(a => a.addEventListener('click', closeMobileNav));
+document.addEventListener('click', (e) => {
+  const nav = document.getElementById('site-nav');
+  if (nav.classList.contains('open') && !nav.contains(e.target)) closeMobileNav();
+});
 </script>
 </body>
 </html>

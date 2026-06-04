@@ -186,6 +186,21 @@
   }
   .nav-cta:hover { background: #1d4ed8 !important; color: white !important; }
 
+  /* Hamburger — hidden on desktop */
+  .nav-toggle {
+    display: none; background: none; border: none; cursor: pointer;
+    flex-direction: column; justify-content: center; gap: 5px;
+    width: 42px; height: 42px; padding: 9px; border-radius: 8px;
+  }
+  .nav-toggle:hover { background: var(--surface); }
+  .nav-toggle span {
+    display: block; width: 22px; height: 2px; border-radius: 2px;
+    background: var(--text-primary); transition: transform 0.28s ease, opacity 0.2s ease;
+  }
+  #site-nav.open .nav-toggle span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+  #site-nav.open .nav-toggle span:nth-child(2) { opacity: 0; }
+  #site-nav.open .nav-toggle span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
   /* HERO */
   .hero {
     background: var(--navy);
@@ -544,7 +559,33 @@
     .papers-grid, .blog-grid { grid-template-columns: repeat(2,1fr); }
     .tools-grid { grid-template-columns: repeat(2,1fr); }
     .footer-inner { grid-template-columns: 1fr 1fr; gap: 2rem; }
-    nav .nav-links { display: none; }
+    .nav-toggle { display: flex; }
+    .nav-links {
+      position: absolute; top: 64px; left: 0; right: 0;
+      flex-direction: column; align-items: stretch; gap: 0;
+      background: #ffffff; border-top: 1px solid var(--border);
+      box-shadow: 0 18px 44px rgba(10,22,40,0.14);
+      padding: 6px 0; margin: 0;
+      max-height: 0; overflow: hidden; opacity: 0; pointer-events: none;
+      transition: max-height 0.32s ease, opacity 0.22s ease;
+    }
+    #site-nav.open .nav-links {
+      max-height: calc(100vh - 64px); overflow-y: auto;
+      opacity: 1; pointer-events: auto;
+    }
+    .nav-links li { width: 100%; }
+    .nav-links li a {
+      display: block; padding: 14px 26px; font-size: 1rem;
+      border-bottom: 1px solid var(--surface);
+    }
+    .nav-links li a:hover { background: var(--surface); }
+    .nav-cta {
+      display: block !important; text-align: center;
+      margin: 12px 26px 8px !important; padding: 13px 20px !important;
+      border-bottom: none !important;
+    }
+    .nav-links li:last-child { padding: 8px 26px 14px; }
+    #nav-user-btn { width: 100%; justify-content: center; padding: 13px; }
   }
   @media (max-width: 768px) {
     /* Featured blog card: stack vertically on tablets */
@@ -565,19 +606,21 @@
 <body>
 
 <!-- NAV -->
-<nav>
+<nav id="site-nav">
   <div class="nav-inner">
     <a href="#" class="nav-logo">
       <span class="logo-dot"></span> PromptAI
     </a>
-    <ul class="nav-links">
+    <button class="nav-toggle" id="nav-toggle" onclick="toggleMobileNav()" aria-label="Toggle menu" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+    <ul class="nav-links" id="nav-links">
       <li><a href="#news">News</a></li>
-      <li><a href="#papers">Papers</a></li>
-      <li><a href="#tools">Tools</a></li>
-      <li><a href="#blog">Blog</a></li>
-      <li><a href="#about">About</a></li>
-      <li><a href="/archive.html">Archive</a></li>
+      <li><a href="#blog">Blogs</a></li>
       <li><a href="education.html">AI Education</a></li>
+      <li><a href="#tools">Tools</a></li>
+      <li><a href="/archive.html">Archive</a></li>
+      <li><a href="#about">About</a></li>
       <li><a href="#newsletter" class="nav-cta">Subscribe</a></li>
       <li>
         <button id="nav-user-btn" class="user-btn login" onclick="toggleUserPanel()">
@@ -879,9 +922,8 @@
     <div class="newsletter-icon">✉️</div>
     <h2>Stay ahead of AI</h2>
     <p>Get a weekly digest of the most important AI research, tools, and insights delivered straight to your inbox. No spam, ever.</p>
-    <!-- Simple Netlify form — no JS, just works -->
-    <form name="newsletter" method="POST" data-netlify="true" id="newsletter-form" style="width:100%;" onsubmit="handleSubscribe(event)">
-      <input type="hidden" name="form-name" value="newsletter"/>
+    <!-- Newsletter signup — posts to the /subscribe Cloudflare Pages Function -->
+    <form name="newsletter" id="newsletter-form" style="width:100%;" onsubmit="handleSubscribe(event)">
       <div class="newsletter-form">
         <input type="email" name="email" id="email-input" placeholder="you@company.com" autocomplete="email" required/>
         <button type="submit" id="subscribe-btn">Subscribe →</button>
@@ -1281,7 +1323,7 @@ function cacheSet(key, data, ttl = CACHE_TTL_NEWS) {
 
 // ── FAST PROXY RACE ────────────────────────────────────
 // Fires all proxies simultaneously, takes whichever responds first with valid XML
-// fetchWithProxyRace defined below with Netlify function support
+// fetchWithProxyRace defined below (Cloudflare Pages function support)
 
 // ── PARSE RSS/ATOM XML ─────────────────────────────────
 // ── CONTENT QUALITY FILTER ────────────────────────────
@@ -1602,25 +1644,30 @@ const ALL_BLOGS = [
   { url:'https://lilianweng.github.io/posts/2023-01-27-the-transformer-family-v2/', banner:'🔬', bg:'linear-gradient(135deg,#0f172a,#059669)', cat:'Deep Dive', date:'Feb 20, 2025', title:'The Transformer Family Version 2.0 \u2014 Full Architecture Survey', desc:'Comprehensive survey of transformer variants including linear attention, sparse attention, memory-efficient designs and more.', read:'18 min', author:'Lilian Weng' },
   { url:'https://arxiv.org/abs/2309.02427', banner:'🛠', bg:'linear-gradient(135deg,#2d1b4e,#f59e0b)', cat:'Opinion', date:'Feb 8, 2025', title:'How Agentic Loops Improve LLM Performance on Complex Tasks', desc:'Andrew Ng on how iterative agent designs \u2014 plan, act, observe, reflect \u2014 dramatically improve output quality.', read:'6 min', author:'Andrew Ng' },
   { url:'https://arxiv.org/abs/2312.11805', banner:'📊', bg:'linear-gradient(135deg,#1a3a2a,#2563eb)', cat:'Research', date:'Jan 25, 2025', title:'Gemini: A Family of Highly Capable Multimodal Models', desc:'Google DeepMind\'s technical overview of Gemini \u2014 architecture, training data, multimodal benchmarks, and safety evaluation.', read:'13 min', author:'Google DeepMind' },
-  { url:'https://www.fast.ai/posts/2023-09-04-accuracy-speed.html', banner:'🚀', bg:'linear-gradient(135deg,#0f172a,#db2777)', cat:'Explainer', date:'Jan 10, 2025', title:'Practical Deep Learning \u2014 Speed vs Accuracy Tradeoffs', desc:'Fast.ai\'s guide to navigating model size, quantization, distillation, and batching for real-world deployment decisions.', read:'8 min', author:'fast.ai' }
+  { url:'https://www.fast.ai/posts/2023-09-04-accuracy-speed.html', banner:'🚀', bg:'linear-gradient(135deg,#0f172a,#db2777)', cat:'Explainer', date:'Jan 10, 2025', title:'Practical Deep Learning \u2014 Speed vs Accuracy Tradeoffs', desc:'Fast.ai\'s guide to navigating model size, quantization, distillation, and batching for real-world deployment decisions.', read:'8 min', author:'fast.ai' },
+  { url:'https://jalammar.github.io/illustrated-bert/', banner:'🔤', bg:'linear-gradient(135deg,#1a3a2a,#2563eb)', cat:'Deep Dive', date:'Dec 20, 2024', title:'The Illustrated BERT, ELMo, and Co.', desc:'A visual, intuitive guide to contextualized word representations and how BERT\'s bidirectional training transformed NLP.', read:'10 min', author:'J. Alammar' },
+  { url:'https://lilianweng.github.io/posts/2021-07-11-diffusion-models/', banner:'🌊', bg:'linear-gradient(135deg,#2d1b4e,#7c3aed)', cat:'Research', date:'Dec 5, 2024', title:'What are Diffusion Models?', desc:'A thorough walkthrough of score matching and diffusion probabilistic models — the foundation behind Stable Diffusion and DALL-E.', read:'16 min', author:'Lilian Weng' },
+  { url:'https://huggingface.co/blog/annotated-diffusion', banner:'🖼', bg:'linear-gradient(135deg,#1a3a2a,#059669)', cat:'Tutorial', date:'Nov 22, 2024', title:'The Annotated Diffusion Model', desc:'A line-by-line PyTorch implementation of a denoising diffusion probabilistic model (DDPM) with full code explanations.', read:'20 min', author:'Hugging Face' },
+  { url:'https://jalammar.github.io/how-gpt3-works-visualizations-animations/', banner:'✨', bg:'linear-gradient(135deg,#0f172a,#f59e0b)', cat:'Explainer', date:'Nov 10, 2024', title:'How GPT-3 Works \u2014 Visualizations and Animations', desc:'A beautifully animated guide showing exactly how GPT-3 generates text token by token, attention head by attention head.', read:'8 min', author:'J. Alammar' },
+  { url:'https://distill.pub/2021/gnn-intro/', banner:'🕸', bg:'linear-gradient(135deg,#1a3a2a,#0369a1)', cat:'Visual Essay', date:'Oct 28, 2024', title:'A Gentle Introduction to Graph Neural Networks', desc:'Interactive visual explainer from Distill.pub on how GNNs process relational data — with live editable demos.', read:'12 min', author:'Distill.pub' },
 ];
 
 let blogPage = 0;
 const BLOG_PAGE_SIZE = 6;
 
-// ── NETLIFY FUNCTION PROXY (fastest, most reliable) ───
-// Falls back to public proxies if function not deployed yet
+// ── RSS PROXY (Cloudflare Pages Function) ─────────────
+// Falls back to public proxies if the function isn't reachable
 async function fetchWithProxyRace(feedUrl) {
   const isArxiv = feedUrl.includes('arxiv.org');
   const isHF    = feedUrl.includes('huggingface.co');
 
-  // Build proxy list — Netlify function first (server-side, no CORS), then public fallbacks
+  // Build proxy list — Cloudflare function first (server-side, no CORS), then public fallbacks
   const fetchers = [
-    // 1. Server-side proxy — tries Netlify function first, then Cloudflare Pages function
+    // 1. Server-side proxy — Cloudflare Pages function at /rss-proxy
     async () => {
       const ctrl = new AbortController();
       setTimeout(() => ctrl.abort(), 6000);
-      for (const path of ['/.netlify/functions/rss-proxy', '/rss-proxy']) {
+      for (const path of ['/rss-proxy']) {
         try {
           const r = await fetch(`${path}?url=${encodeURIComponent(feedUrl)}`, { signal: ctrl.signal });
           if (r.ok) { const t = await r.text(); if (t && t.length > 100) return t; }
@@ -2018,16 +2065,40 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Blog — fetch from educational RSS sources
   const grid = document.getElementById('blog-grid');
   grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:2rem;color:#94a3b8;">Loading articles from educational sources…</div>';
-  allBlogArticles = await fetchDynamicBlogs();
+  const live = await fetchDynamicBlogs();
+  // Guarantee a minimum of 10 articles always: top up live results with the
+  // curated static list (deduped by URL) so the section is never near-empty
+  // when RSS feeds rate-limit or fail.
+  allBlogArticles = topUpBlogs(live, 10);
   archiveSave(allBlogArticles, 'blog');
-  if (allBlogArticles.length > 0) {
-    renderDynamicBlogPage(true);
-  } else {
-    // Fallback to static curated list
-    ALL_BLOGS.forEach((b, i) => grid.appendChild(renderBlogCard(b)));
-    grid.querySelector('div[style*="text-align:center"]') && grid.querySelector('div[style*="text-align:center"]').remove();
-  }
+  renderDynamicBlogPage(true);
 });
+
+// Convert a curated ALL_BLOGS entry into the dynamic-card shape.
+function staticBlogToDynamic(b) {
+  let iso = b.date;
+  const d = new Date(b.date);
+  if (!isNaN(d)) iso = d.toISOString();
+  return { title: b.title, desc: b.desc, date: iso, url: b.url, src: domainOf(b.url) };
+}
+
+// Returns live articles, topped up from the curated list until at least `min`,
+// deduped by URL. Live articles always come first (freshest).
+function topUpBlogs(live, min) {
+  const out = [];
+  const seen = new Set();
+  const push = (item) => {
+    const key = (item.url || '').replace(/\/$/, '');
+    if (!item.url || seen.has(key)) return;
+    seen.add(key);
+    out.push(item);
+  };
+  (live || []).forEach(push);
+  if (out.length < Math.max(min, 6)) {
+    ALL_BLOGS.map(staticBlogToDynamic).forEach(push);
+  }
+  return out;
+}
 // Instead of unreliable proxy-based checking (which causes false "broken" badges),
 // we maintain a whitelist of trusted domains. All curated blog articles use these.
 const TRUSTED_DOMAINS = [
@@ -2084,14 +2155,14 @@ function renderBlogPage(reset) {
 
 // loadMoreBlogs handled above by renderDynamicBlogPage
 
-// ── NETLIFY FORM SUBMIT ────────────────────────────────
+// ── SUBSCRIBE (Cloudflare Pages Function) ─────────────
 function handleSubscribe(e) {
   e.preventDefault();
-  const emailEl  = document.getElementById('email-input');
-  const btn      = document.getElementById('subscribe-btn');
-  const successEl= document.getElementById('success-msg');
-  const errorEl  = document.getElementById('error-msg');
-  const email    = emailEl.value.trim();
+  const emailEl   = document.getElementById('email-input');
+  const btn       = document.getElementById('subscribe-btn');
+  const successEl = document.getElementById('success-msg');
+  const errorEl   = document.getElementById('error-msg');
+  const email     = emailEl.value.trim();
 
   // Reset
   emailEl.style.borderColor = '#e2e8f0';
@@ -2105,28 +2176,30 @@ function handleSubscribe(e) {
     return;
   }
 
-  btn.textContent = 'Subscribing…';
+  btn.textContent = 'Subscribing\u2026';
   btn.disabled = true;
 
-  // Store locally (works everywhere)
+  // Store locally as immediate fallback
   try {
     const subs = JSON.parse(localStorage.getItem('pai_subscribers') || '[]');
     if (!subs.includes(email)) { subs.push(email); localStorage.setItem('pai_subscribers', JSON.stringify(subs)); }
-  } catch(e) {}
+  } catch(err) {}
 
-  // Also try Netlify form in background (only fires when deployed on Netlify)
-  fetch('/', {
+  // Send to Cloudflare Pages Function /subscribe (stores in KV)
+  fetch('/subscribe', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: new URLSearchParams({ 'form-name': 'newsletter', 'email': email }).toString()
-  }).catch(() => {});
-
-  // Always show success
-  successEl.style.display = 'block';
-  btn.textContent = '✓ Subscribed!';
-  btn.style.background = '#16a34a';
-  emailEl.value = '';
-  btn.disabled = false;
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email })
+  })
+  .then(r => r.json())
+  .catch(() => ({ success: true })) // graceful fallback — localStorage already saved it
+  .then(() => {
+    successEl.style.display = 'block';
+    btn.textContent = '\u2713 Subscribed!';
+    btn.style.background = '#16a34a';
+    emailEl.value = '';
+    btn.disabled = false;
+  });
 }
 function filterTools(cat, btn) {
   document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
@@ -2143,6 +2216,26 @@ window.addEventListener('scroll', () => {
   let current='';
   sections.forEach(s=>{ if(window.scrollY>=s.offsetTop-100) current=s.id; });
   navLinks.forEach(a=>{ a.style.color = a.getAttribute('href')==='#'+current?'#2563eb':''; });
+});
+
+// ── Mobile menu toggle ─────────────────────────────────
+function toggleMobileNav() {
+  const nav = document.getElementById('site-nav');
+  const open = nav.classList.toggle('open');
+  document.getElementById('nav-toggle').setAttribute('aria-expanded', open ? 'true' : 'false');
+}
+function closeMobileNav() {
+  const nav = document.getElementById('site-nav');
+  nav.classList.remove('open');
+  document.getElementById('nav-toggle').setAttribute('aria-expanded', 'false');
+}
+// Close the menu after tapping any link (anchor jumps + page links)
+document.querySelectorAll('#nav-links a').forEach(a =>
+  a.addEventListener('click', closeMobileNav));
+// Close when tapping outside the open menu
+document.addEventListener('click', (e) => {
+  const nav = document.getElementById('site-nav');
+  if (nav.classList.contains('open') && !nav.contains(e.target)) closeMobileNav();
 });
 
 // ── Init blogs after DOM ready ─────────────────────────
@@ -2174,10 +2267,10 @@ window.addEventListener('scroll', () => {
 <script>
 // ── USER DATA STORAGE ──────────────────────────────────
 // Stores saved/liked/history per user email in localStorage
-// When Netlify Identity is set up, data is keyed by user email
+// Keyed by the signed-in account's email
 
 const USER_KEY = 'pai_user';
-let currentUser = null; // set when logged in via Netlify Identity
+let currentUser = null; // set when logged in via the /auth backend
 
 function userDataGet() {
   try {
@@ -2376,7 +2469,7 @@ function renderPanelTab(tab) {
   });
 }
 
-// ── NETLIFY IDENTITY SETUP ─────────────────────────────
+// ── NAV USER STATE ─────────────────────────────────────
 function updateNavForUser(user) {
   currentUser = user;
   const btn   = document.getElementById('nav-user-btn');
@@ -2405,9 +2498,37 @@ function updateNavForUser(user) {
 }
 
 // ── CUSTOM AUTH SYSTEM ─────────────────────────────────
+// Backend-first: talks to the /auth Cloudflare Function (KV-backed) so
+// accounts + sessions sync across EVERY device. Falls back to local-only
+// storage when the backend isn't reachable (e.g. local preview).
 const USERS_DB_KEY   = 'pai_users_db';
 const SESSION_DB_KEY = 'pai_session_db';
+const AUTH_TOKEN_KEY = 'pai_token';
+const AUTH_ENDPOINT  = '/auth';
 let authTab = 'login';
+
+// Calls the backend. Throws an Error; err.offline === true means the backend
+// is unavailable (network error / not deployed / KV missing) → use local fallback.
+async function apiAuth(action, payload) {
+  let res;
+  try {
+    res = await fetch(AUTH_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action, ...payload }),
+    });
+  } catch (e) {
+    const err = new Error('offline'); err.offline = true; throw err;
+  }
+  // 404/405 → function not deployed; 5xx → backend/KV not configured
+  if (res.status === 404 || res.status === 405 || res.status >= 500) {
+    const err = new Error('offline'); err.offline = true; throw err;
+  }
+  let data = {};
+  try { data = await res.json(); } catch (e) {}
+  if (!res.ok) { const err = new Error(data.error || 'Request failed'); err.offline = false; throw err; }
+  return data;
+}
 
 function getUsers()          { try { return JSON.parse(localStorage.getItem(USERS_DB_KEY)||'[]'); } catch(e) { return []; } }
 function saveUsers(u)        { try { localStorage.setItem(USERS_DB_KEY, JSON.stringify(u)); } catch(e) {} }
@@ -2456,64 +2577,73 @@ function switchAuthTab(tab) {
   document.getElementById('auth-error-box').style.display = 'none';
 }
 
-function handleAuthSubmit(e) {
+async function handleAuthSubmit(e) {
   e.preventDefault();
   const email    = document.getElementById('auth-email').value.trim().toLowerCase();
   const pass     = document.getElementById('auth-pass').value;
   const name     = document.getElementById('auth-name').value.trim();
   const errBox   = document.getElementById('auth-error-box');
   const submitBtn = document.getElementById('auth-submit');
+  const isLogin  = authTab === 'login';
   errBox.style.display = 'none';
   submitBtn.disabled = true;
-  submitBtn.textContent = authTab === 'login' ? 'Signing in…' : 'Creating account…';
+  submitBtn.textContent = isLogin ? 'Signing in…' : 'Creating account…';
 
-  setTimeout(() => {
+  const fail = (msg) => {
+    errBox.textContent = msg;
+    errBox.style.display = 'block';
+    submitBtn.disabled = false;
+    submitBtn.textContent = isLogin ? 'Sign In' : 'Create Account';
+  };
+
+  // Client-side guards (mirror the server)
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return fail('Please enter a valid email address.');
+  if (pass.length < 6) return fail('Password must be at least 6 characters.');
+  if (!isLogin && !name) return fail('Please enter your name.');
+
+  const succeed = (session) => {
+    currentUser = session;
+    storeSession(session);            // local cache for instant restore
+    updateNavForUser(session);
+    closeAuthModal();
+    showToast(isLogin
+      ? '👋 Welcome back, ' + (session.name?.split(' ')[0] || email.split('@')[0]) + '!'
+      : '🎉 Welcome, ' + (session.name?.split(' ')[0] || email.split('@')[0]) + '! Account created.');
+    setTimeout(openUserPanel, 350);
+  };
+
+  try {
+    // ── Backend (syncs across devices) ──────────────────
+    const data = await apiAuth(isLogin ? 'login' : 'signup', { email, password: pass, name });
+    if (data.token) localStorage.setItem(AUTH_TOKEN_KEY, data.token);
+    succeed(data.user || { email, name });
+  } catch (err) {
+    if (!err.offline) { return fail(err.message); }   // real auth error (wrong pw, exists, …)
+
+    // ── Local fallback (backend unavailable, e.g. preview) ──
     const users = getUsers();
-    if (authTab === 'login') {
+    if (isLogin) {
       const user = users.find(u => u.email === email);
       if (!user || user.ph !== hashStr(pass)) {
-        errBox.textContent = 'Wrong email or password. New here? Create an account above.';
-        errBox.style.display = 'block';
-        submitBtn.disabled = false;
-        submitBtn.textContent = 'Sign In';
-        return;
+        return fail('Wrong email or password. New here? Create an account above.');
       }
-      const session = { email: user.email, name: user.name };
-      storeSession(session);
-      currentUser = session;
-      updateNavForUser(session);
-      closeAuthModal();
-      showToast('👋 Welcome back, ' + (user.name?.split(' ')[0] || email.split('@')[0]) + '!');
-      setTimeout(openUserPanel, 350);
+      succeed({ email: user.email, name: user.name });
     } else {
-      if (!name) {
-        errBox.textContent = 'Please enter your name.';
-        errBox.style.display = 'block';
-        submitBtn.disabled = false;
-        submitBtn.textContent = 'Create Account';
-        return;
-      }
       if (users.find(u => u.email === email)) {
-        errBox.textContent = 'Account already exists with this email — sign in instead.';
-        errBox.style.display = 'block';
-        submitBtn.disabled = false;
         switchAuthTab('login');
-        return;
+        return fail('Account already exists with this email — sign in instead.');
       }
       const newUser = { email, name, ph: hashStr(pass), joinedAt: Date.now() };
       saveUsers([...users, newUser]);
-      const session = { email: newUser.email, name: newUser.name };
-      storeSession(session);
-      currentUser = session;
-      updateNavForUser(session);
-      closeAuthModal();
-      showToast('🎉 Welcome, ' + name.split(' ')[0] + '! Account created.');
-      setTimeout(openUserPanel, 350);
+      succeed({ email, name });
     }
-  }, 380);
+  }
 }
 
-function signOut() {
+async function signOut() {
+  const token = localStorage.getItem(AUTH_TOKEN_KEY);
+  if (token) { try { await apiAuth('logout', { token }); } catch (e) {} }
+  localStorage.removeItem(AUTH_TOKEN_KEY);
   clearStoredSession();
   currentUser = null;
   updateNavForUser(null);
@@ -2521,13 +2651,30 @@ function signOut() {
   showToast('Signed out successfully');
 }
 
-// Restore session on page load
-(function restoreSession() {
-  const s = getStoredSession();
-  if (s) {
+// Restore session on page load — re-validate token with backend so a session
+// created on another device stays valid here.
+(async function restoreSession() {
+  const apply = (s) => {
     currentUser = s;
-    document.addEventListener('DOMContentLoaded', () => updateNavForUser(s));
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', () => updateNavForUser(s));
+    } else {
+      updateNavForUser(s);
+    }
+  };
+  const token = localStorage.getItem(AUTH_TOKEN_KEY);
+  if (token) {
+    try {
+      const data = await apiAuth('session', { token });
+      storeSession(data.user);
+      return apply(data.user);
+    } catch (err) {
+      if (!err.offline) { localStorage.removeItem(AUTH_TOKEN_KEY); clearStoredSession(); }
+      // offline → fall through to cached session below
+    }
   }
+  const s = getStoredSession();
+  if (s) apply(s);
 })();
 
 // ── PATCH renderCard to add save/like buttons ──────────

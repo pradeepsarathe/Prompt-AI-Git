@@ -24,6 +24,13 @@
   .nav-links { display: flex; gap: 2rem; list-style: none; }
   .nav-links a { font-size: 0.9rem; font-weight: 500; color: #475569; transition: color 0.2s; }
   .nav-links a:hover, .nav-links a.active { color: var(--accent); }
+  .nav-cta { background: var(--accent); color: white !important; padding: 7px 18px; border-radius: 8px; }
+  .nav-toggle { display: none; background: none; border: none; cursor: pointer; flex-direction: column; justify-content: center; gap: 5px; width: 42px; height: 42px; padding: 9px; border-radius: 8px; }
+  .nav-toggle:hover { background: var(--surface); }
+  .nav-toggle span { display: block; width: 22px; height: 2px; border-radius: 2px; background: var(--text); transition: transform 0.28s ease, opacity 0.2s ease; }
+  #site-nav.open .nav-toggle span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+  #site-nav.open .nav-toggle span:nth-child(2) { opacity: 0; }
+  #site-nav.open .nav-toggle span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
 
   /* HEADER */
   .archive-header { background: var(--navy); padding: 3.5rem 2rem 3rem; }
@@ -76,23 +83,44 @@
   .load-more-btn { background: none; border: 1px solid var(--border); padding: 10px 28px; border-radius: 8px; font-size: 0.9rem; font-weight: 500; cursor: pointer; color: var(--accent); font-family: 'DM Sans', sans-serif; transition: all 0.2s; }
   .load-more-btn:hover { background: var(--accent-light); }
 
+  @media (max-width: 900px) {
+    .nav-toggle { display: flex; }
+    .nav-links {
+      position: absolute; top: 64px; left: 0; right: 0;
+      flex-direction: column; align-items: stretch; gap: 0;
+      background: #ffffff; border-top: 1px solid var(--border);
+      box-shadow: 0 18px 44px rgba(10,22,40,0.14);
+      padding: 6px 0; margin: 0;
+      max-height: 0; overflow: hidden; opacity: 0; pointer-events: none;
+      transition: max-height 0.32s ease, opacity 0.22s ease;
+    }
+    #site-nav.open .nav-links { max-height: calc(100vh - 64px); overflow-y: auto; opacity: 1; pointer-events: auto; }
+    .nav-links li { width: 100%; }
+    .nav-links li a { display: block; padding: 14px 26px; font-size: 1rem; border-bottom: 1px solid var(--surface); }
+    .nav-links li a:hover { background: var(--surface); }
+    .nav-cta { display: block; text-align: center; margin: 12px 26px 8px; padding: 13px 20px !important; border-bottom: none !important; }
+  }
   @media (max-width: 600px) {
-    .nav-links { display: none; }
     .archive-header h1 { font-size: 1.8rem; }
   }
 </style>
 </head>
 <body>
 
-<nav>
+<nav id="site-nav">
   <div class="nav-inner">
     <a href="/" class="nav-logo"><span class="logo-dot"></span> PromptAI</a>
-    <ul class="nav-links">
+    <button class="nav-toggle" id="nav-toggle" onclick="toggleMobileNav()" aria-label="Toggle menu" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+    <ul class="nav-links" id="nav-links">
       <li><a href="/#news">News</a></li>
-      <li><a href="/#papers">Papers</a></li>
-      <li><a href="/#blog">Blog</a></li>
+      <li><a href="/#blog">Blogs</a></li>
+      <li><a href="/education.html">AI Education</a></li>
+      <li><a href="/#tools">Tools</a></li>
       <li><a href="/archive.html" class="active">Archive</a></li>
-      <li><a href="/#newsletter" style="background:#2563eb;color:white;padding:7px 18px;border-radius:8px;">Subscribe</a></li>
+      <li><a href="/#about">About</a></li>
+      <li><a href="/#newsletter" class="nav-cta">Subscribe</a></li>
     </ul>
   </div>
 </nav>
@@ -317,6 +345,22 @@ filtered   = [...allArchive].sort((a,b) => (b.savedAt||0) - (a.savedAt||0));
 updateStats();
 buildSourceFilters();
 renderArchive(true);
+
+// ── Mobile menu ──
+function toggleMobileNav() {
+  const nav = document.getElementById('site-nav');
+  const open = nav.classList.toggle('open');
+  document.getElementById('nav-toggle').setAttribute('aria-expanded', open ? 'true' : 'false');
+}
+function closeMobileNav() {
+  document.getElementById('site-nav').classList.remove('open');
+  document.getElementById('nav-toggle').setAttribute('aria-expanded', 'false');
+}
+document.querySelectorAll('#nav-links a').forEach(a => a.addEventListener('click', closeMobileNav));
+document.addEventListener('click', (e) => {
+  const nav = document.getElementById('site-nav');
+  if (nav.classList.contains('open') && !nav.contains(e.target)) closeMobileNav();
+});
 </script>
 </body>
 </html>

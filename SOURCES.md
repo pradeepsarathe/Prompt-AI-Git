@@ -121,8 +121,8 @@ Status: ✅ Active | 🔄 Rotate in | ⚠️ Unreliable | ❌ Blocked/Paywalled
 3. Add to `BLOG_FEEDS` array in `index.html` with appropriate `src` key
 4. Add source badge in `sourceBadge()` map
 5. Add colour in `catColor()` map
-6. Add to `ALLOWED` list in `netlify/functions/rss-proxy.js`
-7. Redeploy to Netlify
+6. Add to `ALLOWED` list in `functions/rss-proxy.js`
+7. Redeploy to Cloudflare Pages
 
 ---
 
