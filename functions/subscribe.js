@@ -1,7 +1,10 @@
 // functions/subscribe.js
 // Cloudflare Pages Function — Newsletter subscribe endpoint
-// Stores emails in Cloudflare KV (namespace binding: SUBSCRIBERS)
+// Stores emails in Cloudflare KV (namespace binding: SUBSCRIBERS) and sends the
+// new subscriber an immediate "latest blogs" email via Resend.
 // Setup: Pages → Settings → Functions → KV namespace bindings → add SUBSCRIBERS
+
+import { fetchLatestBlogs, blogDigestHtml } from './send-digest.js';
 
 export async function onRequest(context) {
   const { request, env } = context;
@@ -61,10 +64,17 @@ export async function onRequest(context) {
       }
     }
 
-    // Send the welcome email (Resend). Only for new subscribers, only if
+    // Send the latest-blogs email (Resend). Only for new subscribers, only if
     // RESEND_API_KEY + FROM_EMAIL are configured. Never blocks the response.
     if (isNew && env.RESEND_API_KEY && env.FROM_EMAIL) {
       try {
+        const blogs = await fetchLatestBlogs();
+        const dateStr = new Date().toLocaleString('en-US', {
+          month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit',
+        });
+        const html = blogs.length
+          ? blogDigestHtml({ blogs, dateStr, email })
+          : welcomeHtml(email); // fallback if feeds are temporarily empty
         await fetch('https://api.resend.com/emails', {
           method: 'POST',
           headers: {
@@ -72,10 +82,12 @@ export async function onRequest(context) {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            from: env.FROM_EMAIL,                 // e.g. "PromptAI <hello@promptai.in>"
+            from: env.FROM_EMAIL,                 // e.g. "PromptAI <blogs@promptai.in>"
             to: [email],
-            subject: "Welcome to PromptAI 🎉 Your AI digest starts Tuesday",
-            html: welcomeHtml(email),
+            subject: blogs.length
+              ? `📚 Welcome to PromptAI — latest AI blogs inside`
+              : `Welcome to PromptAI 🎉`,
+            html,
           }),
         });
       } catch (e) { /* non-fatal — subscription already saved */ }
