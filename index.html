@@ -1407,7 +1407,10 @@ function parseRSS(xml, src, maxItems = 10) {
   } catch(e) { return []; }
 }
 
-// ── FETCH ONE RSS FEED (rss2json-first, then XML proxy fallback) ────
+// ── FETCH ONE RSS FEED (server-proxy-first, rss2json fallback) ────
+// The Cloudflare /rss-proxy (server-side fetch + 30-min edge cache) is tried
+// FIRST because it's reliable and fast; rss2json is only a fallback now (its
+// free tier rate-limits and was making feeds load slowly / inconsistently).
 async function fetchRSS(feedUrl, src, maxItems = 10, ttl = CACHE_TTL_NEWS) {
   const cacheKey = src + '_' + feedUrl.slice(-20).replace(/[^a-z0-9]/gi,'_');
   const cached = cacheGet(cacheKey, ttl);
@@ -1415,7 +1418,16 @@ async function fetchRSS(feedUrl, src, maxItems = 10, ttl = CACHE_TTL_NEWS) {
 
   const aiKw = /\b(AI|artificial intelligence|machine learning|LLM|GPT|chatbot|deep learning|neural|openai|anthropic|gemini|llama|mistral|robotics|automation|transformer|diffusion|agent|RAG|model)\b/i;
 
-  // Strategy 1: rss2json.com — dedicated RSS-to-JSON service, no CORS issues
+  // Strategy 1: server-side XML proxy (/rss-proxy) → parseRSS. Reliable + cached.
+  try {
+    const xml = await fetchWithProxyRace(feedUrl);
+    if (xml) {
+      const results = parseRSS(xml, src, maxItems);
+      if (results.length > 0) { cacheSet(cacheKey, results, ttl); return results; }
+    }
+  } catch(e) { /* fall through to rss2json */ }
+
+  // Strategy 2: rss2json.com fallback (for feeds the proxy can't reach)
   try {
     const ctrl = new AbortController();
     setTimeout(() => ctrl.abort(), 9000);
@@ -1439,14 +1451,9 @@ async function fetchRSS(feedUrl, src, maxItems = 10, ttl = CACHE_TTL_NEWS) {
         .slice(0, maxItems);
       if (results.length > 0) { cacheSet(cacheKey, results, ttl); return results; }
     }
-  } catch(e) { /* fall through to XML proxy */ }
+  } catch(e) { /* both strategies failed */ }
 
-  // Strategy 2: XML proxies fallback
-  const xml = await fetchWithProxyRace(feedUrl);
-  if (!xml) return [];
-  const results = parseRSS(xml, src, maxItems);
-  if (results.length > 0) cacheSet(cacheKey, results, ttl);
-  return results;
+  return [];
 }
 
 // ── FETCH: HACKER NEWS ────────────────────────────────
@@ -2303,6 +2310,7 @@ document.addEventListener('click', (e) => {
   <div class="panel-tabs">
     <button class="panel-tab active" onclick="switchPanelTab('saved',this)">🔖 Saved</button>
     <button class="panel-tab" onclick="switchPanelTab('liked',this)">❤️ Liked</button>
+    <button class="panel-tab" onclick="switchPanelTab('learning',this)">🎓 Learning</button>
     <button class="panel-tab" onclick="switchPanelTab('history',this)">📖 History</button>
     <button class="panel-tab" onclick="switchPanelTab('account',this)">⚙️ Account</button>
   </div>
@@ -2322,8 +2330,10 @@ let currentUser = null; // set when logged in via the /auth backend
 function userDataGet() {
   try {
     const key = USER_KEY + (currentUser ? '_' + btoa(currentUser.email).slice(0,12) : '_guest');
-    return JSON.parse(localStorage.getItem(key) || '{"saved":[],"liked":[],"history":[]}');
-  } catch(e) { return {saved:[],liked:[],history:[]}; }
+    const d = JSON.parse(localStorage.getItem(key) || '{"saved":[],"liked":[],"history":[],"learning":[]}');
+    d.saved = d.saved || []; d.liked = d.liked || []; d.history = d.history || []; d.learning = d.learning || [];
+    return d;
+  } catch(e) { return {saved:[],liked:[],history:[],learning:[]}; }
 }
 
 function userDataSave(data) {
@@ -2372,6 +2382,7 @@ async function pullUserData() {
     saved:   mergeBy(local.saved,   remote.saved,   'savedAt'),
     liked:   mergeBy(local.liked,   remote.liked,   'likedAt'),
     history: mergeBy(local.history, remote.history, 'readAt').slice(0, 200),
+    learning: mergeBy(local.learning, remote.learning, 'learnedAt').slice(0, 200),
   };
   // write merged result locally + back to server so both ends converge
   try {
@@ -2522,7 +2533,7 @@ function renderPanelTab(tab) {
           <div style="font-size:0.78rem;color:#94a3b8;margin-bottom:4px;">Signed in as</div>
           <div style="font-weight:600;color:#0f172a;">${currentUser?.email || 'Guest'}</div>
         </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.75rem;margin-bottom:1.25rem;">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;margin-bottom:1.25rem;">
           <div style="background:#eff6ff;border-radius:10px;padding:0.75rem;text-align:center;">
             <div style="font-size:1.4rem;font-weight:700;color:#2563eb;">${data.saved.length}</div>
             <div style="font-size:0.72rem;color:#64748b;">Saved</div>
@@ -2530,6 +2541,10 @@ function renderPanelTab(tab) {
           <div style="background:#fef2f2;border-radius:10px;padding:0.75rem;text-align:center;">
             <div style="font-size:1.4rem;font-weight:700;color:#dc2626;">${data.liked.length}</div>
             <div style="font-size:0.72rem;color:#64748b;">Liked</div>
+          </div>
+          <div style="background:#faf5ff;border-radius:10px;padding:0.75rem;text-align:center;">
+            <div style="font-size:1.4rem;font-weight:700;color:#7c3aed;">${data.learning.length}</div>
+            <div style="font-size:0.72rem;color:#64748b;">Learning</div>
           </div>
           <div style="background:#f0fdf4;border-radius:10px;padding:0.75rem;text-align:center;">
             <div style="font-size:1.4rem;font-weight:700;color:#16a34a;">${data.history.length}</div>
@@ -2541,11 +2556,11 @@ function renderPanelTab(tab) {
     return;
   }
 
-  const items = tab === 'saved' ? data.saved : tab === 'liked' ? data.liked : data.history;
-  const emptyMsg = { saved:'No saved articles yet. Click 🔖 on any article to save it.', liked:'No liked articles yet. Click ♡ on any article to like it.', history:'No reading history yet. Start reading articles!' };
+  const items = tab === 'saved' ? data.saved : tab === 'liked' ? data.liked : tab === 'learning' ? data.learning : data.history;
+  const emptyMsg = { saved:'No saved articles yet. Click 🔖 on any article to save it.', liked:'No liked articles yet. Click ♡ on any article to like it.', learning:'No learning yet. Open any course or guide on the AI Education page and it shows up here.', history:'No reading history yet. Start reading articles!' };
 
   if (items.length === 0) {
-    body.innerHTML = `<div class="empty-panel"><div class="icon">${tab==='saved'?'🔖':tab==='liked'?'❤️':'📖'}</div><p>${emptyMsg[tab]}</p></div>`;
+    body.innerHTML = `<div class="empty-panel"><div class="icon">${tab==='saved'?'🔖':tab==='liked'?'❤️':tab==='learning'?'🎓':'📖'}</div><p>${emptyMsg[tab]}</p></div>`;
     return;
   }
 
@@ -2553,7 +2568,7 @@ function renderPanelTab(tab) {
   items.forEach(item => {
     const card = document.createElement('div');
     card.className = 'saved-card';
-    const ts = item.savedAt || item.likedAt || item.readAt;
+    const ts = item.savedAt || item.likedAt || item.readAt || item.learnedAt;
     const timeStr = ts ? new Date(ts).toLocaleDateString('en-IN',{day:'numeric',month:'short'}) : '';
     card.innerHTML = `
       <div class="saved-card-title">${item.title || 'Untitled'}</div>
@@ -2571,13 +2586,21 @@ function renderPanelTab(tab) {
 }
 
 // ── NAV USER STATE ─────────────────────────────────────
+// Initials are computed ONE way everywhere (here + the sub-pages) so the avatar
+// never flips between "P" and "PR": first letter of first + last name → "PS".
+function userInitials(u) {
+  const n = ((u && (u.name || u.email)) || '?').trim();
+  const parts = n.split(/\s+/).filter(Boolean);
+  if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
+  return n.slice(0, 2).toUpperCase();
+}
 function updateNavForUser(user) {
   currentUser = user;
   const btn   = document.getElementById('nav-user-btn');
   const label = document.getElementById('nav-user-label');
   const icon  = document.getElementById('nav-user-icon');
   if (user) {
-    const initials = (user.name || user.email || '?').slice(0,2).toUpperCase();
+    const initials = userInitials(user);
     const firstName = (user.name || user.email || '').split(' ')[0];
     // Clean look: white pill with coloured avatar circle + dark name
     btn.className = 'user-btn';
