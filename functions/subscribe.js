@@ -65,9 +65,12 @@ export async function onRequest(context) {
       }
     }
 
-    // Send the latest-blogs email (Resend). Only for new subscribers, only if
-    // RESEND_API_KEY + FROM_EMAIL are configured. Never blocks the response.
-    if (isNew && env.RESEND_API_KEY && env.FROM_EMAIL) {
+    // Send the confirmation briefing (Resend) on EVERY subscribe click, as long
+    // as RESEND_API_KEY + FROM_EMAIL are configured. Never blocks the response.
+    // We also report back whether it actually sent, to make debugging easy.
+    let emailSent = false;
+    let emailError = null;
+    if (env.RESEND_API_KEY && env.FROM_EMAIL) {
       try {
         const content = await fetchDigestContent(); // { news, blogs, paper }
         const hasContent = content.news.length + content.blogs.length > 0 || content.paper;
@@ -77,7 +80,7 @@ export async function onRequest(context) {
         const html = hasContent
           ? digestHtml({ ...content, dateStr, email })
           : welcomeHtml(email); // fallback if feeds are temporarily empty
-        await fetch('https://api.resend.com/emails', {
+        const resp = await fetch('https://api.resend.com/emails', {
           method: 'POST',
           headers: {
             'Authorization': 'Bearer ' + env.RESEND_API_KEY,
@@ -87,16 +90,21 @@ export async function onRequest(context) {
             from: env.FROM_EMAIL,                 // e.g. "PromptAI <briefing@promptai.in>"
             to: [email],
             subject: hasContent
-              ? `✅ You're subscribed — your first PromptAI briefing inside`
+              ? `✅ You're subscribed — your PromptAI briefing inside`
               : `Welcome to PromptAI 🎉`,
             html,
           }),
         });
-      } catch (e) { /* non-fatal — subscription already saved */ }
+        if (resp.ok) { emailSent = true; }
+        else { emailError = (await resp.text()).slice(0, 300); } // Resend's reason
+      } catch (e) { emailError = e.message; }
+    } else {
+      emailError = 'RESEND_API_KEY / FROM_EMAIL not configured';
     }
 
-    // Always succeed — graceful fallback even without KV
-    return new Response(JSON.stringify({ success: true, message: 'Subscribed!', isNew }), {
+    // Always succeed for the UI — but include diagnostics so you can see whether
+    // the email actually went out (check the Network tab / curl response).
+    return new Response(JSON.stringify({ success: true, message: 'Subscribed!', isNew, emailSent, emailError }), {
       status: 200,
       headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
     });
