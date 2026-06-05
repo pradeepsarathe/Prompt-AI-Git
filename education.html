@@ -46,6 +46,10 @@
   .nav-links a:hover, .nav-links a.active { color: var(--accent); }
   .nav-cta { background: var(--accent); color: white !important; padding: 8px 20px; border-radius: var(--radius); font-size: 0.88rem !important; font-weight: 500 !important; transition: background 0.2s !important; }
   .nav-cta:hover { background: #1d4ed8 !important; }
+  /* account button — identical to home so the header never shifts between pages */
+  .user-btn { display:flex;align-items:center;gap:8px;padding:7px 16px;border-radius:8px;font-size:0.85rem;font-weight:500;cursor:pointer;border:none;font-family:'DM Sans',sans-serif;transition:all 0.2s; }
+  .user-btn.login { background:#eff6ff;color:#2563eb;border:1px solid #bfdbfe; }
+  .user-btn.login:hover { background:#dbeafe; }
 
   /* Hamburger */
   .nav-toggle { display: none; background: none; border: none; cursor: pointer; flex-direction: column; justify-content: center; gap: 5px; width: 42px; height: 42px; padding: 9px; border-radius: 8px; }
@@ -186,12 +190,14 @@
     </button>
     <ul class="nav-links" id="nav-links">
       <li><a href="index.html#news">News</a></li>
+      <li><a href="index.html#papers">Research</a></li>
       <li><a href="index.html#blog">Blogs</a></li>
       <li><a href="education.html" class="active">AI Education</a></li>
       <li><a href="index.html#tools">Tools</a></li>
       <li><a href="archive.html">Archive</a></li>
       <li><a href="index.html#about">About</a></li>
       <li><a href="index.html#newsletter" class="nav-cta">Subscribe</a></li>
+      <li><button id="nav-user-btn" class="user-btn login" onclick="goAccount()"><span id="nav-user-icon">👤</span><span id="nav-user-label">Sign In</span></button></li>
     </ul>
   </div>
 </nav>
@@ -587,6 +593,24 @@ document.addEventListener('click', (e) => {
   const nav = document.getElementById('site-nav');
   if (nav.classList.contains('open') && !nav.contains(e.target)) closeMobileNav();
 });
+
+// ── nav account button (matches home; keeps the header identical) ──
+function goAccount() {
+  let s = null; try { s = JSON.parse(localStorage.getItem('pai_session_db') || 'null'); } catch(e) {}
+  location.href = s ? 'index.html' : 'index.html#account';
+}
+(function initNavUser() {
+  let s = null; try { s = JSON.parse(localStorage.getItem('pai_session_db') || 'null'); } catch(e) {}
+  const btn = document.getElementById('nav-user-btn');
+  const label = document.getElementById('nav-user-label');
+  const icon = document.getElementById('nav-user-icon');
+  if (!btn || !s) return;
+  const first = (s.name || s.email || '').split(' ')[0] || 'Account';
+  btn.className = 'user-btn';
+  btn.style.cssText = "background:#fff;border:1.5px solid #e2e8f0;color:#0f172a;display:flex;align-items:center;gap:7px;padding:5px 12px 5px 5px;border-radius:20px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:0.85rem;font-weight:600;";
+  if (icon) icon.outerHTML = '<span style="width:26px;height:26px;border-radius:50%;background:#2563eb;color:#fff;display:flex;align-items:center;justify-content:center;font-size:0.8rem;font-weight:700;">' + first.charAt(0).toUpperCase() + '</span>';
+  if (label) label.textContent = first;
+})();
 </script>
 </body>
 </html>

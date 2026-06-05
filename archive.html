@@ -25,6 +25,10 @@
   .nav-links a { font-size: 0.9rem; font-weight: 500; color: #475569; transition: color 0.2s; }
   .nav-links a:hover, .nav-links a.active { color: var(--accent); }
   .nav-cta { background: var(--accent); color: white !important; padding: 7px 18px; border-radius: 8px; }
+  /* account button — kept identical to the home page so the nav never shifts */
+  .user-btn { display:flex;align-items:center;gap:8px;padding:7px 16px;border-radius:8px;font-size:0.85rem;font-weight:500;cursor:pointer;border:none;font-family:'DM Sans',sans-serif;transition:all 0.2s; }
+  .user-btn.login { background:#eff6ff;color:#2563eb;border:1px solid #bfdbfe; }
+  .user-btn.login:hover { background:#dbeafe; }
   .nav-toggle { display: none; background: none; border: none; cursor: pointer; flex-direction: column; justify-content: center; gap: 5px; width: 42px; height: 42px; padding: 9px; border-radius: 8px; }
   .nav-toggle:hover { background: var(--surface); }
   .nav-toggle span { display: block; width: 22px; height: 2px; border-radius: 2px; background: var(--text); transition: transform 0.28s ease, opacity 0.2s ease; }
@@ -115,12 +119,14 @@
     </button>
     <ul class="nav-links" id="nav-links">
       <li><a href="/#news">News</a></li>
+      <li><a href="/#papers">Research</a></li>
       <li><a href="/#blog">Blogs</a></li>
       <li><a href="/education.html">AI Education</a></li>
       <li><a href="/#tools">Tools</a></li>
       <li><a href="/archive.html" class="active">Archive</a></li>
       <li><a href="/#about">About</a></li>
       <li><a href="/#newsletter" class="nav-cta">Subscribe</a></li>
+      <li><button id="nav-user-btn" class="user-btn login" onclick="goAccount()"><span id="nav-user-icon">👤</span><span id="nav-user-label">Sign In</span></button></li>
     </ul>
   </div>
 </nav>
@@ -153,6 +159,9 @@
     <option value="newest">Newest first</option>
     <option value="oldest">Oldest first</option>
     <option value="source">By source</option>
+  </select>
+  <select class="sort-select" id="jump-select" onchange="jumpToDate(this.value)" title="Jump to a date">
+    <option value="">⤓ Jump to date…</option>
   </select>
   <button class="pill" onclick="clearArchive()" style="border-color:#fecaca;color:#dc2626;">🗑 Clear archive</button>
 </div>
@@ -247,6 +256,8 @@ function renderArchive(reset) {
   Object.entries(groups).forEach(([date, items]) => {
     const group = document.createElement('div');
     group.className = 'date-group';
+    group.dataset.date = date;
+    group.id = 'dg-' + date.replace(/[^a-z0-9]/gi, '');
     group.innerHTML = `<div class="date-label">${date} <span style="color:#94a3b8;font-weight:400;font-size:0.72rem;">(${items.length} articles)</span></div>
       <div class="articles-row" id="row-${date.replace(/\s/g,'_')}"></div>`;
     container.appendChild(group);
@@ -293,6 +304,7 @@ function applyFilters() {
   else if (sort === 'source') filtered.sort((a,b) => (a.src||'').localeCompare(b.src||''));
 
   renderArchive(true);
+  populateJump();
 }
 
 function setType(type, btn) {
@@ -321,6 +333,38 @@ function buildSourceFilters() {
 
 function showMoreArchive() { renderArchive(false); }
 
+// ── JUMP TO DATE ("move to a particular news") ──────────
+function populateJump() {
+  const sel = document.getElementById('jump-select');
+  if (!sel) return;
+  const seen = new Set();
+  const labels = [];
+  filtered.forEach(item => {
+    const lbl = formatDateGroup(item.savedAt || item.ts || Date.now());
+    if (!seen.has(lbl)) { seen.add(lbl); labels.push(lbl); }
+  });
+  sel.innerHTML = '<option value="">⤓ Jump to date…</option>' +
+    labels.map(l => `<option value="${l.replace(/"/g,'')}">${l}</option>`).join('');
+}
+
+function jumpToDate(label) {
+  if (!label) return;
+  const id = 'dg-' + label.replace(/[^a-z0-9]/gi, '');
+  let guard = 0;
+  // The list is paginated — keep loading until the target group is rendered.
+  while (!document.getElementById(id) &&
+         filtered.length > archivePage * PAGE_SIZE && guard++ < 60) {
+    renderArchive(false);
+  }
+  const el = document.getElementById(id);
+  if (el) {
+    const y = el.getBoundingClientRect().top + window.pageYOffset - 80;
+    window.scrollTo({ top: y, behavior: 'smooth' });
+    el.querySelector('.date-label')?.animate(
+      [{ color: '#2563eb' }, { color: '#0f172a' }], { duration: 1200 });
+  }
+}
+
 function clearArchive() {
   if (!confirm('Clear all archived articles? This cannot be undone.')) return;
   localStorage.removeItem(ARCHIVE_KEY);
@@ -345,6 +389,50 @@ filtered   = [...allArchive].sort((a,b) => (b.savedAt||0) - (a.savedAt||0));
 updateStats();
 buildSourceFilters();
 renderArchive(true);
+populateJump();
+
+// Pull the SHARED archive from the server (same on every device) and merge it
+// with whatever this browser saw locally. The server is the source of truth for
+// the count, so it no longer jumps around (100+ → 33 …). Falls back to
+// local-only when the backend isn't reachable (preview / not yet deployed).
+async function fetchServerArchive() {
+  try {
+    const r = await fetch('/archive-data?limit=4000');
+    const data = await r.json();
+    if (data && !data.offline && Array.isArray(data.items)) return data.items;
+  } catch (e) {}
+  return null;
+}
+(async function syncServerArchive() {
+  const server = await fetchServerArchive();
+  if (!server || !server.length) return;
+  const byUrl = new Map(server.map(i => [i.url, i]));
+  allArchive.forEach(i => { if (i.url && !byUrl.has(i.url)) byUrl.set(i.url, i); });
+  allArchive = [...byUrl.values()];
+  saveArchive(allArchive); // refresh local cache to match the shared store
+  // Re-apply current filters so the view + count reflect the shared archive
+  if (typeof applyFilters === 'function') applyFilters();
+  else { filtered = [...allArchive].sort((a,b)=>(b.savedAt||0)-(a.savedAt||0)); renderArchive(true); populateJump(); }
+  updateStats();
+})();
+
+// ── nav account button (matches home; keeps the header identical) ──
+function goAccount() {
+  let s = null; try { s = JSON.parse(localStorage.getItem('pai_session_db') || 'null'); } catch(e) {}
+  location.href = s ? '/' : '/#account';
+}
+(function initNavUser() {
+  let s = null; try { s = JSON.parse(localStorage.getItem('pai_session_db') || 'null'); } catch(e) {}
+  const btn = document.getElementById('nav-user-btn');
+  const label = document.getElementById('nav-user-label');
+  const icon = document.getElementById('nav-user-icon');
+  if (!btn || !s) return;
+  const first = (s.name || s.email || '').split(' ')[0] || 'Account';
+  btn.className = 'user-btn';
+  btn.style.cssText = "background:#fff;border:1.5px solid #e2e8f0;color:#0f172a;display:flex;align-items:center;gap:7px;padding:5px 12px 5px 5px;border-radius:20px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:0.85rem;font-weight:600;";
+  if (icon) icon.outerHTML = '<span style="width:26px;height:26px;border-radius:50%;background:#2563eb;color:#fff;display:flex;align-items:center;justify-content:center;font-size:0.8rem;font-weight:700;">' + first.charAt(0).toUpperCase() + '</span>';
+  if (label) label.textContent = first;
+})();
 
 // ── Mobile menu ──
 function toggleMobileNav() {

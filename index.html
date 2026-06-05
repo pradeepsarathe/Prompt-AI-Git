@@ -616,6 +616,7 @@
     </button>
     <ul class="nav-links" id="nav-links">
       <li><a href="#news">News</a></li>
+      <li><a href="#papers">Research</a></li>
       <li><a href="#blog">Blogs</a></li>
       <li><a href="education.html">AI Education</a></li>
       <li><a href="#tools">Tools</a></li>
@@ -1092,11 +1093,16 @@ function analyticsTrackArticle(url) {
 function updateAnalyticsDisplay() {
   const d = analyticsLoad();
 
-  // Total visits across all days
-  const totalVisits = Object.values(d.visits || {}).reduce((a,b) => a+b, 0);
+  // Total visits across all days (local fallback)
+  const localTotal = Object.values(d.visits || {}).reduce((a,b) => a+b, 0);
 
-  // Today's visits
-  const todayVisits = (d.visits || {})[TODAY] || 0;
+  // Today's visits (local fallback)
+  const localToday = (d.visits || {})[TODAY] || 0;
+
+  // Prefer the GLOBAL server counter when we have it — same number on every
+  // device, never resets. Falls back to the local count offline / in preview.
+  const totalVisits = (serverStats && serverStats.totalVisitors > 0) ? serverStats.totalVisitors : localTotal;
+  const todayVisits = (serverStats && serverStats.totalVisitors > 0) ? serverStats.todayVisitors : localToday;
 
   // Average read time
   const times = d.readTimes || [];
@@ -1119,8 +1125,31 @@ function updateAnalyticsDisplay() {
   set('hero-stat-articles', articlesToday || '0');
 }
 
+// ── GLOBAL visitor counter (server-backed, /stats) ─────
+// Fixes the old per-device counter that "reset every day": the real total now
+// lives in Cloudflare KV and is shared across every device.
+let serverStats = null;
+async function syncVisitorCounter() {
+  try {
+    // Count this visit once per browser session (avoids inflating on refresh).
+    const already = sessionStorage.getItem('pai_visit_sent');
+    const r = await fetch('/stats', already ? { method: 'GET' } : {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'visit' }),
+    });
+    const data = await r.json();
+    if (!already) sessionStorage.setItem('pai_visit_sent', '1');
+    if (data && !data.offline) {
+      serverStats = data;
+      updateAnalyticsDisplay();
+    }
+  } catch (e) { /* offline → keep local fallback number */ }
+}
+
 // Init analytics on load
 analyticsInit();
+syncVisitorCounter();
 
 
 let allStories = [];
@@ -1724,6 +1753,24 @@ function archiveSave(items, type) {
       .map(i => ({ ...i, type, savedAt: Date.now() }));
     const merged = [...toAdd, ...existing].slice(0, ARCHIVE_MAX);
     localStorage.setItem(ARCHIVE_KEY, JSON.stringify(merged));
+    // Push new items to the SHARED server archive so every device sees the same
+    // history (news kept 90 days, papers/blogs forever). Best-effort.
+    if (toAdd.length) archivePush(toAdd);
+  } catch(e) {}
+}
+
+// Send freshly-seen items to the shared archive store (/archive-data).
+function archivePush(items) {
+  try {
+    const slim = items.map(i => ({
+      url: i.url, title: i.title, desc: i.desc || '', src: i.src || '',
+      type: i.type, savedAt: i.savedAt || Date.now(),
+    }));
+    fetch('/archive-data', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ items: slim }),
+    }).catch(() => {});
   } catch(e) {}
 }
 
@@ -2733,6 +2780,17 @@ async function signOut() {
   }
   const s = getStoredSession();
   if (s) apply(s);
+})();
+
+// Open the account panel when arrived from another page's nav button
+// (archive.html / education.html link here with #account or #signin).
+(function handleAccountHash() {
+  const open = () => { if (/^#(account|signin|signup)$/.test(location.hash)) {
+    try { history.replaceState(null, '', location.pathname); } catch(e) {}
+    setTimeout(toggleUserPanel, 250);
+  }};
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', open);
+  else open();
 })();
 
 // ── PATCH renderCard to add save/like buttons ──────────
