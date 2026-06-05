@@ -19,6 +19,10 @@ const ALLOWED = [
   'spectrum.ieee.org',
   'www.sciencedaily.com',
   'www.jmlr.org',
+  // News + lab research replacements
+  'www.marktechpost.com', 'www.unite.ai',
+  'www.microsoft.com', 'news.mit.edu',
+  'bair.berkeley.edu',
   // Educational blogs
   'www.fast.ai', 'distill.pub',
   'interconnects.ai',
