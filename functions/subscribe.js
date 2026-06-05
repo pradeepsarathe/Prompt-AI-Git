@@ -1,10 +1,11 @@
 // functions/subscribe.js
 // Cloudflare Pages Function — Newsletter subscribe endpoint
 // Stores emails in Cloudflare KV (namespace binding: SUBSCRIBERS) and sends the
-// new subscriber an immediate "latest blogs" email via Resend.
+// new subscriber an immediate confirmation briefing (5 news + 5 blogs + 1 paper)
+// via Resend.
 // Setup: Pages → Settings → Functions → KV namespace bindings → add SUBSCRIBERS
 
-import { fetchLatestBlogs, blogDigestHtml } from './send-digest.js';
+import { fetchDigestContent, digestHtml } from './send-digest.js';
 
 export async function onRequest(context) {
   const { request, env } = context;
@@ -68,12 +69,13 @@ export async function onRequest(context) {
     // RESEND_API_KEY + FROM_EMAIL are configured. Never blocks the response.
     if (isNew && env.RESEND_API_KEY && env.FROM_EMAIL) {
       try {
-        const blogs = await fetchLatestBlogs();
+        const content = await fetchDigestContent(); // { news, blogs, paper }
+        const hasContent = content.news.length + content.blogs.length > 0 || content.paper;
         const dateStr = new Date().toLocaleString('en-US', {
           month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit',
         });
-        const html = blogs.length
-          ? blogDigestHtml({ blogs, dateStr, email })
+        const html = hasContent
+          ? digestHtml({ ...content, dateStr, email })
           : welcomeHtml(email); // fallback if feeds are temporarily empty
         await fetch('https://api.resend.com/emails', {
           method: 'POST',
@@ -82,10 +84,10 @@ export async function onRequest(context) {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            from: env.FROM_EMAIL,                 // e.g. "PromptAI <blogs@promptai.in>"
+            from: env.FROM_EMAIL,                 // e.g. "PromptAI <briefing@promptai.in>"
             to: [email],
-            subject: blogs.length
-              ? `📚 Welcome to PromptAI — latest AI blogs inside`
+            subject: hasContent
+              ? `✅ You're subscribed — your first PromptAI briefing inside`
               : `Welcome to PromptAI 🎉`,
             html,
           }),
