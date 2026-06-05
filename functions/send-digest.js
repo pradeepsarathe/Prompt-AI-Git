@@ -48,10 +48,13 @@ export async function onRequest(context) {
     return json({ error: 'Email not configured (RESEND_API_KEY / FROM_EMAIL)' }, 503);
   }
 
+  // Everything below is wrapped so a feed/Resend hiccup returns readable JSON
+  // instead of an opaque Cloudflare 502.
+  try {
   // ── content: 5 news + 5 blogs + 1 paper ──
   const content = await fetchDigestContent();
   if (content.news.length + content.blogs.length === 0 && !content.paper) {
-    return json({ error: 'No content available right now' }, 502);
+    return json({ error: 'No content available right now (all feeds failed)' }, 200);
   }
 
   const dateStr = new Date().toLocaleString('en-US', {
@@ -77,34 +80,36 @@ export async function onRequest(context) {
   }
   if (emails.length === 0) return json({ sent: 0, message: 'No subscribers yet' });
 
-  // ── send via Resend batch (≤100 per request) ──
+  // ── send via Resend (one request per recipient; robust to a slow batch) ──
   let sent = 0;
-  for (let i = 0; i < emails.length; i += 100) {
-    const batch = emails.slice(i, i + 100).map(email => ({
-      from: env.FROM_EMAIL,
-      to: [email],
-      subject,
-      html: digestHtml({ ...content, dateStr, email }),
-    }));
+  let lastResendError = null;
+  for (const email of emails) {
     try {
-      const r = await fetch('https://api.resend.com/emails/batch', {
+      const r = await fetch('https://api.resend.com/emails', {
         method: 'POST',
         headers: { 'Authorization': 'Bearer ' + env.RESEND_API_KEY, 'Content-Type': 'application/json' },
-        body: JSON.stringify(batch),
+        body: JSON.stringify({ from: env.FROM_EMAIL, to: [email], subject, html: digestHtml({ ...content, dateStr, email }) }),
       });
-      if (r.ok) sent += batch.length;
-    } catch (e) { /* continue */ }
+      if (r.ok) sent++;
+      else lastResendError = (await r.text()).slice(0, 300);
+    } catch (e) { lastResendError = e.message; }
   }
 
-  return json({ success: true, recipients: emails.length, sent, subject,
+  return json({ success: true, recipients: emails.length, sent, subject, lastResendError,
     counts: { news: content.news.length, blogs: content.blogs.length, paper: content.paper ? 1 : 0 } });
+  } catch (err) {
+    return json({ error: 'send-digest crashed', detail: String(err && err.message || err) }, 200);
+  }
 }
 
 // ── generic feed fetch via rss2json (dodges CORS / format issues) ─────
+// Manual AbortController timeout (more portable than AbortSignal.timeout).
 async function fetchFeedItems(feed, take) {
+  const ac = new AbortController();
+  const t = setTimeout(() => ac.abort(), 7000);
   try {
     const r = await fetch('https://api.rss2json.com/v1/api.json?rss_url=' + encodeURIComponent(feed),
-      { signal: AbortSignal.timeout(8000) });
+      { signal: ac.signal });
     const data = await r.json();
     if (data.status === 'ok' && data.items?.length) {
       const src = (data.feed?.title || domainOf(feed)).replace(/\s*[-–|].*$/, '').trim();
@@ -117,7 +122,16 @@ async function fetchFeedItems(feed, take) {
       }));
     }
   } catch (e) { /* ignore */ }
+  finally { clearTimeout(t); }
   return [];
+}
+
+// Resolve a promise but never wait longer than `ms` (returns `fallback`).
+function withTimeout(promise, ms, fallback) {
+  return Promise.race([
+    promise,
+    new Promise(res => setTimeout(() => res(fallback), ms)),
+  ]);
 }
 
 async function mergeFeeds(feeds, perFeed, total) {
@@ -131,12 +145,13 @@ async function mergeFeeds(feeds, perFeed, total) {
     .slice(0, total);
 }
 
-// Pull everything the briefing needs.
+// Pull everything the briefing needs. Each section is time-boxed so one slow
+// feed can never hang the whole request (which was causing 502s).
 export async function fetchDigestContent() {
   const [news, blogs, papers] = await Promise.all([
-    mergeFeeds(NEWS_FEEDS, 5, 5),
-    mergeFeeds(BLOG_FEEDS, 4, 5),
-    mergeFeeds(PAPER_FEEDS, 4, 1),
+    withTimeout(mergeFeeds(NEWS_FEEDS, 5, 5), 9000, []),
+    withTimeout(mergeFeeds(BLOG_FEEDS, 4, 5), 9000, []),
+    withTimeout(mergeFeeds(PAPER_FEEDS, 4, 1), 9000, []),
   ]);
   return { news, blogs, paper: papers[0] || null };
 }
