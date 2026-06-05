@@ -69,8 +69,11 @@ export async function onRequest(context) {
   try {
     const response = await fetch(feedUrl, {
       headers: {
-        'User-Agent': 'PromptAI-RSS-Reader/1.0 (+https://promptai.in)',
-        'Accept': 'application/rss+xml, application/atom+xml, application/xml, text/xml, */*',
+        // Use a real browser UA — several feeds (VentureBeat, Unite.AI, etc.)
+        // sit behind WAFs that block non-browser User-Agents with a 403.
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+        'Accept': 'application/rss+xml, application/atom+xml, application/xml, text/xml, text/html, */*',
+        'Accept-Language': 'en-US,en;q=0.9',
       },
       cf: { cacheTtl: 1800, cacheEverything: true }, // Cloudflare edge cache 30 min
     });
