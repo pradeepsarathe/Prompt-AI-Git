@@ -102,9 +102,40 @@ export async function onRequest(context) {
   }
 }
 
-// ── generic feed fetch via rss2json (dodges CORS / format issues) ─────
-// Manual AbortController timeout (more portable than AbortSignal.timeout).
+// ── feed fetch ───────────────────────────────────────────────────────
+// A Cloudflare Function can fetch RSS DIRECTLY (no browser CORS), so we parse
+// the XML ourselves. rss2json is only a last-resort fallback because its free
+// tier rate-limits datacenter IPs (which made every feed come back empty).
 async function fetchFeedItems(feed, take) {
+  const direct = await fetchDirect(feed, take);
+  if (direct.length) return direct;
+  return fetchViaRss2json(feed, take);
+}
+
+// 1) Direct fetch + lightweight XML parse (RSS <item> and Atom <entry>).
+async function fetchDirect(feed, take) {
+  const ac = new AbortController();
+  const t = setTimeout(() => ac.abort(), 7000);
+  try {
+    const r = await fetch(feed, {
+      signal: ac.signal,
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (compatible; PromptAI/1.0; +https://promptai.in)',
+        'Accept': 'application/rss+xml, application/atom+xml, application/xml, text/xml, */*',
+      },
+    });
+    if (!r.ok) return [];
+    const xml = await r.text();
+    if (!xml || xml.length < 100) return [];
+    const header = xml.split(/<item[\s>]/i)[0] || xml;
+    const src = (decodeEntities(tagText(header, 'title')) || domainOf(feed)).replace(/\s*[-–|].*$/, '').trim();
+    return parseFeed(xml, take).map(i => ({ ...i, src }));
+  } catch (e) { return []; }
+  finally { clearTimeout(t); }
+}
+
+// 2) Fallback proxy (kept for feeds that block direct datacenter requests).
+async function fetchViaRss2json(feed, take) {
   const ac = new AbortController();
   const t = setTimeout(() => ac.abort(), 7000);
   try {
@@ -124,6 +155,41 @@ async function fetchFeedItems(feed, take) {
   } catch (e) { /* ignore */ }
   finally { clearTimeout(t); }
   return [];
+}
+
+// ── tiny XML helpers (no DOMParser in Workers) ───────────────────────
+function tagText(block, name) {
+  const m = block.match(new RegExp('<' + name + '[^>]*>([\\s\\S]*?)<\\/' + name + '>', 'i'));
+  return m ? m[1] : '';
+}
+function decodeEntities(s) {
+  return (s || '')
+    .replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, '$1')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"').replace(/&#0*39;|&apos;/g, "'")
+    .replace(/&#(\d+);/g, (_, n) => String.fromCharCode(+n))
+    .replace(/&#x([0-9a-f]+);/gi, (_, n) => String.fromCharCode(parseInt(n, 16)))
+    .replace(/\s+/g, ' ').trim();
+}
+function parseFeed(xml, take) {
+  const isRss = /<item[\s>]/i.test(xml);
+  const chunks = xml.split(isRss ? /<item[\s>]/i : /<entry[\s>]/i).slice(1);
+  const out = [];
+  for (const block of chunks) {
+    const title = decodeEntities(tagText(block, 'title'));
+    let link = decodeEntities(tagText(block, 'link'));
+    if (!link || /^https?:/.test(link) === false) {
+      const lm = block.match(/<link[^>]*href=["']([^"']+)["']/i);
+      if (lm) link = lm[1];
+    }
+    const descRaw = tagText(block, 'description') || tagText(block, 'summary') || tagText(block, 'content');
+    const desc = truncate(decodeEntities(descRaw), 160);
+    const dt = tagText(block, 'pubDate') || tagText(block, 'published') || tagText(block, 'updated') || tagText(block, 'dc:date');
+    if (title && link) out.push({ title, link, desc, date: dt ? new Date(dt) : new Date(0) });
+    if (out.length >= take) break;
+  }
+  return out;
 }
 
 // Resolve a promise but never wait longer than `ms` (returns `fallback`).
