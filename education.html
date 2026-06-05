@@ -605,12 +605,62 @@ function goAccount() {
   const label = document.getElementById('nav-user-label');
   const icon = document.getElementById('nav-user-icon');
   if (!btn || !s) return;
-  const first = (s.name || s.email || '').split(' ')[0] || 'Account';
+  const _n = (s.name || s.email || '').trim();
+  const _p = _n.split(/\s+/).filter(Boolean);
+  const first = _p[0] || 'Account';
+  const initials = (_p.length >= 2 ? (_p[0][0] + _p[1][0]) : _n.slice(0, 2)).toUpperCase();
   btn.className = 'user-btn';
   btn.style.cssText = "background:#fff;border:1.5px solid #e2e8f0;color:#0f172a;display:flex;align-items:center;gap:7px;padding:5px 12px 5px 5px;border-radius:20px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:0.85rem;font-weight:600;";
-  if (icon) icon.outerHTML = '<span style="width:26px;height:26px;border-radius:50%;background:#2563eb;color:#fff;display:flex;align-items:center;justify-content:center;font-size:0.8rem;font-weight:700;">' + first.charAt(0).toUpperCase() + '</span>';
+  if (icon) icon.outerHTML = '<span style="width:26px;height:26px;border-radius:50%;background:#2563eb;color:#fff;display:flex;align-items:center;justify-content:center;font-size:0.8rem;font-weight:700;">' + initials + '</span>';
   if (label) label.textContent = first;
 })();
+
+// ── MY LEARNING — record courses/guides opened here into the user's account ──
+// Writes to the same per-user localStorage key index.html reads, and (when
+// signed in) merges into the backend so "🎓 Learning" syncs across devices.
+async function recordLearning(item) {
+  let sess = null, token = null;
+  try { sess = JSON.parse(localStorage.getItem('pai_session_db') || 'null'); } catch (e) {}
+  try { token = localStorage.getItem('pai_token'); } catch (e) {}
+  const key = 'pai_user_' + (sess ? btoa(sess.email).slice(0, 12) : 'guest');
+
+  let data; try { data = JSON.parse(localStorage.getItem(key) || '{}'); } catch (e) { data = {}; }
+  data.saved = data.saved || []; data.liked = data.liked || [];
+  data.history = data.history || []; data.learning = data.learning || [];
+  data.learning = data.learning.filter(x => x.url !== item.url);
+  data.learning.unshift({ ...item, learnedAt: Date.now() });
+  data.learning = data.learning.slice(0, 200);
+  try { localStorage.setItem(key, JSON.stringify(data)); } catch (e) {}
+
+  // Sync to backend only when signed in. getdata → merge → setdata so we never
+  // clobber saved/liked/history written on other pages.
+  if (sess && token) {
+    try {
+      const res = await fetch('/auth', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'getdata', token }) });
+      const j = await res.json();
+      const server = (j && j.data) || { saved: [], liked: [], history: [], learning: [] };
+      server.learning = server.learning || [];
+      const byUrl = new Map(server.learning.map(x => [x.url, x]));
+      data.learning.forEach(x => { const p = byUrl.get(x.url); if (!p || (x.learnedAt || 0) > (p.learnedAt || 0)) byUrl.set(x.url, x); });
+      server.learning = [...byUrl.values()].sort((a, b) => (b.learnedAt || 0) - (a.learnedAt || 0)).slice(0, 200);
+      await fetch('/auth', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'setdata', token, data: server }) });
+      try { localStorage.setItem(key, JSON.stringify(server)); } catch (e) {}
+    } catch (e) { /* offline → local copy already saved */ }
+  }
+}
+
+// Attach to every external course/guide/resource link on the page.
+document.querySelectorAll('section a[href^="http"]').forEach(a => {
+  a.addEventListener('click', () => {
+    const card = a.closest('.course-card, .prompt-card, .guide-card, .path-card');
+    const title = (card && (card.querySelector('h4, h3') || {}).textContent
+      ? card.querySelector('h4, h3').textContent.trim()
+      : a.textContent.trim()) || 'AI Education resource';
+    recordLearning({ url: a.href, title, src: 'AI Education' });
+  });
+});
 </script>
 </body>
 </html>

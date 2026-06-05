@@ -427,10 +427,13 @@ function goAccount() {
   const label = document.getElementById('nav-user-label');
   const icon = document.getElementById('nav-user-icon');
   if (!btn || !s) return;
-  const first = (s.name || s.email || '').split(' ')[0] || 'Account';
+  const _n = (s.name || s.email || '').trim();
+  const _p = _n.split(/\s+/).filter(Boolean);
+  const first = _p[0] || 'Account';
+  const initials = (_p.length >= 2 ? (_p[0][0] + _p[1][0]) : _n.slice(0, 2)).toUpperCase();
   btn.className = 'user-btn';
   btn.style.cssText = "background:#fff;border:1.5px solid #e2e8f0;color:#0f172a;display:flex;align-items:center;gap:7px;padding:5px 12px 5px 5px;border-radius:20px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:0.85rem;font-weight:600;";
-  if (icon) icon.outerHTML = '<span style="width:26px;height:26px;border-radius:50%;background:#2563eb;color:#fff;display:flex;align-items:center;justify-content:center;font-size:0.8rem;font-weight:700;">' + first.charAt(0).toUpperCase() + '</span>';
+  if (icon) icon.outerHTML = '<span style="width:26px;height:26px;border-radius:50%;background:#2563eb;color:#fff;display:flex;align-items:center;justify-content:center;font-size:0.8rem;font-weight:700;">' + initials + '</span>';
   if (label) label.textContent = first;
 })();
 

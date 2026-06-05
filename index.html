@@ -1033,7 +1033,7 @@
       <span style="font-size:0.72rem;color:#334155;">promptai.in</span>
     </div>
     <div class="footer-bottom-row">
-      <p>© 2025 PromptAI · promptai.in · All rights reserved</p>
+      <p>© 2026 PromptAI · promptai.in · All rights reserved</p>
       <p style="color:#334155;">Content sourced via RSS · All articles © their respective publishers · <a href="#about" style="color:#475569;text-decoration:underline;">About</a></p>
     </div>
   </div>
@@ -1357,7 +1357,7 @@ function cacheSet(key, data, ttl = CACHE_TTL_NEWS) {
 // ── PARSE RSS/ATOM XML ─────────────────────────────────
 // ── CONTENT QUALITY FILTER ────────────────────────────
 // Strips garbage content: HTML in titles, code, URLs, too-short text
-function passesQualityCheck(title, desc, dateStr) {
+function passesQualityCheck(title, desc, dateStr, src) {
   if (!title || title.trim().length < 15) return false;
   if (title.length > 250) return false;
   if (/<[a-zA-Z]/.test(title)) return false;           // HTML tags in title
@@ -1373,12 +1373,15 @@ function passesQualityCheck(title, desc, dateStr) {
     const codeHits = (desc.match(/function\s*\(|var\s+\w|const\s+\w|let\s+\w|=>\s*{|<\/?[a-z]+>/gi) || []).length;
     if (codeHits > 2) return false;
   }
-  // Recency filter for news: skip anything older than 14 days
-  if (dateStr) {
+  // Recency filter — but EXEMPT evergreen / low-frequency sources (research labs,
+  // company blogs, journals) that publish less often than every 2 weeks; otherwise
+  // they'd never show up. Fast-moving aggregators keep a 30-day window.
+  const EVERGREEN = new Set(['anthropic','metaai','google','mitsloan','gradient','tds','medium','verge','hf','fastai','distill','interconnects','jmlr','ieee','sciencedaily','mistral','perplexity','langchain','databricks','cohere','openai','batch']);
+  if (dateStr && !EVERGREEN.has(src)) {
     try {
       const age = Date.now() - new Date(dateStr).getTime();
-      const FOURTEEN_DAYS = 14 * 24 * 60 * 60 * 1000;
-      if (age > FOURTEEN_DAYS) return false;
+      const THIRTY_DAYS = 30 * 24 * 60 * 60 * 1000;
+      if (age > THIRTY_DAYS) return false;
     } catch(e) {}
   }
   return true;
@@ -1398,7 +1401,7 @@ function parseRSS(xml, src, maxItems = 10) {
         || item.querySelector('link')?.getAttribute('href')?.trim() || '';
       const pubDate = item.querySelector('pubDate, published, updated')?.textContent?.slice(0,16) || '';
       if (!title || !link) continue;
-      if (!passesQualityCheck(title, desc, pubDate)) continue;
+      if (!passesQualityCheck(title, desc, pubDate, src)) continue;
       if (src !== 'arxiv' && !aiKw.test(title) && !aiKw.test(desc)) continue;
       results.push({ src, title, url: link, date: pubDate, desc });
       if (results.length >= maxItems) break;
@@ -1446,7 +1449,7 @@ async function fetchRSS(feedUrl, src, maxItems = 10, ttl = CACHE_TTL_NEWS) {
           desc: (i.description || i.content || '')
             .replace(/<[^>]+>/g,'').replace(/&[a-z#0-9]+;/gi,' ').trim().slice(0, 220) + '…'
         }))
-        .filter(i => i.title && i.url && passesQualityCheck(i.title, i.desc, i.date))
+        .filter(i => i.title && i.url && passesQualityCheck(i.title, i.desc, i.date, src))
         .filter(i => src === 'arxiv' || aiKw.test(i.title) || aiKw.test(i.desc || ''))
         .slice(0, maxItems);
       if (results.length > 0) { cacheSet(cacheKey, results, ttl); return results; }
@@ -1518,6 +1521,7 @@ async function fetchTech() {
 // ── MODAL ──────────────────────────────────────────────
 function openModal(s) {
   analyticsTrackArticle(s.url); // track the click
+  try { addToHistory(s); } catch(e) {}   // record in account History — every article (news, papers, blogs) opens here
   document.getElementById('article-modal').style.display = 'block';
   document.body.style.overflow = 'hidden';
 
