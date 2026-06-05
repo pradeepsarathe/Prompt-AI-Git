@@ -135,19 +135,20 @@ export async function onRequest(context) {
       const email = await emailFromToken(env, body.token);
       if (!email) return json({ error: 'Session expired' }, 401);
       const raw = await env.USERS.get('data:' + email);
-      return json({ data: raw ? JSON.parse(raw) : { saved: [], liked: [], history: [] } });
+      return json({ data: raw ? JSON.parse(raw) : { saved: [], liked: [], history: [], learning: [] } });
     }
 
     // ── SAVE USER DATA ───────────────────────────────────
     if (action === 'setdata') {
       const email = await emailFromToken(env, body.token);
       if (!email) return json({ error: 'Session expired' }, 401);
-      const data = body.data || { saved: [], liked: [], history: [] };
+      const data = body.data || { saved: [], liked: [], history: [], learning: [] };
       // basic shape guard + cap to keep values small
       const clean = {
-        saved:   Array.isArray(data.saved)   ? data.saved.slice(0, 500)   : [],
-        liked:   Array.isArray(data.liked)   ? data.liked.slice(0, 500)   : [],
-        history: Array.isArray(data.history) ? data.history.slice(0, 200) : [],
+        saved:    Array.isArray(data.saved)    ? data.saved.slice(0, 500)    : [],
+        liked:    Array.isArray(data.liked)    ? data.liked.slice(0, 500)    : [],
+        history:  Array.isArray(data.history)  ? data.history.slice(0, 200)  : [],
+        learning: Array.isArray(data.learning) ? data.learning.slice(0, 200) : [],
       };
       await env.USERS.put('data:' + email, JSON.stringify(clean));
       return json({ success: true });
