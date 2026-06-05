@@ -80,19 +80,31 @@ export async function onRequest(context) {
   }
   if (emails.length === 0) return json({ sent: 0, message: 'No subscribers yet' });
 
-  // ── send via Resend (one request per recipient; robust to a slow batch) ──
+  // ── send via Resend BATCH (≤100 personalized emails per request) ──
+  // One HTTP request per 100 recipients keeps us under Resend's "2 requests/sec"
+  // limit (the per-email loop tripped a 429). A short pause between batches
+  // covers the case of >200 subscribers.
+  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   let sent = 0;
   let lastResendError = null;
-  for (const email of emails) {
+  for (let i = 0; i < emails.length; i += 100) {
+    const chunk = emails.slice(i, i + 100);
+    const batch = chunk.map((email) => ({
+      from: env.FROM_EMAIL,
+      to: [email],
+      subject,
+      html: digestHtml({ ...content, dateStr, email }),
+    }));
     try {
-      const r = await fetch('https://api.resend.com/emails', {
+      const r = await fetch('https://api.resend.com/emails/batch', {
         method: 'POST',
         headers: { 'Authorization': 'Bearer ' + env.RESEND_API_KEY, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ from: env.FROM_EMAIL, to: [email], subject, html: digestHtml({ ...content, dateStr, email }) }),
+        body: JSON.stringify(batch),
       });
-      if (r.ok) sent++;
+      if (r.ok) sent += chunk.length;
       else lastResendError = (await r.text()).slice(0, 300);
     } catch (e) { lastResendError = e.message; }
+    if (i + 100 < emails.length) await sleep(600); // stay under 2 req/sec
   }
 
   return json({ success: true, recipients: emails.length, sent, subject, lastResendError,
