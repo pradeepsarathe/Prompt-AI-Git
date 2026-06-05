@@ -771,11 +771,12 @@
     <div class="section-header">
       <div class="section-label">AI Papers &amp; Summaries</div>
       <h2>Key research, simplified</h2>
-      <p>Live from arXiv, IEEE Spectrum, Science Daily AI, and JMLR — refreshed daily. Click any paper to read the summary.</p>
+      <p>Research from the world's top labs &amp; universities — OpenAI, Google, Microsoft, MIT and Berkeley AI — plus live papers from arXiv, IEEE Spectrum, Science Daily and JMLR. Refreshed daily.</p>
     </div>
     <!-- Category filter -->
     <div style="display:flex;gap:0.6rem;flex-wrap:wrap;margin-bottom:2rem;" id="paper-filters">
       <button class="filter-btn active" onclick="filterPapers('all',this)">All Sources</button>
+      <button class="filter-btn" onclick="filterPapers('labs',this)">🏛 Top Labs</button>
       <button class="filter-btn" onclick="filterPapers('arxiv',this)">📄 arXiv</button>
       <button class="filter-btn" onclick="filterPapers('cs.AI',this)">🤖 AI</button>
       <button class="filter-btn" onclick="filterPapers('cs.LG',this)">📈 Machine Learning</button>
@@ -1087,7 +1088,22 @@ function analyticsTrackArticle(url) {
   if (!d.articlesRead[TODAY]) d.articlesRead[TODAY] = 0;
   d.articlesRead[TODAY]++;
   analyticsSave(d);
+  bumpGlobalReadCount();   // +1 to the SITE-WIDE counter (shared across all devices/visitors)
   updateAnalyticsDisplay();
+}
+
+// Increment the global, site-wide "articles read" counter in Cloudflare KV so the
+// number is the TOTAL across the whole website (every visitor), synced on every
+// device — not a per-browser or per-account tally. Best-effort; offline keeps local.
+function bumpGlobalReadCount() {
+  fetch('/stats', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action: 'read' }),
+  })
+    .then(r => r.json())
+    .then(data => { if (data && !data.offline) { serverStats = data; updateAnalyticsDisplay(); } })
+    .catch(() => {});
 }
 
 function updateAnalyticsDisplay() {
@@ -1111,8 +1127,10 @@ function updateAnalyticsDisplay() {
     ? `${Math.floor(avgSec/60)}m ${avgSec%60}s`
     : avgSec > 0 ? `${avgSec}s` : '—';
 
-  // Articles read today
-  const articlesToday = (d.articlesRead || {})[TODAY] || 0;
+  // Articles read today — prefer the GLOBAL site-wide server counter (same number
+  // on every device, counts ALL visitors), fall back to local only when offline.
+  const localArticles = (d.articlesRead || {})[TODAY] || 0;
+  const articlesToday = serverStats ? (serverStats.articlesReadToday || 0) : localArticles;
 
   // Update analytics bar
   const fmt = n => n >= 1000 ? (n/1000).toFixed(1)+'k' : n.toString();
@@ -1215,6 +1233,11 @@ function sourceBadge(src) {
     ieee:          '🔌 IEEE Spectrum',
     sciencedaily:  '🔬 Science Daily',
     jmlr:          '📊 JMLR',
+    marktechpost:  '🧪 MarkTechPost',
+    uniteai:       '🌐 Unite.AI',
+    msr:           '🔷 Microsoft Research',
+    mit:           '🏛 MIT News',
+    bair:          '🐻 Berkeley AI',
   };
   return map[src] || src;
 }
@@ -1254,6 +1277,11 @@ function catColor(src) {
     ieee:          {bg:'#fff7ed', col:'#c2410c'},
     sciencedaily:  {bg:'#ecfdf5', col:'#065f46'},
     jmlr:          {bg:'#fdf4ff', col:'#7e22ce'},
+    marktechpost:  {bg:'#eff6ff', col:'#1d4ed8'},
+    uniteai:       {bg:'#ecfdf5', col:'#065f46'},
+    msr:           {bg:'#eff6ff', col:'#1e40af'},
+    mit:           {bg:'#f0f4ff', col:'#3730a3'},
+    bair:          {bg:'#fff7ed', col:'#9a3412'},
   };
   return map[src] || {bg:'#eff6ff', col:'#1d4ed8'};
 }
@@ -1263,14 +1291,19 @@ function domainOf(url) {
 
 // ── SOURCE PRIORITY RANKING ──────────────────────────────
 const SOURCE_PRIORITY = {
-  openai:10, anthropic:10, google:9, metaai:9, hf:8,
-  batch:8, mistral:7, perplexity:7, tc:7, verge:7, ars:7, hn:6,
+  openai:10, google:9, msr:9, mit:9, bair:8, hf:8,
+  marktechpost:7, uniteai:6, mistral:7, perplexity:7, tc:7, ars:7,
   venturebeat:5, gradient:6, langchain:5, databricks:5, cohere:5,
-  analytics:3, mitsloan:5, tds:4, medium:3, arxiv:4,
+  analytics:3, tds:4, arxiv:4,
+  hn:1,
 };
 
 function rankStories(stories) {
   return [...stories].sort((a, b) => {
+    // Hacker News is deprioritised — it always sorts AFTER every other source,
+    // so HN stories appear at the very bottom of the feed regardless of recency.
+    const aHN = a.src === 'hn', bHN = b.src === 'hn';
+    if (aHN !== bHN) return aHN ? 1 : -1;
     const ageA = a.time ? (Date.now()/1000 - a.time)/3600
       : (a.date ? (Date.now() - new Date(a.date).getTime())/3600000 : 48);
     const ageB = b.time ? (Date.now()/1000 - b.time)/3600
@@ -1376,7 +1409,7 @@ function passesQualityCheck(title, desc, dateStr, src) {
   // Recency filter — but EXEMPT evergreen / low-frequency sources (research labs,
   // company blogs, journals) that publish less often than every 2 weeks; otherwise
   // they'd never show up. Fast-moving aggregators keep a 30-day window.
-  const EVERGREEN = new Set(['anthropic','metaai','google','mitsloan','gradient','tds','medium','verge','hf','fastai','distill','interconnects','jmlr','ieee','sciencedaily','mistral','perplexity','langchain','databricks','cohere','openai','batch']);
+  const EVERGREEN = new Set(['anthropic','metaai','google','mitsloan','gradient','tds','medium','verge','hf','fastai','distill','interconnects','jmlr','ieee','sciencedaily','mistral','perplexity','langchain','databricks','cohere','openai','batch','msr','mit','bair']);
   if (dateStr && !EVERGREEN.has(src)) {
     try {
       const age = Date.now() - new Date(dateStr).getTime();
@@ -1477,7 +1510,7 @@ async function fetchHN() {
   const aiKw = /\b(AI|LLM|GPT|claude|gemini|llama|transformer|machine learning|deep learning|neural|openai|anthropic|mistral|diffusion|RAG|fine.tun|model|agent|chatbot|copilot|inference|embedding)\b/i;
   const result = items
     .filter(i => i && i.title && (aiKw.test(i.title) || aiKw.test(i.text||'')))
-    .slice(0, 15)
+    .slice(0, 7)
     .map(i => ({ src:'hn', title:i.title, url:i.url||`https://news.ycombinator.com/item?id=${i.id}`, time:i.time, score:i.score, desc: i.text ? i.text.replace(/<[^>]+>/g,'').slice(0,200)+'…' : '' }));
   if (result.length) cacheSet('hn', result, CACHE_TTL_NEWS);
   return result;
@@ -1490,20 +1523,19 @@ async function fetchArxiv() {
 
 // ── FETCH: All 10 RSS sources IN PARALLEL ─────────────
 async function fetchTech() {
+  // NOTE: Anthropic, Meta AI, The Verge, The Batch and MIT Sloan feeds were
+  // removed — their RSS endpoints are dead or block server fetches. Replaced
+  // with reliable, high-volume AI-news sources (MarkTechPost, Unite.AI).
   const feeds = [
-    { url:'https://www.anthropic.com/news/rss',                                    src:'anthropic'  },
     { url:'https://huggingface.co/blog/feed.xml',                                   src:'hf'         },
-    { url:'https://www.deeplearning.ai/the-batch/feed/',                            src:'batch'      },
-    { url:'https://ai.meta.com/blog/rss/',                                          src:'metaai'     },
-    { url:'https://www.theverge.com/ai-artificial-intelligence/rss/index.xml',      src:'verge'      },
     { url:'https://techcrunch.com/category/artificial-intelligence/feed/',          src:'tc'         },
     { url:'https://feeds.arstechnica.com/arstechnica/technology-lab',              src:'ars'        },
-    { url:'https://openai.com/blog/rss.xml',                                       src:'openai'     },
-    { url:'https://sloanreview.mit.edu/topic/artificial-intelligence/feed/',       src:'mitsloan'   },
+    { url:'https://openai.com/news/rss.xml',                                       src:'openai'     },
+    { url:'https://www.marktechpost.com/feed/',                                    src:'marktechpost'},
+    { url:'https://www.unite.ai/feed/',                                            src:'uniteai'    },
     { url:'https://www.analyticsinsight.net/feed/',                                src:'analytics'  },
     { url:'https://thegradient.pub/rss/',                                          src:'gradient'   },
     { url:'https://medium.com/feed/towards-data-science',                          src:'tds'        },
-    { url:'https://medium.com/feed/tag/artificial-intelligence',                   src:'medium'     },
     { url:'https://blog.research.google/feeds/posts/default',                      src:'google'     },
     { url:'https://venturebeat.com/category/ai/feed/',                             src:'venturebeat'},
     { url:'https://mistral.ai/news/rss',                                           src:'mistral'    },
@@ -1883,6 +1915,10 @@ function renderPaperCard(p) {
       <span>${p.src === 'arxiv' ? 'arXiv' : (sourceBadge(p.src) || p.src).replace(/^\S+\s/,'')} · ${p.date ? p.date.slice(0,10) : 'Latest'}</span>
       <span class="read-link">Read paper →</span>
     </div>`;
+  // Record research papers in account History + the global read counter
+  card.addEventListener('click', () => {
+    try { addToHistory({ title:p.title, url:p.url, src:p.src, desc:p.desc, date:p.date }); analyticsTrackArticle(p.url); } catch(e) {}
+  });
   return card;
 }
 
@@ -1898,6 +1934,34 @@ function renderPapersPage(reset) {
   slice.forEach(p => grid.appendChild(renderPaperCard(p)));
   document.getElementById('papers-load-more').style.display =
     filteredPapers.length > paperPage * PAPER_PAGE_SIZE ? 'inline-block' : 'none';
+}
+
+// ── TOP-LAB & ACADEMIC RESEARCH ─────────────────────────
+// Aggregates official research feeds from leading labs + universities into the
+// Research section (the "🏛 Top Labs" filter). Anthropic has no public RSS, so it
+// is represented through these peers + arXiv rather than a dead feed.
+async function fetchLabResearch() {
+  const LAB_FEEDS = [
+    { url:'https://openai.com/news/rss.xml',                       src:'openai', label:'OpenAI',              cls:'cat-llm' },
+    { url:'https://blog.research.google/feeds/posts/default',      src:'google', label:'Google Research',     cls:'cat-ai'  },
+    { url:'https://www.microsoft.com/en-us/research/feed/',        src:'msr',    label:'Microsoft Research',  cls:'cat-ml'  },
+    { url:'https://news.mit.edu/rss/topic/artificial-intelligence2', src:'mit',  label:'MIT',                 cls:'cat-nlp' },
+    { url:'https://bair.berkeley.edu/blog/feed.xml',              src:'bair',   label:'Berkeley AI',         cls:'cat-cv'  },
+  ];
+  const settled = await Promise.allSettled(
+    LAB_FEEDS.map(f => fetchRSS(f.url, f.src, 6, CACHE_TTL_PAPERS))
+  );
+  const out = [];
+  settled.forEach((r, i) => {
+    if (r.status !== 'fulfilled') return;
+    const f = LAB_FEEDS[i];
+    r.value.forEach(p => out.push({
+      title: p.title, url: p.url, desc: p.desc,
+      cat: f.label, cls: f.cls, authors: f.label, date: p.date, src: f.src,
+    }));
+  });
+  out.sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
+  return out;
 }
 
 async function filterPapers(cat, btn) {
@@ -1916,7 +1980,9 @@ async function filterPapers(cat, btn) {
   };
 
   let papers = [];
-  if (ALT_SRC[cat]) {
+  if (cat === 'labs') {
+    papers = await fetchLabResearch();
+  } else if (ALT_SRC[cat]) {
     const { url, cat: catLabel, cls } = ALT_SRC[cat];
     const raw = await fetchRSS(url, cat, 15, CACHE_TTL_PAPERS);
     papers = raw.map(p => ({ ...p, cat: catLabel, cls, authors: domainOf(p.url) || cat, src: cat }));
@@ -1940,8 +2006,6 @@ const BLOG_FEEDS = [
   { url:'https://thegradient.pub/rss/',                                        src:'gradient'     },
   { url:'https://medium.com/feed/towards-data-science',                        src:'tds'          },
   { url:'https://blog.research.google/feeds/posts/default',                    src:'google'       },
-  { url:'https://sloanreview.mit.edu/topic/artificial-intelligence/feed/',     src:'mitsloan'     },
-  { url:'https://www.deeplearning.ai/the-batch/feed/',                         src:'batch'        },
   { url:'https://huggingface.co/blog/feed.xml',                                src:'hf'           },
   { url:'https://www.fast.ai/index.xml',                                       src:'fastai'       },
   { url:'https://distill.pub/rss.xml',                                         src:'distill'      },
@@ -2011,7 +2075,10 @@ function renderFeaturedBlogCard(item) {
         <span style="font-size:0.82rem;font-weight:600;color:#2563eb;white-space:nowrap;flex-shrink:0;">Read article →</span>
       </div>
     </div>`;
-  card.onclick = () => window.open(item.url, '_blank', 'noopener');
+  card.onclick = () => {
+    try { addToHistory({ title:item.title, url:item.url, src:item.src, desc:item.desc, date:item.date }); analyticsTrackArticle(item.url); } catch(e) {}
+    window.open(item.url, '_blank', 'noopener');
+  };
   card.onmouseover = () => { card.style.transform='translateY(-3px)'; card.style.boxShadow='0 10px 36px rgba(0,0,0,0.11)'; };
   card.onmouseout  = () => { card.style.transform=''; card.style.boxShadow=''; };
   return card;
@@ -2043,7 +2110,10 @@ function renderDynamicBlogCard(item, idx) {
       <span style="flex:1;font-size:0.8rem;">${domainOf(item.url)}</span>
       <span style="font-size:0.72rem;color:#94a3b8;white-space:nowrap;">📖 ${readTime}</span>
     </div>`;
-  card.onclick = () => window.open(item.url, '_blank', 'noopener');
+  card.onclick = () => {
+    try { addToHistory({ title:item.title, url:item.url, src:item.src, desc:item.desc, date:item.date }); analyticsTrackArticle(item.url); } catch(e) {}
+    window.open(item.url, '_blank', 'noopener');
+  };
   card.onmouseover = () => { card.style.transform='translateY(-4px)'; card.style.boxShadow='0 8px 30px rgba(0,0,0,0.1)'; };
   card.onmouseout  = () => { card.style.transform=''; card.style.boxShadow=''; };
   return card;
@@ -2195,7 +2265,10 @@ function renderBlogCard(b) {
       <span>${b.author} · ${b.read} read · ${new URL(b.url).hostname.replace('www.','')} →</span>
     </div>`;
 
-  card.onclick = () => window.open(b.url, '_blank', 'noopener');
+  card.onclick = () => {
+    try { addToHistory({ title:b.title, url:b.url, src:'blog', desc:b.desc, date:b.date }); analyticsTrackArticle(b.url); } catch(e) {}
+    window.open(b.url, '_blank', 'noopener');
+  };
   card.onmouseover = () => { card.style.transform='translateY(-4px)'; card.style.boxShadow='0 8px 30px rgba(0,0,0,0.1)'; };
   card.onmouseout  = () => { card.style.transform=''; card.style.boxShadow=''; };
   return card;
@@ -2347,6 +2420,38 @@ function userDataSave(data) {
   } catch(e) {}
   // Push to backend so saved/liked/history sync across devices (debounced)
   pushUserData(data);
+}
+
+// ── GUEST → ACCOUNT MIGRATION ───────────────────────────
+// Anything read/saved/liked/learned BEFORE signing in is stored under the
+// 'pai_user_guest' key. On login the active key switches to the account's key,
+// so without this the panel would look empty ("nothing saved after login").
+// Merge the guest bucket into the account bucket, then clear guest.
+function migrateGuestData() {
+  if (!currentUser) return;
+  try {
+    const guest = JSON.parse(localStorage.getItem(USER_KEY + '_guest') || 'null');
+    if (!guest) return;
+    const acctKey = USER_KEY + '_' + btoa(currentUser.email).slice(0, 12);
+    const acct = JSON.parse(localStorage.getItem(acctKey) || '{"saved":[],"liked":[],"history":[],"learning":[]}');
+    const mergeBy = (a = [], b = [], stamp) => {
+      const m = new Map();
+      [...(a||[]), ...(b||[])].forEach(it => {
+        if (!it || !it.url) return;
+        const p = m.get(it.url);
+        if (!p || (it[stamp] || 0) > (p[stamp] || 0)) m.set(it.url, it);
+      });
+      return [...m.values()].sort((x, y) => (y[stamp] || 0) - (x[stamp] || 0));
+    };
+    const merged = {
+      saved:    mergeBy(acct.saved,    guest.saved,    'savedAt'),
+      liked:    mergeBy(acct.liked,    guest.liked,    'likedAt'),
+      history:  mergeBy(acct.history,  guest.history,  'readAt').slice(0, 200),
+      learning: mergeBy(acct.learning, guest.learning, 'learnedAt').slice(0, 200),
+    };
+    localStorage.setItem(acctKey, JSON.stringify(merged));
+    localStorage.removeItem(USER_KEY + '_guest');  // avoid re-merging on next login
+  } catch(e) {}
 }
 
 // ── CROSS-DEVICE DATA SYNC ─────────────────────────────
@@ -2731,6 +2836,7 @@ async function handleAuthSubmit(e) {
 
   const succeed = (session) => {
     currentUser = session;
+    migrateGuestData();               // carry pre-login reads/saves into the account
     storeSession(session);            // local cache for instant restore
     updateNavForUser(session);
     closeAuthModal();
@@ -2798,6 +2904,7 @@ async function signOut() {
       storeSession(data.user);
       currentUser = data.user;
       apply(data.user);
+      migrateGuestData();             // carry pre-login reads/saves into the account
       pullUserData();                 // sync saved/liked/history across devices
       return;
     } catch (err) {
@@ -2806,7 +2913,7 @@ async function signOut() {
     }
   }
   const s = getStoredSession();
-  if (s) apply(s);
+  if (s) { apply(s); migrateGuestData(); }
 })();
 
 // Open the account panel when arrived from another page's nav button

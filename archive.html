@@ -163,7 +163,6 @@
   <select class="sort-select" id="jump-select" onchange="jumpToDate(this.value)" title="Jump to a date">
     <option value="">⤓ Jump to date…</option>
   </select>
-  <button class="pill" onclick="clearArchive()" style="border-color:#fecaca;color:#dc2626;">🗑 Clear archive</button>
 </div>
 
 <div class="archive-main">
@@ -365,11 +364,6 @@ function jumpToDate(label) {
   }
 }
 
-function clearArchive() {
-  if (!confirm('Clear all archived articles? This cannot be undone.')) return;
-  localStorage.removeItem(ARCHIVE_KEY);
-  location.reload();
-}
 
 // ── STATS ──────────────────────────────────────────────
 function updateStats() {
