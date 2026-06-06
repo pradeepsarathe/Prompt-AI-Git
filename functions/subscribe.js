@@ -30,15 +30,27 @@ export async function onRequest(context) {
 
   try {
     let email = '';
+    let honeypot = '';
     const contentType = request.headers.get('content-type') || '';
 
     if (contentType.includes('application/json')) {
       const body = await request.json();
       email = body.email || '';
+      honeypot = body.website || '';
     } else {
       const body = await request.text();
       const params = new URLSearchParams(body);
       email = params.get('email') || '';
+      honeypot = params.get('website') || '';
+    }
+
+    // ── Honeypot: real users never fill the hidden "website" field. If it's
+    // populated, silently pretend success so the bot gets no signal. ──
+    if (honeypot.trim()) {
+      return new Response(JSON.stringify({ success: true, message: 'Subscribed!' }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
+      });
     }
 
     email = email.trim().toLowerCase();
@@ -49,6 +61,26 @@ export async function onRequest(context) {
         status: 400,
         headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
       });
+    }
+
+    // ── Rate limiting: max 5 signups per IP per hour (KV-backed). ──
+    // Stops a single client hammering the endpoint / Resend. Fails open if the
+    // KV binding is missing so a config gap never blocks real subscribers.
+    if (env.SUBSCRIBERS) {
+      const ip = request.headers.get('CF-Connecting-IP')
+        || request.headers.get('X-Forwarded-For') || 'unknown';
+      const rlKey = 'rl:' + ip;
+      try {
+        const count = parseInt(await env.SUBSCRIBERS.get(rlKey) || '0', 10);
+        if (count >= 5) {
+          return new Response(JSON.stringify({ error: 'Too many requests — please try again later.' }), {
+            status: 429,
+            headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*', 'Retry-After': '3600' },
+          });
+        }
+        // TTL resets the window 1h after the FIRST hit (KV min TTL is 60s).
+        await env.SUBSCRIBERS.put(rlKey, String(count + 1), { expirationTtl: 3600 });
+      } catch (e) { /* fail open */ }
     }
 
     // Store in KV if binding exists
