@@ -233,6 +233,25 @@
   }
   .nav-cta:hover { background: #1d4ed8 !important; color: white !important; }
 
+  /* Learn dropdown */
+  .nav-dropdown { position: relative; }
+  .nav-drop-toggle { display: inline-flex; align-items: center; gap: 4px; }
+  .nav-drop-toggle .caret { font-size: 0.7rem; transition: transform 0.2s; }
+  .nav-dropdown:hover .caret, .nav-dropdown:focus-within .caret { transform: rotate(180deg); }
+  .nav-submenu {
+    position: absolute; top: calc(100% + 6px); left: -10px; min-width: 196px;
+    background: #fff; border: 1px solid var(--border); border-radius: 12px;
+    box-shadow: 0 16px 40px rgba(10,22,40,0.14); padding: 6px; margin: 0;
+    list-style: none; display: none; z-index: 60;
+  }
+  .nav-dropdown:hover .nav-submenu, .nav-dropdown:focus-within .nav-submenu { display: block; }
+  .nav-submenu li { width: 100%; }
+  .nav-submenu li a {
+    display: block; padding: 9px 14px; border-radius: 7px; font-size: 0.88rem;
+    white-space: nowrap; color: var(--text-secondary);
+  }
+  .nav-submenu li a:hover { background: var(--surface); color: var(--accent); }
+
   /* Hamburger — hidden on desktop */
   .nav-toggle {
     display: none; background: none; border: none; cursor: pointer;
@@ -457,6 +476,18 @@
     transition: all 0.2s; cursor: pointer;
   }
   .tool-card:hover { border-color: var(--accent-light); background: var(--white); transform: translateY(-2px); }
+  .tool-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.9rem; }
+  .tool-logo {
+    width: 42px; height: 42px; border-radius: 10px; object-fit: contain;
+    background: #fff; border: 1px solid var(--border); padding: 6px; box-sizing: border-box;
+  }
+  .tool-price {
+    font-size: 0.64rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;
+    padding: 3px 9px; border-radius: 20px;
+  }
+  .tool-price.free { background: #ecfdf5; color: #047857; }
+  .tool-price.freemium { background: #eff6ff; color: #1d4ed8; }
+  .tool-price.paid { background: #fef3c7; color: #92400e; }
   .tool-icon {
     width: 44px; height: 44px; border-radius: 10px;
     display: flex; align-items: center; justify-content: center;
@@ -626,6 +657,15 @@
       border-bottom: 1px solid var(--surface);
     }
     .nav-links li a:hover { background: var(--surface); }
+    /* Learn submenu: flatten into the stacked mobile menu */
+    .nav-submenu {
+      position: static; display: block; box-shadow: none; border: none;
+      border-radius: 0; padding: 0; min-width: 0;
+    }
+    .nav-drop-toggle .caret { display: none; }
+    .nav-submenu li a {
+      padding-left: 44px; font-size: 0.92rem; color: var(--text-muted);
+    }
     .nav-cta {
       display: block !important; text-align: center;
       margin: 12px 26px 8px !important; padding: 13px 20px !important;
@@ -665,12 +705,15 @@
     <ul class="nav-links" id="nav-links">
       <li><a href="#news">News</a></li>
       <li><a href="#papers">Research</a></li>
-      <li><a href="#blog">Blogs</a></li>
-      <li><a href="education.html">AI Education</a></li>
+      <li class="nav-dropdown">
+        <a href="#blog" class="nav-drop-toggle" aria-haspopup="true">Learn <span class="caret" aria-hidden="true">▾</span></a>
+        <ul class="nav-submenu">
+          <li><a href="#blog">Guides &amp; Explainers</a></li>
+          <li><a href="education.html">AI Education</a></li>
+        </ul>
+      </li>
       <li><a href="#tools">Tools</a></li>
-      <li><a href="/archive.html">Archive</a></li>
       <li><a href="#about">About</a></li>
-      <li><a href="#contact">Contact</a></li>
       <li><a href="#newsletter" class="nav-cta">Subscribe</a></li>
       <li>
         <button id="nav-user-btn" class="user-btn login" onclick="toggleUserPanel()">
@@ -712,6 +755,7 @@
         </div>
       </div>
       <div id="hero-trending" class="hero-featured" style="cursor:pointer;text-decoration:none;">
+        <img id="hero-trending-img" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer" style="display:none;width:100%;height:150px;object-fit:cover;border-radius:10px;margin-bottom:0.85rem;background:rgba(255,255,255,0.06);"/>
         <div class="tag">🔥 Trending now</div>
         <h4 id="hero-trending-title" style="color:white;">Loading today's top AI story…</h4>
         <p id="hero-trending-desc" style="color:#94a3b8;font-size:0.85rem;margin-top:4px;">Fetching live from top sources →</p>
@@ -774,9 +818,9 @@
 <section class="news-section" id="news">
   <div class="section-inner">
     <div class="section-header">
-      <div class="section-label">Latest AI Research / News</div>
-      <h2>What's happening in AI</h2>
-      <p>Live feed from Hacker News, arXiv &amp; AI research blogs — read everything without leaving this page.</p>
+      <div class="section-label">Live AI Feed</div>
+      <h2>The AI world, in real time</h2>
+      <p>One continuously-updated feed across 20+ trusted sources — research labs, journals, and newsrooms. Releases, papers, and expert analysis as they happen, all without leaving the page.</p>
     </div>
 
     <!-- Source tabs -->
@@ -788,7 +832,6 @@
       <button class="src-btn" onclick="switchSource('marktechpost',this)">🧪 MarkTechPost</button>
       <button class="src-btn" onclick="switchSource('tc',this)">📰 TechCrunch</button>
       <button class="src-btn" onclick="switchSource('ars',this)">🔭 Ars Technica</button>
-      <button class="src-btn" onclick="switchSource('venturebeat',this)">📈 VentureBeat</button>
       <button class="src-btn" onclick="switchSource('gradient',this)">🎓 The Gradient</button>
       <button class="src-btn" onclick="switchSource('arxiv',this)">📄 arXiv</button>
       <button class="src-btn" onclick="switchSource('hn',this)">🟠 Hacker News</button>
@@ -867,52 +910,100 @@
     </div>
     <div class="tools-grid" id="tools-grid">
       <a href="https://claude.ai" target="_blank" rel="noopener" class="tool-card" data-cat="llm" style="text-decoration:none;color:inherit;">
-        <div class="tool-icon" style="background:#eff6ff;">🧠</div>
+        <div class="tool-head"><img class="tool-logo" onerror="toolLogoFail(this)" src="https://www.google.com/s2/favicons?domain=claude.ai&sz=64" alt="" loading="lazy"/><span class="tool-price freemium">Freemium</span></div>
         <h4>Claude (Anthropic)</h4>
         <p>Advanced reasoning, coding, analysis and long-context understanding.</p>
         <span class="tool-tag">LLM</span>
       </a>
-      <a href="https://openai.com/chatgpt" target="_blank" rel="noopener" class="tool-card" data-cat="llm" style="text-decoration:none;color:inherit;">
-        <div class="tool-icon" style="background:#fef9c3;">⚡</div>
-        <h4>GPT-4o (OpenAI)</h4>
-        <p>Multimodal model for text, images, audio and real-time applications.</p>
+      <a href="https://chatgpt.com" target="_blank" rel="noopener" class="tool-card" data-cat="llm" style="text-decoration:none;color:inherit;">
+        <div class="tool-head"><img class="tool-logo" onerror="toolLogoFail(this)" src="https://www.google.com/s2/favicons?domain=openai.com&sz=64" alt="" loading="lazy"/><span class="tool-price freemium">Freemium</span></div>
+        <h4>ChatGPT (OpenAI)</h4>
+        <p>Multimodal assistant for text, images, voice and real-time tasks.</p>
+        <span class="tool-tag">LLM</span>
+      </a>
+      <a href="https://gemini.google.com" target="_blank" rel="noopener" class="tool-card" data-cat="llm" style="text-decoration:none;color:inherit;">
+        <div class="tool-head"><img class="tool-logo" onerror="toolLogoFail(this)" src="https://www.google.com/s2/favicons?domain=gemini.google.com&sz=64" alt="" loading="lazy"/><span class="tool-price freemium">Freemium</span></div>
+        <h4>Gemini (Google)</h4>
+        <p>Google's multimodal model with deep Workspace and search integration.</p>
+        <span class="tool-tag">LLM</span>
+      </a>
+      <a href="https://www.perplexity.ai" target="_blank" rel="noopener" class="tool-card" data-cat="llm" style="text-decoration:none;color:inherit;">
+        <div class="tool-head"><img class="tool-logo" onerror="toolLogoFail(this)" src="https://www.google.com/s2/favicons?domain=perplexity.ai&sz=64" alt="" loading="lazy"/><span class="tool-price freemium">Freemium</span></div>
+        <h4>Perplexity</h4>
+        <p>Answer engine that cites live sources for grounded research.</p>
         <span class="tool-tag">LLM</span>
       </a>
       <a href="https://github.com/features/copilot" target="_blank" rel="noopener" class="tool-card" data-cat="code" style="text-decoration:none;color:inherit;">
-        <div class="tool-icon" style="background:#f0fdf4;">💻</div>
+        <div class="tool-head"><img class="tool-logo" onerror="toolLogoFail(this)" src="https://www.google.com/s2/favicons?domain=github.com&sz=64" alt="" loading="lazy"/><span class="tool-price paid">Paid</span></div>
         <h4>GitHub Copilot</h4>
         <p>AI pair programmer integrated into VS Code, JetBrains and more.</p>
         <span class="tool-tag">Coding</span>
       </a>
-      <a href="https://www.midjourney.com" target="_blank" rel="noopener" class="tool-card" data-cat="image" style="text-decoration:none;color:inherit;">
-        <div class="tool-icon" style="background:#fdf4ff;">🎨</div>
-        <h4>Midjourney v6</h4>
-        <p>State-of-the-art text-to-image generation with photorealistic quality.</p>
-        <span class="tool-tag">Image AI</span>
-      </a>
-      <a href="https://www.databricks.com/product/machine-learning" target="_blank" rel="noopener" class="tool-card" data-cat="data" style="text-decoration:none;color:inherit;">
-        <div class="tool-icon" style="background:#fff7ed;">📊</div>
-        <h4>Databricks + DBRX</h4>
-        <p>Enterprise AI/ML platform with integrated LLM and data pipeline support.</p>
-        <span class="tool-tag">Data &amp; Analytics</span>
-      </a>
-      <a href="https://www.notion.so/product/ai" target="_blank" rel="noopener" class="tool-card" data-cat="productivity" style="text-decoration:none;color:inherit;">
-        <div class="tool-icon" style="background:#ecfdf5;">📝</div>
-        <h4>Notion AI</h4>
-        <p>AI-enhanced workspace for notes, docs, wikis and project management.</p>
-        <span class="tool-tag">Productivity</span>
-      </a>
       <a href="https://www.cursor.com" target="_blank" rel="noopener" class="tool-card" data-cat="code" style="text-decoration:none;color:inherit;">
-        <div class="tool-icon" style="background:#eff6ff;">🔧</div>
+        <div class="tool-head"><img class="tool-logo" onerror="toolLogoFail(this)" src="https://www.google.com/s2/favicons?domain=cursor.com&sz=64" alt="" loading="lazy"/><span class="tool-price freemium">Freemium</span></div>
         <h4>Cursor IDE</h4>
         <p>AI-native code editor built on VS Code with deep Claude/GPT integration.</p>
         <span class="tool-tag">Coding</span>
       </a>
-      <a href="https://openai.com/dall-e-3" target="_blank" rel="noopener" class="tool-card" data-cat="image" style="text-decoration:none;color:inherit;">
-        <div class="tool-icon" style="background:#fef2f2;">🖼</div>
-        <h4>DALL-E 3</h4>
-        <p>OpenAI's image generation model with precise text rendering capabilities.</p>
+      <a href="https://replit.com" target="_blank" rel="noopener" class="tool-card" data-cat="code" style="text-decoration:none;color:inherit;">
+        <div class="tool-head"><img class="tool-logo" onerror="toolLogoFail(this)" src="https://www.google.com/s2/favicons?domain=replit.com&sz=64" alt="" loading="lazy"/><span class="tool-price freemium">Freemium</span></div>
+        <h4>Replit Agent</h4>
+        <p>Cloud IDE that builds and deploys full apps from a prompt.</p>
+        <span class="tool-tag">Coding</span>
+      </a>
+      <a href="https://www.midjourney.com" target="_blank" rel="noopener" class="tool-card" data-cat="image" style="text-decoration:none;color:inherit;">
+        <div class="tool-head"><img class="tool-logo" onerror="toolLogoFail(this)" src="https://www.google.com/s2/favicons?domain=midjourney.com&sz=64" alt="" loading="lazy"/><span class="tool-price paid">Paid</span></div>
+        <h4>Midjourney v6</h4>
+        <p>State-of-the-art text-to-image generation with photorealistic quality.</p>
         <span class="tool-tag">Image AI</span>
+      </a>
+      <a href="https://openai.com/dall-e-3" target="_blank" rel="noopener" class="tool-card" data-cat="image" style="text-decoration:none;color:inherit;">
+        <div class="tool-head"><img class="tool-logo" onerror="toolLogoFail(this)" src="https://www.google.com/s2/favicons?domain=openai.com&sz=64" alt="" loading="lazy"/><span class="tool-price paid">Paid</span></div>
+        <h4>DALL·E 3</h4>
+        <p>OpenAI's image model with precise text rendering inside images.</p>
+        <span class="tool-tag">Image AI</span>
+      </a>
+      <a href="https://stability.ai" target="_blank" rel="noopener" class="tool-card" data-cat="image" style="text-decoration:none;color:inherit;">
+        <div class="tool-head"><img class="tool-logo" onerror="toolLogoFail(this)" src="https://www.google.com/s2/favicons?domain=stability.ai&sz=64" alt="" loading="lazy"/><span class="tool-price free">Open Source</span></div>
+        <h4>Stable Diffusion</h4>
+        <p>Open-weights image generation you can run and fine-tune locally.</p>
+        <span class="tool-tag">Image AI</span>
+      </a>
+      <a href="https://huggingface.co" target="_blank" rel="noopener" class="tool-card" data-cat="data" style="text-decoration:none;color:inherit;">
+        <div class="tool-head"><img class="tool-logo" onerror="toolLogoFail(this)" src="https://www.google.com/s2/favicons?domain=huggingface.co&sz=64" alt="" loading="lazy"/><span class="tool-price freemium">Freemium</span></div>
+        <h4>Hugging Face</h4>
+        <p>The hub for open models, datasets and ML demos.</p>
+        <span class="tool-tag">Data &amp; Analytics</span>
+      </a>
+      <a href="https://www.databricks.com/product/machine-learning" target="_blank" rel="noopener" class="tool-card" data-cat="data" style="text-decoration:none;color:inherit;">
+        <div class="tool-head"><img class="tool-logo" onerror="toolLogoFail(this)" src="https://www.google.com/s2/favicons?domain=databricks.com&sz=64" alt="" loading="lazy"/><span class="tool-price paid">Paid</span></div>
+        <h4>Databricks + DBRX</h4>
+        <p>Enterprise AI/ML platform with integrated LLM and data pipelines.</p>
+        <span class="tool-tag">Data &amp; Analytics</span>
+      </a>
+      <a href="https://www.notion.so/product/ai" target="_blank" rel="noopener" class="tool-card" data-cat="productivity" style="text-decoration:none;color:inherit;">
+        <div class="tool-head"><img class="tool-logo" onerror="toolLogoFail(this)" src="https://www.google.com/s2/favicons?domain=notion.so&sz=64" alt="" loading="lazy"/><span class="tool-price freemium">Freemium</span></div>
+        <h4>Notion AI</h4>
+        <p>AI-enhanced workspace for notes, docs, wikis and project management.</p>
+        <span class="tool-tag">Productivity</span>
+      </a>
+      <a href="https://gamma.app" target="_blank" rel="noopener" class="tool-card" data-cat="productivity" style="text-decoration:none;color:inherit;">
+        <div class="tool-head"><img class="tool-logo" onerror="toolLogoFail(this)" src="https://www.google.com/s2/favicons?domain=gamma.app&sz=64" alt="" loading="lazy"/><span class="tool-price freemium">Freemium</span></div>
+        <h4>Gamma</h4>
+        <p>Generate polished decks, docs and sites from a single prompt.</p>
+        <span class="tool-tag">Productivity</span>
+      </a>
+      <a href="https://otter.ai" target="_blank" rel="noopener" class="tool-card" data-cat="productivity" style="text-decoration:none;color:inherit;">
+        <div class="tool-head"><img class="tool-logo" onerror="toolLogoFail(this)" src="https://www.google.com/s2/favicons?domain=otter.ai&sz=64" alt="" loading="lazy"/><span class="tool-price freemium">Freemium</span></div>
+        <h4>Otter.ai</h4>
+        <p>Live meeting transcription, summaries and action items.</p>
+        <span class="tool-tag">Productivity</span>
+      </a>
+      <a href="https://elevenlabs.io" target="_blank" rel="noopener" class="tool-card" data-cat="productivity" style="text-decoration:none;color:inherit;">
+        <div class="tool-head"><img class="tool-logo" onerror="toolLogoFail(this)" src="https://www.google.com/s2/favicons?domain=elevenlabs.io&sz=64" alt="" loading="lazy"/><span class="tool-price freemium">Freemium</span></div>
+        <h4>ElevenLabs</h4>
+        <p>Lifelike AI voice generation, dubbing and text-to-speech.</p>
+        <span class="tool-tag">Productivity</span>
       </a>
     </div>
   </div>
@@ -922,9 +1013,9 @@
 <section class="blog-section" id="blog">
   <div class="section-inner">
     <div class="section-header">
-      <div class="section-label">Blog / Articles</div>
-      <h2>Perspectives on AI</h2>
-      <p>In-depth explainers, tutorials, and research breakdowns — strictly educational content from The Gradient, fast.ai, Google Research, and more. Not news.</p>
+      <div class="section-label">Guides &amp; Explainers</div>
+      <h2>Learn the fundamentals</h2>
+      <p>Evergreen explainers and tutorials — hand-picked, timeless reads that teach the concepts behind the headlines. Start here, not in the live feed.</p>
     </div>
     <div class="blog-grid" id="blog-grid"></div>
     <div style="text-align:center;margin-top:2.5rem;">
@@ -1071,8 +1162,9 @@
         <li><a href="#news">Latest News</a></li>
         <li><a href="#papers">AI Papers</a></li>
         <li><a href="#tools">Tools Directory</a></li>
-        <li><a href="#blog">Blog</a></li>
+        <li><a href="#blog">Guides &amp; Explainers</a></li>
         <li><a href="education.html">AI Education</a></li>
+        <li><a href="/archive.html">Archive</a></li>
       </ul>
     </div>
     <div class="footer-col">
@@ -1213,7 +1305,7 @@ function updateAnalyticsDisplay() {
   set('stat-avg-read',     avgStr);
   set('stat-articles-read',articlesToday);
   set('hero-stat-visitors', fmt(totalVisits));
-  set('hero-stat-articles', articlesToday || '0');
+  set('hero-stat-articles', articlesToday ? fmt(articlesToday) : '—');
 }
 
 // ── GLOBAL visitor counter (server-backed, /stats) ─────
@@ -1793,7 +1885,6 @@ async function fetchTech() {
     { url:'https://thegradient.pub/rss/',                                          src:'gradient'   },
     { url:'https://medium.com/feed/towards-data-science',                          src:'tds'        },
     { url:'https://blog.research.google/feeds/posts/default',                      src:'google'     },
-    { url:'https://venturebeat.com/category/ai/feed/',                             src:'venturebeat'},
     { url:'https://blog.langchain.dev/rss/',                                       src:'langchain'  },
     { url:'https://www.databricks.com/blog/feed',                                  src:'databricks' },
     { url:'https://cohere.com/blog/rss',                                           src:'cohere'     },
@@ -1896,6 +1987,16 @@ function updateTrendingCard(stories) {
   document.getElementById('hero-trending-desc').textContent  = (story.desc || domainOf(story.url) || '').slice(0,100) + ' →';
   card.onclick = () => openModal(story);
   card.querySelector('.tag').textContent = '🔥 Trending · ' + sourceBadge(story.src);
+  const himg = document.getElementById('hero-trending-img');
+  if (himg) {
+    if (story.image) {
+      himg.src = story.image;
+      himg.style.display = 'block';
+      himg.onerror = () => { himg.style.display = 'none'; };
+    } else {
+      himg.style.display = 'none';
+    }
+  }
 }
 
 // ── BOOT: progressive rendering ───────────────────────
@@ -2172,15 +2273,30 @@ async function fetchPapers(cat = 'all') {
   return results;
 }
 
+// Topic-colored gradient banner for paper cards (arXiv rarely has images).
+function paperBanner(p) {
+  const map = {
+    'cat-ml':  { grad:'linear-gradient(135deg,#1e3a5f,#2563eb)', glyph:'📈' },
+    'cat-cv':  { grad:'linear-gradient(135deg,#2d1b4e,#7c3aed)', glyph:'👁' },
+    'cat-nlp': { grad:'linear-gradient(135deg,#7c2d12,#ea580c)', glyph:'💬' },
+    'cat-ai':  { grad:'linear-gradient(135deg,#0c4a6e,#0284c7)', glyph:'🤖' },
+  };
+  return map[p.cls] || { grad:'linear-gradient(135deg,#0f172a,#334155)', glyph:'📄' };
+}
+
 function renderPaperCard(p) {
   const card = document.createElement('a');
   card.href = p.url;
   card.target = '_blank';
   card.rel = 'noopener';
   card.className = 'paper-card';
-  card.style.cssText = 'text-decoration:none;color:inherit;display:flex;flex-direction:column;';
+  card.style.cssText = 'text-decoration:none;color:inherit;display:flex;flex-direction:column;overflow:hidden;';
+  const pb = paperBanner(p);
   card.innerHTML = `
-    <span class="paper-category ${p.cls}">${p.cat}</span>
+    <div style="margin:-1.5rem -1.5rem 1.15rem;height:88px;background:${pb.grad};display:flex;align-items:flex-end;padding:0.7rem 1.1rem;position:relative;overflow:hidden;">
+      <span aria-hidden="true" style="position:absolute;right:0.7rem;top:-0.35rem;font-size:2.9rem;opacity:0.24;">${pb.glyph}</span>
+      <span style="font-size:0.64rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:rgba(255,255,255,0.95);">${p.cat}</span>
+    </div>
     <h4>${p.title}</h4>
     <div class="authors">${p.authors}</div>
     <div class="summary">${p.desc}</div>
@@ -2608,6 +2724,17 @@ function handleSubscribe(e) {
     emailEl.value = '';
     btn.disabled = false;
   });
+}
+// Favicon failed for a tool → swap in a tinted initial badge so the card never shows a broken image.
+function toolLogoFail(img) {
+  try {
+    const card = img.closest('.tool-card');
+    const name = (card && card.querySelector('h4') ? card.querySelector('h4').textContent.trim() : '?');
+    const span = document.createElement('span');
+    span.textContent = (name[0] || '?').toUpperCase();
+    span.style.cssText = 'width:42px;height:42px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1.15rem;color:#2563eb;background:#eff6ff;border:1px solid var(--border);box-sizing:border-box;';
+    img.replaceWith(span);
+  } catch(e) { img.style.display = 'none'; }
 }
 function filterTools(cat, btn) {
   document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
