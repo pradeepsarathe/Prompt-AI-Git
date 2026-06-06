@@ -30,11 +30,58 @@
 
 <!-- RSS autodiscovery -->
 <link rel="alternate" type="application/rss+xml" title="PromptAI — AI Research Feed" href="/feed.xml"/>
+<link rel="sitemap" type="application/xml" href="/sitemap.xml"/>
+<!-- SEO: structured data (Organization + WebSite with search) -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": "https://promptai.in/#org",
+      "name": "PromptAI",
+      "url": "https://promptai.in/",
+      "logo": "https://promptai.in/og-image.png",
+      "description": "Independent hub for AI research, papers, tools and insights.",
+      "sameAs": [
+        "https://twitter.com/promptai_in",
+        "https://www.linkedin.com/company/promptai-in",
+        "https://www.instagram.com/promptai.in"
+      ]
+    },
+    {
+      "@type": "WebSite",
+      "@id": "https://promptai.in/#website",
+      "url": "https://promptai.in/",
+      "name": "PromptAI",
+      "publisher": { "@id": "https://promptai.in/#org" },
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": "https://promptai.in/archive.html?q={search_term_string}",
+        "query-input": "required name=search_term_string"
+      }
+    }
+  ]
+}
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <!-- Google Fonts -->
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&display=swap" rel="stylesheet"/>
 <style>
+  /* ── ACCESSIBILITY & PERFORMANCE (added) ── */
+  :focus-visible { outline: 3px solid rgba(37,99,235,0.45); outline-offset: 2px; border-radius: 4px; }
+  .skip-link {
+    position: absolute; left: -999px; top: 0; z-index: 2000;
+    background: #2563eb; color: #fff; padding: 10px 16px; border-radius: 0 0 8px 0;
+    font-size: 0.9rem; font-weight: 600;
+  }
+  .skip-link:focus { left: 0; }
+  @keyframes pai-shimmer { 0% { background-position: -468px 0; } 100% { background-position: 468px 0; } }
+  .skel { background:#eef2f7; background-image:linear-gradient(90deg,#eef2f7 0px,#f7f9fc 40px,#eef2f7 80px); background-size:600px; animation:pai-shimmer 1.3s infinite linear; border-radius:6px; }
+  .skel-card { background:#fff;border:1px solid #e2e8f0;border-left:3px solid #e2e8f0;border-radius:0 12px 12px 0;padding:1rem 1.1rem;display:flex;flex-direction:column;gap:0.6rem; }
+  @media (prefers-reduced-motion: reduce) { .skel { animation:none; } }
+
   /* ── USER AUTH STYLES ── */
   .user-btn {
     display:flex;align-items:center;gap:8px;padding:7px 16px;border-radius:8px;
@@ -604,6 +651,7 @@
 </style>
 </head>
 <body>
+<a href="#news" class="skip-link">Skip to content</a>
 
 <!-- NAV -->
 <nav id="site-nav">
@@ -744,6 +792,16 @@
       <button class="src-btn" onclick="switchSource('gradient',this)">🎓 The Gradient</button>
       <button class="src-btn" onclick="switchSource('arxiv',this)">📄 arXiv</button>
       <button class="src-btn" onclick="switchSource('hn',this)">🟠 Hacker News</button>
+    </div>
+
+    <!-- Topic chips + unified search + For You (added) -->
+    <div id="topic-chips" role="group" aria-label="Filter by topic" style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-bottom:1rem;"></div>
+    <div style="display:flex;gap:0.75rem;flex-wrap:wrap;align-items:center;margin-bottom:1.25rem;">
+      <div style="flex:1;min-width:220px;position:relative;">
+        <input id="news-search" type="search" placeholder="Search news, papers &amp; blogs…" aria-label="Search the feed" oninput="onNewsSearch(this.value)" style="width:100%;padding:10px 14px 10px 38px;border:1px solid #e2e8f0;border-radius:10px;font-size:0.9rem;font-family:'DM Sans',sans-serif;outline:none;background:#fff;" onfocus="this.style.borderColor='#2563eb'" onblur="this.style.borderColor='#e2e8f0'"/>
+        <span aria-hidden="true" style="position:absolute;left:13px;top:50%;transform:translateY(-50%);font-size:0.85rem;color:#94a3b8;">🔍</span>
+      </div>
+      <button id="foryou-btn" onclick="toggleForYou(this)" aria-pressed="false" title="Show stories matching what you've been reading" style="padding:9px 16px;border-radius:20px;border:1px solid #e2e8f0;background:#fff;color:#475569;font-size:0.85rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap;">✨ For You</button>
     </div>
 
     <div class="fetch-status">
@@ -922,6 +980,8 @@
     <p>Get a weekly digest of the most important AI research, tools, and insights delivered straight to your inbox. No spam, ever.</p>
     <!-- Newsletter signup — posts to the /subscribe Cloudflare Pages Function -->
     <form name="newsletter" id="newsletter-form" style="width:100%;" onsubmit="handleSubscribe(event)">
+      <!-- Honeypot: hidden from real users; bots fill it and get silently dropped. -->
+      <input type="text" name="website" id="hp-website" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;top:-9999px;width:1px;height:1px;opacity:0;pointer-events:none;"/>
       <div class="newsletter-form">
         <input type="email" name="email" id="email-input" placeholder="you@company.com" autocomplete="email" required/>
         <button type="submit" id="subscribe-btn">Subscribe →</button>
@@ -939,8 +999,8 @@
     <div style="font-size:0.78rem;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;color:#60a5fa;margin-bottom:1rem;">Contact</div>
     <h2 style="font-family:'DM Serif Display',serif;font-size:2.2rem;color:#fff;margin-bottom:0.85rem;line-height:1.2;">Get in touch</h2>
     <p style="font-size:1rem;color:#94a3b8;line-height:1.7;margin-bottom:2rem;">Have feedback, a tool you'd like featured, a correction, or a partnership idea? We'd love to hear from you.</p>
-    <a href="/cdn-cgi/l/email-protection#e28a878e8e8da292908d8f9296838bcc8b8c" style="display:inline-flex;align-items:center;gap:9px;white-space:nowrap;background:#2563eb;color:#fff;padding:14px 30px;border-radius:10px;font-size:1rem;font-weight:600;text-decoration:none;transition:background 0.2s;" onmouseover="this.style.background='#1d4ed8'" onmouseout="this.style.background='#2563eb'">✉️ Email us</a>
-    <div style="margin-top:1.25rem;font-size:0.9rem;color:#64748b;">or write to <a href="/cdn-cgi/l/email-protection#caa2afa6a6a58abab8a5a7babeaba3e4a3a4" style="color:#93c5fd;text-decoration:none;font-weight:500;"><span class="__cf_email__" data-cfemail="345c5158585b7444465b594440555d1a5d5a">[email&#160;protected]</span></a></div>
+    <a href="mailto:hello@promptai.in" style="display:inline-flex;align-items:center;gap:9px;white-space:nowrap;background:#2563eb;color:#fff;padding:14px 30px;border-radius:10px;font-size:1rem;font-weight:600;text-decoration:none;transition:background 0.2s;" onmouseover="this.style.background='#1d4ed8'" onmouseout="this.style.background='#2563eb'">✉️ Email us</a>
+    <div style="margin-top:1.25rem;font-size:0.9rem;color:#64748b;">or write to <a href="mailto:hello@promptai.in" style="color:#93c5fd;text-decoration:none;font-weight:500;">hello@promptai.in</a></div>
     <div style="display:flex;gap:0.75rem;justify-content:center;margin-top:2.25rem;">
       <a href="https://twitter.com/promptai_in" target="_blank" rel="noopener" aria-label="Twitter / X" style="width:44px;height:44px;display:flex;align-items:center;justify-content:center;border-radius:50%;border:1px solid rgba(255,255,255,0.15);color:#cbd5e1;font-size:1rem;text-decoration:none;transition:all 0.2s;" onmouseover="this.style.borderColor='#2563eb';this.style.color='#fff';this.style.background='rgba(37,99,235,0.18)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.15)';this.style.color='#cbd5e1';this.style.background='transparent'">𝕏</a>
       <a href="https://www.linkedin.com/company/promptai-in" target="_blank" rel="noopener" aria-label="LinkedIn" style="width:44px;height:44px;display:flex;align-items:center;justify-content:center;border-radius:50%;border:1px solid rgba(255,255,255,0.15);color:#cbd5e1;font-size:0.85rem;font-weight:700;text-decoration:none;transition:all 0.2s;" onmouseover="this.style.borderColor='#2563eb';this.style.color='#fff';this.style.background='rgba(37,99,235,0.18)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.15)';this.style.color='#cbd5e1';this.style.background='transparent'">in</a>
@@ -1053,7 +1113,7 @@
   </div>
 </footer>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+<script>
 // ── ANALYTICS ENGINE ───────────────────────────────────
 // Tracks: page visits, articles clicked, time on page
 // Stored in localStorage — private, no third-party
@@ -1311,18 +1371,23 @@ const SOURCE_PRIORITY = {
   hn:1,
 };
 
+// Site-wide article popularity (url → read count), filled from /stats. Used to
+// boost genuinely-popular stories instead of ranking purely by recency.
+let POPULAR = {};
+
 function rankStories(stories) {
+  const now = Date.now();
   return [...stories].sort((a, b) => {
     // Hacker News is deprioritised — it always sorts AFTER every other source,
     // so HN stories appear at the very bottom of the feed regardless of recency.
     const aHN = a.src === 'hn', bHN = b.src === 'hn';
     if (aHN !== bHN) return aHN ? 1 : -1;
-    const ageA = a.time ? (Date.now()/1000 - a.time)/3600
-      : (a.date ? (Date.now() - new Date(a.date).getTime())/3600000 : 48);
-    const ageB = b.time ? (Date.now()/1000 - b.time)/3600
-      : (b.date ? (Date.now() - new Date(b.date).getTime())/3600000 : 48);
-    const sA = (SOURCE_PRIORITY[a.src]||5) - Math.min(ageA/12,6) + (a.score ? Math.min(a.score/50,3) : 0);
-    const sB = (SOURCE_PRIORITY[b.src]||5) - Math.min(ageB/12,6) + (b.score ? Math.min(b.score/50,3) : 0);
+    const ageA = (now - (a.ts || now - 48*3.6e6)) / 3.6e6;   // hours old
+    const ageB = (now - (b.ts || now - 48*3.6e6)) / 3.6e6;
+    const popA = POPULAR[a.url] ? Math.min(POPULAR[a.url] / 3, 4) : 0;
+    const popB = POPULAR[b.url] ? Math.min(POPULAR[b.url] / 3, 4) : 0;
+    const sA = (SOURCE_PRIORITY[a.src]||5) - Math.min(ageA/12,6) + (a.score ? Math.min(a.score/50,3) : 0) + popA;
+    const sB = (SOURCE_PRIORITY[b.src]||5) - Math.min(ageB/12,6) + (b.score ? Math.min(b.score/50,3) : 0) + popB;
     return sB - sA;
   });
 }
@@ -1332,23 +1397,41 @@ function renderCard(s) {
   const c = catColor(s.src);
   const div = document.createElement('div');
   div.dataset.src = s.src;
-  // Newspaper style: left accent border in source colour
-  div.style.cssText = `background:#fff;border:1px solid #e2e8f0;border-left:3px solid ${c.col};border-radius:0 12px 12px 0;padding:1rem 1.1rem;cursor:pointer;transition:all 0.2s;display:flex;flex-direction:column;gap:0.45rem;`;
+  div.dataset.topic = s.topic || 'General';
+  div.setAttribute('role', 'button');
+  div.tabIndex = 0;
+  div.setAttribute('aria-label', s.title);
+  div.style.cssText = `background:#fff;border:1px solid #e2e8f0;border-left:3px solid ${c.col};border-radius:0 12px 12px 0;padding:0;cursor:pointer;transition:all 0.2s;display:flex;flex-direction:column;overflow:hidden;`;
   div.onmouseover = ()=>{ div.style.transform='translateX(3px)'; div.style.boxShadow='0 4px 16px rgba(0,0,0,0.07)'; div.style.background='#fafbff'; };
   div.onmouseout  = ()=>{ div.style.transform=''; div.style.boxShadow=''; div.style.background='#fff'; };
-  div.onclick = ()=> openModal(s);
+  div.onfocus = ()=>{ div.style.boxShadow='0 0 0 3px rgba(37,99,235,0.35)'; };
+  div.onblur  = ()=>{ div.style.boxShadow=''; };
+  const open = ()=> openModal(s);
+  div.onclick = open;
+  div.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); } };
   const timeStr = s.time ? timeAgo(s.time) : (s.date ? s.date.slice(0,10) : '');
   const scoreStr = s.score ? ` · ⬆ ${s.score}` : '';
+  const topicChip = (s.topic && s.topic !== 'General')
+    ? `<span style="font-size:0.62rem;font-weight:600;color:#64748b;background:#f1f5f9;padding:2px 7px;border-radius:6px;white-space:nowrap;">${s.topic}</span>` : '';
+  const img = s.image
+    ? `<img src="${s.image}" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="this.style.display='none'" style="width:100%;height:150px;object-fit:cover;display:block;background:#eef2f7;"/>`
+    : '';
   div.innerHTML = `
-    <div style="display:flex;align-items:center;justify-content:space-between;gap:0.5rem;">
-      <span style="font-size:0.67rem;font-weight:700;text-transform:uppercase;letter-spacing:0.09em;color:${c.col};background:${c.bg};padding:2px 7px;border-radius:6px;flex-shrink:0;">${sourceBadge(s.src)}</span>
-      <span style="font-size:0.7rem;color:#94a3b8;white-space:nowrap;">${timeStr}</span>
-    </div>
-    <h4 style="font-family:'DM Serif Display',serif;font-size:0.96rem;color:#0a1628;line-height:1.38;margin:0;">${s.title}</h4>
-    ${s.desc ? `<p style="font-size:0.79rem;color:#64748b;line-height:1.55;margin:0;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">${s.desc}</p>` : ''}
-    <div style="display:flex;justify-content:space-between;align-items:center;padding-top:0.35rem;border-top:1px solid #f1f5f9;margin-top:auto;">
-      <span style="font-size:0.7rem;color:#94a3b8;">${domainOf(s.url)}${scoreStr}</span>
-      <span style="font-size:0.76rem;color:#2563eb;font-weight:600;">Read →</span>
+    ${img}
+    <div style="padding:1rem 1.1rem;display:flex;flex-direction:column;gap:0.45rem;flex:1;">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:0.5rem;">
+        <span style="display:flex;gap:5px;align-items:center;min-width:0;">
+          <span style="font-size:0.67rem;font-weight:700;text-transform:uppercase;letter-spacing:0.09em;color:${c.col};background:${c.bg};padding:2px 7px;border-radius:6px;flex-shrink:0;">${sourceBadge(s.src)}</span>
+          ${topicChip}
+        </span>
+        <span style="font-size:0.7rem;color:#94a3b8;white-space:nowrap;">${timeStr}</span>
+      </div>
+      <h4 style="font-family:'DM Serif Display',serif;font-size:0.96rem;color:#0a1628;line-height:1.38;margin:0;">${s.title}</h4>
+      ${s.desc ? `<p style="font-size:0.79rem;color:#64748b;line-height:1.55;margin:0;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">${s.desc}</p>` : ''}
+      <div style="display:flex;justify-content:space-between;align-items:center;padding-top:0.35rem;border-top:1px solid #f1f5f9;margin-top:auto;">
+        <span style="font-size:0.7rem;color:#94a3b8;">${domainOf(s.url)}${scoreStr}</span>
+        <span style="font-size:0.76rem;color:#2563eb;font-weight:600;">Read →</span>
+      </div>
     </div>`;
   return div;
 }
@@ -1365,15 +1448,106 @@ function renderPage(reset) {
 }
 function loadMore() { renderPage(false); }
 
-// ── SOURCE FILTER ──────────────────────────────────────
+// Skeleton placeholders shown while the first feed batch loads (perceived speed).
+function renderSkeletons(n = 6) {
+  const grid = document.getElementById('news-dynamic-grid');
+  if (!grid) return;
+  let html = '';
+  for (let i = 0; i < n; i++) {
+    html += `<div class="skel-card" aria-hidden="true">
+      <div class="skel" style="height:14px;width:38%;"></div>
+      <div class="skel" style="height:18px;width:92%;"></div>
+      <div class="skel" style="height:18px;width:70%;"></div>
+      <div class="skel" style="height:12px;width:55%;margin-top:6px;"></div>
+    </div>`;
+  }
+  grid.innerHTML = html;
+  const loading = document.getElementById('news-loading');
+  if (loading) loading.style.display = 'none';
+}
+
+// ── SOURCE / TOPIC / SEARCH FILTER ─────────────────────
+let currentTopic = 'all';
+let newsQuery = '';
+let forYouOn = false;
+
 function switchSource(src, btn) {
   currentSource = src;
   document.querySelectorAll('.src-btn').forEach(b => {
-    b.style.background='white'; b.style.color='#475569'; b.style.borderColor='#e2e8f0';
+    b.style.background='white'; b.style.color='#475569'; b.style.borderColor='#e2e8f0'; b.setAttribute('aria-pressed','false');
   });
-  btn.style.background='#2563eb'; btn.style.color='white'; btn.style.borderColor='#2563eb';
-  filtered = src==='all' ? allStories : allStories.filter(s=>s.src===src);
+  if (btn) { btn.style.background='#2563eb'; btn.style.color='white'; btn.style.borderColor='#2563eb'; btn.setAttribute('aria-pressed','true'); }
+  applyNewsFilters();
+}
+
+// Build the topic chip row from whatever topics are present in the feed.
+function buildTopicChips(stories) {
+  const counts = {};
+  stories.forEach(s => { const t = s.topic || 'General'; counts[t] = (counts[t]||0)+1; });
+  const order = ['LLMs','Agents','Vision','Robotics','Research','Tools','Policy','General'];
+  const topics = order.filter(t => counts[t]);
+  const box = document.getElementById('topic-chips');
+  if (!box) return;
+  const chip = (key,label,active) => `<button class="topic-chip" data-topic="${key}" onclick="switchTopic('${key}',this)" aria-pressed="${active}" style="padding:6px 13px;border-radius:20px;border:1px solid ${active?'#2563eb':'#e2e8f0'};background:${active?'#2563eb':'#fff'};color:${active?'#fff':'#475569'};font-size:0.8rem;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;">${label}</button>`;
+  box.innerHTML = chip('all','All Topics',currentTopic==='all')
+    + topics.map(t => chip(t, `${t} · ${counts[t]}`, currentTopic===t)).join('');
+}
+
+function switchTopic(topic, btn) {
+  currentTopic = topic;
+  document.querySelectorAll('#topic-chips .topic-chip').forEach(b => {
+    const on = b.dataset.topic === topic;
+    b.style.background = on ? '#2563eb' : '#fff';
+    b.style.color = on ? '#fff' : '#475569';
+    b.style.borderColor = on ? '#2563eb' : '#e2e8f0';
+    b.setAttribute('aria-pressed', on);
+  });
+  applyNewsFilters();
+}
+
+function onNewsSearch(q) { newsQuery = (q||'').trim().toLowerCase(); applyNewsFilters(); }
+
+function toggleForYou(btn) {
+  forYouOn = !forYouOn;
+  btn.style.background = forYouOn ? '#2563eb' : '#fff';
+  btn.style.color = forYouOn ? '#fff' : '#475569';
+  btn.style.borderColor = forYouOn ? '#2563eb' : '#e2e8f0';
+  btn.setAttribute('aria-pressed', forYouOn);
+  applyNewsFilters();
+}
+
+// Topics the user has shown interest in (derived from their history + likes).
+function preferredTopics() {
+  try {
+    const d = userDataGet();
+    const counts = {};
+    [...(d.history||[]), ...(d.liked||[])].forEach(a => {
+      const t = a.topic || classifyTopic(a.title||'', a.desc||'');
+      if (t && t !== 'General') counts[t] = (counts[t]||0)+1;
+    });
+    return new Set(Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,3).map(e=>e[0]));
+  } catch(e) { return new Set(); }
+}
+
+// The single source of truth for what the feed shows: source + topic + search + For You.
+function applyNewsFilters() {
+  let list = allStories;
+  if (currentSource !== 'all') list = list.filter(s => s.src === currentSource);
+  if (currentTopic !== 'all')  list = list.filter(s => (s.topic||'General') === currentTopic);
+  if (newsQuery) list = list.filter(s => (s.title + ' ' + (s.desc||'')).toLowerCase().includes(newsQuery));
+  if (forYouOn) {
+    const prefs = preferredTopics();
+    if (prefs.size) { const inPref = list.filter(s => prefs.has(s.topic)); list = inPref.length ? inPref : list; }
+  }
+  filtered = list;
   renderPage(true);
+  const loading = document.getElementById('news-loading');
+  if (loading) {
+    if (filtered.length === 0 && allStories.length > 0) {
+      loading.textContent = 'No stories match these filters — try clearing the search or picking “All Topics”.';
+      loading.style.display = 'block';
+    } else { loading.style.display = 'none'; }
+  }
 }
 
 // ── CACHE HELPERS (localStorage, 30min TTL) ────────────
@@ -1401,6 +1575,54 @@ function cacheSet(key, data, ttl = CACHE_TTL_NEWS) {
 // fetchWithProxyRace defined below (Cloudflare Pages function support)
 
 // ── PARSE RSS/ATOM XML ─────────────────────────────────
+// ── DATA-QUALITY HELPERS (added) ───────────────────────
+// Clip text to n chars, adding an ellipsis ONLY when actually truncated.
+function clip(str, n = 220) {
+  const s = (str || '').replace(/\s+/g, ' ').trim();
+  return s.length > n ? s.slice(0, n).trim() + '…' : s;
+}
+// Parse any feed date string into epoch-ms; 0 when unparseable.
+function parseTs(str) {
+  if (!str) return 0;
+  const t = Date.parse(str);
+  return Number.isFinite(t) ? t : 0;
+}
+// Pull a representative image URL out of an RSS/Atom <item>/<entry>.
+function extractImage(item) {
+  try {
+    const encs = item.querySelectorAll('enclosure[url]');
+    for (const enc of encs) {
+      const u = enc.getAttribute('url') || '';
+      if (/image\//i.test(enc.getAttribute('type') || '') || /\.(jpg|jpeg|png|webp|gif)(\?|$)/i.test(u)) return u;
+    }
+    const media = item.getElementsByTagName('media:content')[0] || item.getElementsByTagName('media:thumbnail')[0];
+    if (media && media.getAttribute('url')) return media.getAttribute('url');
+    const html = (item.getElementsByTagName('content:encoded')[0]?.textContent)
+      || item.querySelector('content, description, summary')?.textContent || '';
+    const m = html.match(/<img[^>]+src=["']([^"']+)["']/i);
+    if (m) return m[1];
+  } catch(e){}
+  return '';
+}
+// Lightweight topic classifier for tag chips + "For You".
+const TOPIC_RULES = [
+  ['Agents',   /\b(agent|agentic|autonomous|tool[- ]?use|multi[- ]?agent|orchestrat)\b/i],
+  ['Vision',   /\b(vision|image generation|video|diffusion|midjourney|dall[- ]?e|stable diffusion|multimodal|segmentation)\b/i],
+  ['Robotics', /\b(robot|robotics|embodied|drone|self[- ]?driving|autonomous vehicle|manipulation)\b/i],
+  ['Policy',   /\b(regulat|policy|governance|alignment|ai safety|ethic|copyright|lawsuit|\bban\b|eu ai act)\b/i],
+  ['Research', /\b(benchmark|arxiv|\bstudy\b|researchers?|state[- ]of[- ]the[- ]art|\bsota\b|fine[- ]?tun|pre[- ]?train|dataset)\b/i],
+  ['Tools',    /\b(launch|release|\bapi\b|\bsdk\b|platform|plugin|available now|now available|rolls out)\b/i],
+  ['LLMs',     /\b(llm|gpt|claude|gemini|llama|mistral|language model|chatbot|prompt|context window|\brag\b)\b/i],
+];
+function classifyTopic(title, desc) {
+  const text = title + ' ' + (desc || '');
+  for (const [name, re] of TOPIC_RULES) { if (re.test(text)) return name; }
+  return 'General';
+}
+// Shared AI-relevance gate + obvious-spam negative filter (stronger than before).
+const AI_RELEVANCE = /\b(AI|A\.I\.|artificial intelligence|machine learning|\bML\b|LLM|GPT|chatbot|deep learning|neural|openai|anthropic|claude|gemini|llama|mistral|robotics|automation|transformer|diffusion|agent|RAG|model|inference|fine[- ]?tun|dataset|benchmark|nvidia|deepmind)\b/i;
+const SPAM_NEG = /\b(casino|coupon|horoscope|betting|airdrop|forex|essay writing service|buy now|discount code|porn|viagra)\b/i;
+
 // ── CONTENT QUALITY FILTER ────────────────────────────
 // Strips garbage content: HTML in titles, code, URLs, too-short text
 function passesQualityCheck(title, desc, dateStr, src) {
@@ -1434,7 +1656,6 @@ function passesQualityCheck(title, desc, dateStr, src) {
 }
 
 function parseRSS(xml, src, maxItems = 10) {
-  const aiKw = /\b(AI|artificial intelligence|machine learning|LLM|GPT|chatbot|deep learning|neural|openai|anthropic|gemini|llama|mistral|robotics|automation|transformer|diffusion|agent|RAG|model)\b/i;
   try {
     const doc = new DOMParser().parseFromString(xml, 'text/xml');
     const items = Array.from(doc.querySelectorAll('item, entry'));
@@ -1442,18 +1663,38 @@ function parseRSS(xml, src, maxItems = 10) {
     for (const item of items) {
       const title = (item.querySelector('title')?.textContent || '').trim();
       const rawDesc = item.querySelector('description, summary, content')?.textContent || '';
-      const desc = rawDesc.replace(/<[^>]+>/g,'').replace(/&[a-z#0-9]+;/gi,' ').trim().slice(0, 220) + '…';
+      const desc = clip(rawDesc.replace(/<[^>]+>/g,'').replace(/&[a-z#0-9]+;/gi,' ').trim(), 220);
       const link = item.querySelector('link')?.textContent?.trim()
         || item.querySelector('link')?.getAttribute('href')?.trim() || '';
-      const pubDate = item.querySelector('pubDate, published, updated')?.textContent?.slice(0,16) || '';
+      const pubDate = item.querySelector('pubDate, published, updated')?.textContent?.trim() || '';
       if (!title || !link) continue;
       if (!passesQualityCheck(title, desc, pubDate, src)) continue;
-      if (src !== 'arxiv' && !aiKw.test(title) && !aiKw.test(desc)) continue;
-      results.push({ src, title, url: link, date: pubDate, desc });
+      if (src !== 'arxiv' && !AI_RELEVANCE.test(title) && !AI_RELEVANCE.test(desc)) continue;
+      if (SPAM_NEG.test(title + ' ' + desc)) continue;
+      results.push({ src, title, url: link, date: pubDate.slice(0,16), ts: parseTs(pubDate),
+        desc, image: extractImage(item), topic: classifyTopic(title, desc) });
       if (results.length >= maxItems) break;
     }
     return results;
   } catch(e) { return []; }
+}
+
+// ── SOURCE HEALTH MONITORING (added) ────────────────────
+// Tracks which feeds succeeded/failed this load (for the "N of M sources" note)
+// and auto-disables a feed for 6h after 3 consecutive failures so a dead source
+// stops costing every visitor a slow request.
+const SOURCE_STATUS = {};
+function _failStore() { try { return JSON.parse(localStorage.getItem('pai_srcfail') || '{}'); } catch(e) { return {}; } }
+function isSourceSkipped(src) {
+  const f = _failStore()[src];
+  return !!(f && f.n >= 3 && (Date.now() - f.at) < 6 * 3600 * 1000);
+}
+function recordSource(src, ok) {
+  SOURCE_STATUS[src] = ok ? 'ok' : 'fail';
+  const store = _failStore();
+  if (ok) { delete store[src]; }
+  else { const f = store[src] || { n: 0 }; f.n = (f.n || 0) + 1; f.at = Date.now(); store[src] = f; }
+  try { localStorage.setItem('pai_srcfail', JSON.stringify(store)); } catch(e) {}
 }
 
 // ── FETCH ONE RSS FEED (server-proxy-first, rss2json fallback) ────
@@ -1463,16 +1704,15 @@ function parseRSS(xml, src, maxItems = 10) {
 async function fetchRSS(feedUrl, src, maxItems = 10, ttl = CACHE_TTL_NEWS) {
   const cacheKey = src + '_' + feedUrl.slice(-20).replace(/[^a-z0-9]/gi,'_');
   const cached = cacheGet(cacheKey, ttl);
-  if (cached) return cached;
-
-  const aiKw = /\b(AI|artificial intelligence|machine learning|LLM|GPT|chatbot|deep learning|neural|openai|anthropic|gemini|llama|mistral|robotics|automation|transformer|diffusion|agent|RAG|model)\b/i;
+  if (cached) { recordSource(src, true); return cached; }
+  if (isSourceSkipped(src)) return [];   // auto-disabled after repeated failures
 
   // Strategy 1: server-side XML proxy (/rss-proxy) → parseRSS. Reliable + cached.
   try {
     const xml = await fetchWithProxyRace(feedUrl);
     if (xml) {
       const results = parseRSS(xml, src, maxItems);
-      if (results.length > 0) { cacheSet(cacheKey, results, ttl); return results; }
+      if (results.length > 0) { cacheSet(cacheKey, results, ttl); recordSource(src, true); return results; }
     }
   } catch(e) { /* fall through to rss2json */ }
 
@@ -1487,21 +1727,22 @@ async function fetchRSS(feedUrl, src, maxItems = 10, ttl = CACHE_TTL_NEWS) {
     const data = await r.json();
     if (data.status === 'ok' && data.items?.length > 0) {
       const results = data.items
-        .map(i => ({
-          src,
-          title: (i.title || '').replace(/<[^>]+>/g,'').trim(),
-          url: i.link || i.guid || '',
-          date: (i.pubDate || '').slice(0, 16),
-          desc: (i.description || i.content || '')
-            .replace(/<[^>]+>/g,'').replace(/&[a-z#0-9]+;/gi,' ').trim().slice(0, 220) + '…'
-        }))
+        .map(i => {
+          const title = (i.title || '').replace(/<[^>]+>/g,'').trim();
+          const desc = clip((i.description || i.content || '').replace(/<[^>]+>/g,'').replace(/&[a-z#0-9]+;/gi,' ').trim(), 220);
+          return { src, title, url: i.link || i.guid || '', date: (i.pubDate || '').slice(0, 16),
+            ts: parseTs(i.pubDate), desc, image: (i.thumbnail || i.enclosure?.link || ''),
+            topic: classifyTopic(title, desc) };
+        })
         .filter(i => i.title && i.url && passesQualityCheck(i.title, i.desc, i.date, src))
-        .filter(i => src === 'arxiv' || aiKw.test(i.title) || aiKw.test(i.desc || ''))
+        .filter(i => src === 'arxiv' || AI_RELEVANCE.test(i.title) || AI_RELEVANCE.test(i.desc || ''))
+        .filter(i => !SPAM_NEG.test(i.title + ' ' + i.desc))
         .slice(0, maxItems);
-      if (results.length > 0) { cacheSet(cacheKey, results, ttl); return results; }
+      if (results.length > 0) { cacheSet(cacheKey, results, ttl); recordSource(src, true); return results; }
     }
   } catch(e) { /* both strategies failed */ }
 
+  recordSource(src, false);
   return [];
 }
 
@@ -1524,7 +1765,10 @@ async function fetchHN() {
   const result = items
     .filter(i => i && i.title && (aiKw.test(i.title) || aiKw.test(i.text||'')))
     .slice(0, 7)
-    .map(i => ({ src:'hn', title:i.title, url:i.url||`https://news.ycombinator.com/item?id=${i.id}`, time:i.time, score:i.score, desc: i.text ? i.text.replace(/<[^>]+>/g,'').slice(0,200)+'…' : '' }));
+    .map(i => ({ src:'hn', title:i.title, url:i.url||`https://news.ycombinator.com/item?id=${i.id}`,
+      time:i.time, ts:(i.time ? i.time*1000 : 0), score:i.score, image:'',
+      topic:classifyTopic(i.title, i.text||''),
+      desc: i.text ? clip(i.text.replace(/<[^>]+>/g,''), 200) : '' }));
   if (result.length) cacheSet('hn', result, CACHE_TTL_NEWS);
   return result;
 }
@@ -1637,9 +1881,16 @@ document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeModal(); });
 // ── UPDATE TRENDING HERO CARD ──────────────────────────
 function updateTrendingCard(stories) {
   if (!stories || stories.length === 0) return;
-  const now = new Date();
-  const dayOfYear = Math.floor((now - new Date(now.getFullYear(), 0, 0)) / 86400000);
-  const story = stories[dayOfYear % stories.length];
+  // Prefer the most-read story site-wide (real trending); fall back to a daily pick.
+  let story;
+  const byPop = [...stories].filter(s => POPULAR[s.url]).sort((a,b) => (POPULAR[b.url]||0) - (POPULAR[a.url]||0));
+  if (byPop.length) {
+    story = byPop[0];
+  } else {
+    const now = new Date();
+    const dayOfYear = Math.floor((now - new Date(now.getFullYear(), 0, 0)) / 86400000);
+    story = stories[dayOfYear % stories.length];
+  }
   const card  = document.getElementById('hero-trending');
   document.getElementById('hero-trending-title').textContent = story.title;
   document.getElementById('hero-trending-desc').textContent  = (story.desc || domainOf(story.url) || '').slice(0,100) + ' →';
@@ -1651,6 +1902,7 @@ function updateTrendingCard(stories) {
 // HN loads in ~1s, shows immediately. arXiv + RSS stream in as they arrive.
 (async () => {
   try {
+    renderSkeletons(6);
     // ── Load HN + arXiv + all RSS feeds in parallel ──────────────
     document.getElementById('fetch-label').textContent = 'Fetching AI news from all sources…';
     const [hnResult, arxivResult, techResult] = await Promise.allSettled([
@@ -1682,26 +1934,37 @@ function updateTrendingCard(stories) {
     }
 
     if (added > 0) {
-      // Deduplicate by normalised title (same story from multiple sources)
-      const seenTitles = new Set();
-      const normTitle = t => t.toLowerCase().replace(/[^a-z0-9]/g,'').slice(0,40);
+      // ── Stronger cross-source dedupe ──────────────────────────
+      // Drop exact-URL repeats AND near-duplicate titles (same story carried by
+      // multiple outlets) using a stop-word-stripped 6-word signature.
+      const STOP = new Set(['the','a','an','to','of','for','and','in','on','with','is','are','how','why','what','new','ai','using','via','from','its','as']);
+      const sig = t => t.toLowerCase().replace(/[^a-z0-9 ]/g,' ').split(/\s+/).filter(w=>w && !STOP.has(w)).slice(0,6).join(' ');
+      const seenUrl = new Set(), seenSig = new Set();
       allStories = allStories.filter(s => {
-        const k = normTitle(s.title);
-        if (seenTitles.has(k)) return false;
-        seenTitles.add(k);
+        const u = (s.url||'').split(/[?#]/)[0];
+        const k = sig(s.title);
+        if (seenUrl.has(u) || (k && seenSig.has(k))) return false;
+        seenUrl.add(u); if (k) seenSig.add(k);
         return true;
       });
+      // ── Freshness: drop undated items when we have enough dated ones ────
+      const datedCount = allStories.filter(s => s.ts > 0).length;
+      if (datedCount >= 12) allStories = allStories.filter(s => s.ts > 0 || s.src === 'hn');
+      // ── Popularity: fetch site-wide read counts to boost ranking ──────
+      try { const pr = await fetch('/stats'); const pd = await pr.json(); if (pd && pd.popular) POPULAR = pd.popular; } catch(e) {}
       // ── Apply priority ranking ──────────────────────────────
       allStories = rankStories(allStories);
-      filtered = currentSource === 'all' ? [...allStories]
-        : allStories.filter(s => s.src === currentSource);
-      renderPage(true);
+      if (typeof buildTopicChips === 'function') buildTopicChips(allStories);
+      if (typeof applyNewsFilters === 'function') applyNewsFilters();
+      else { filtered = [...allStories]; renderPage(true); }
       document.getElementById('news-loading').style.display = 'none';
       updateTrendingCard(allStories);
       archiveSave(allStories, 'news');
     }
 
-    doneLoading(`${allStories.length} stories from ${new Set(allStories.map(s=>s.src)).size} sources`);
+    const liveSrcs = new Set(allStories.map(s=>s.src)).size;
+    const failed = Object.values(SOURCE_STATUS).filter(v => v === 'fail').length;
+    doneLoading(`${allStories.length} stories · ${liveSrcs} sources live${failed ? ` · ${failed} unavailable` : ''}`);
 
     if (allStories.length === 0) {
       document.getElementById('news-loading').textContent = 'Could not load live news. Check back soon.';
@@ -2304,10 +2567,14 @@ function handleSubscribe(e) {
   const successEl = document.getElementById('success-msg');
   const errorEl   = document.getElementById('error-msg');
   const email     = emailEl.value.trim();
+  const hp        = (document.getElementById('hp-website')?.value || '').trim();
 
   // Reset
   emailEl.style.borderColor = '#e2e8f0';
   errorEl.style.display = 'none';
+
+  // Honeypot tripped → it's a bot. Show the success state but do nothing.
+  if (hp) { successEl.style.display = 'block'; emailEl.value = ''; return; }
 
   // Validate
   if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
@@ -2330,7 +2597,7 @@ function handleSubscribe(e) {
   fetch('/subscribe', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email })
+    body: JSON.stringify({ email, website: hp })
   })
   .then(r => r.json())
   .catch(() => ({ success: true })) // graceful fallback — localStorage already saved it
