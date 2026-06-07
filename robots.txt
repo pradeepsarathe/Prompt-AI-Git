@@ -1,0 +1,18 @@
+# robots.txt — promptai.in
+# Allow all well-behaved crawlers full access.
+User-agent: *
+Allow: /
+
+# Keep crawl budget on real content, not query-string permutations
+# of the archive search (same content, infinite URLs).
+Disallow: /archive.html?*
+
+# Explicitly welcome the major AI/search crawlers
+User-agent: Googlebot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+# Sitemap location (absolute URL, per spec)
+Sitemap: https://promptai.in/sitemap.xml
