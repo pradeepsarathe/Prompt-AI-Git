@@ -33,6 +33,9 @@ const json = (obj, status = 200) =>
 
 const dayKey = () => 'v:day:' + new Date().toISOString().slice(0, 10); // v:day:YYYY-MM-DD
 const TOTAL_KEY = 'v:total';
+// Article-read counters (separate namespace from visitors).
+const aDayKey = () => 'a:day:' + new Date().toISOString().slice(0, 10); // a:day:YYYY-MM-DD
+const A_TOTAL_KEY = 'a:total';
 
 async function readNum(kv, key) {
   const raw = await kv.get(key);
@@ -52,12 +55,17 @@ async function countDays(kv) {
 }
 
 async function snapshot(kv) {
-  const [total, today, days] = await Promise.all([
+  const [total, today, days, aTotal, aToday] = await Promise.all([
     readNum(kv, TOTAL_KEY),
     readNum(kv, dayKey()),
     countDays(kv),
+    readNum(kv, A_TOTAL_KEY),
+    readNum(kv, aDayKey()),
   ]);
-  return { totalVisitors: total, todayVisitors: today, days };
+  return {
+    totalVisitors: total, todayVisitors: today, days,
+    articlesReadTotal: aTotal, articlesReadToday: aToday,
+  };
 }
 
 export async function onRequest(context) {
@@ -66,14 +74,29 @@ export async function onRequest(context) {
   if (request.method === 'OPTIONS') return json({}, 204);
 
   // No KV → tell the client to use its local fallback number.
-  if (!env.STATS) return json({ offline: true, totalVisitors: 0, todayVisitors: 0, days: 0 });
+  if (!env.STATS) return json({ offline: true, totalVisitors: 0, todayVisitors: 0, days: 0, articlesReadTotal: 0, articlesReadToday: 0 });
 
   const kv = env.STATS;
 
   try {
     if (request.method === 'POST') {
-      // Read-modify-write. KV is eventually consistent; for this traffic level a
-      // rare lost increment is acceptable and the count only ever grows.
+      // Distinguish the action: 'read' bumps the ARTICLE counters, anything else
+      // (default 'visit') bumps the VISITOR counters. KV is eventually consistent;
+      // for this traffic level a rare lost increment is fine and counts only grow.
+      let action = 'visit';
+      try { const body = await request.json(); if (body && body.action) action = body.action; } catch (e) {}
+
+      if (action === 'read') {
+        const tKey = aDayKey();
+        const [aTotal, aToday] = await Promise.all([readNum(kv, A_TOTAL_KEY), readNum(kv, tKey)]);
+        await Promise.all([
+          kv.put(A_TOTAL_KEY, String(aTotal + 1)),
+          kv.put(tKey, String(aToday + 1), { expirationTtl: 60 * 60 * 24 * 120 }),
+        ]);
+        return json(await snapshot(kv));
+      }
+
+      // Default: a visit.
       const tKey = dayKey();
       const [total, today] = await Promise.all([readNum(kv, TOTAL_KEY), readNum(kv, tKey)]);
       await Promise.all([
@@ -81,13 +104,12 @@ export async function onRequest(context) {
         // day buckets expire after ~120 days so the "days of history" stays sane
         kv.put(tKey, String(today + 1), { expirationTtl: 60 * 60 * 24 * 120 }),
       ]);
-      const days = await countDays(kv);
-      return json({ totalVisitors: total + 1, todayVisitors: today + 1, days });
+      return json(await snapshot(kv));
     }
 
     // GET → just report current totals
     return json(await snapshot(kv));
   } catch (err) {
-    return json({ offline: true, error: err.message, totalVisitors: 0, todayVisitors: 0, days: 0 });
+    return json({ offline: true, error: err.message, totalVisitors: 0, todayVisitors: 0, days: 0, articlesReadTotal: 0, articlesReadToday: 0 });
   }
 }
