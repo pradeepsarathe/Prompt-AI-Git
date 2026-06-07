@@ -767,7 +767,7 @@
         </div>
         <div class="stat-card">
           <span class="num" id="hero-stat-articles">—</span>
-          <div class="lbl">Articles read today</div>
+          <div class="lbl">Articles read</div>
         </div>
         <div class="stat-card">
           <span class="num">Hourly</span>
@@ -868,12 +868,11 @@
           <option value="all">All sources</option>
           <option value="openai">🤖 OpenAI</option>
           <option value="google">🔵 Google AI</option>
-          <option value="hf">🤗 Hugging Face</option>
-          <option value="marktechpost">🧪 MarkTechPost</option>
           <option value="tc">📰 TechCrunch</option>
           <option value="ars">🔭 Ars Technica</option>
-          <option value="gradient">🎓 The Gradient</option>
-          <option value="arxiv">📄 arXiv</option>
+          <option value="marktechpost">🧪 MarkTechPost</option>
+          <option value="analytics">📊 Analytics Insight</option>
+          <option value="hf">🤗 Hugging Face</option>
           <option value="hn">🟠 Hacker News</option>
         </select>
       </label>
@@ -1180,8 +1179,8 @@
     <div style="font-size:0.78rem;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;color:#60a5fa;margin-bottom:1rem;">Contact</div>
     <h2 style="font-family:'DM Serif Display',serif;font-size:2.2rem;color:#fff;margin-bottom:0.85rem;line-height:1.2;">Get in touch</h2>
     <p style="font-size:1rem;color:#94a3b8;line-height:1.7;margin-bottom:2rem;">Have feedback, a tool you'd like featured, a correction, or a partnership idea? We'd love to hear from you.</p>
-    <a href="/cdn-cgi/l/email-protection#f199949d9d9eb181839e9c81859098df989f" style="display:inline-flex;align-items:center;gap:9px;white-space:nowrap;background:#2563eb;color:#fff;padding:14px 30px;border-radius:10px;font-size:1rem;font-weight:600;text-decoration:none;transition:background 0.2s;" onmouseover="this.style.background='#1d4ed8'" onmouseout="this.style.background='#2563eb'">✉️ Email us</a>
-    <div style="margin-top:1.25rem;font-size:0.9rem;color:#64748b;">or write to <a href="/cdn-cgi/l/email-protection#e9818c858586a9999b8684999d8880c78087" style="color:#93c5fd;text-decoration:none;font-weight:500;"><span class="__cf_email__" data-cfemail="e28a878e8e8da292908d8f9296838bcc8b8c">[email&#160;protected]</span></a></div>
+    <a href="mailto:hello@promptai.in" style="display:inline-flex;align-items:center;gap:9px;white-space:nowrap;background:#2563eb;color:#fff;padding:14px 30px;border-radius:10px;font-size:1rem;font-weight:600;text-decoration:none;transition:background 0.2s;" onmouseover="this.style.background='#1d4ed8'" onmouseout="this.style.background='#2563eb'">✉️ Email us</a>
+    <div style="margin-top:1.25rem;font-size:0.9rem;color:#64748b;">or write to <a href="mailto:hello@promptai.in" style="color:#93c5fd;text-decoration:none;font-weight:500;">hello@promptai.in</a></div>
     <div style="display:flex;gap:0.75rem;justify-content:center;margin-top:2.25rem;">
       <a href="https://twitter.com/promptai_in" target="_blank" rel="noopener" aria-label="Twitter / X" style="width:44px;height:44px;display:flex;align-items:center;justify-content:center;border-radius:50%;border:1px solid rgba(255,255,255,0.15);color:#cbd5e1;font-size:1rem;text-decoration:none;transition:all 0.2s;" onmouseover="this.style.borderColor='#2563eb';this.style.color='#fff';this.style.background='rgba(37,99,235,0.18)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.15)';this.style.color='#cbd5e1';this.style.background='transparent'">𝕏</a>
       <a href="https://www.linkedin.com/company/promptai-in" target="_blank" rel="noopener" aria-label="LinkedIn" style="width:44px;height:44px;display:flex;align-items:center;justify-content:center;border-radius:50%;border:1px solid rgba(255,255,255,0.15);color:#cbd5e1;font-size:0.85rem;font-weight:700;text-decoration:none;transition:all 0.2s;" onmouseover="this.style.borderColor='#2563eb';this.style.color='#fff';this.style.background='rgba(37,99,235,0.18)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.15)';this.style.color='#cbd5e1';this.style.background='transparent'">in</a>
@@ -1285,7 +1284,7 @@
       <span style="font-size:0.78rem;color:#94a3b8;">🛰 <strong style="color:#e2e8f0;">20+</strong> sources tracked</span>
       <span style="font-size:0.78rem;color:#94a3b8;">🔄 Refreshed <strong style="color:#e2e8f0;">hourly</strong></span>
       <span style="font-size:0.78rem;color:#94a3b8;">⏱ Avg read: <strong id="stat-avg-read" style="color:#e2e8f0;">—</strong></span>
-      <span style="font-size:0.78rem;color:#94a3b8;">📖 <strong id="stat-articles-read" style="color:#e2e8f0;">—</strong> articles read today</span>
+      <span style="font-size:0.78rem;color:#94a3b8;">📖 <strong id="stat-articles-read" style="color:#e2e8f0;">—</strong> articles read all-time</span>
       <span style="font-size:0.72rem;color:#334155;">promptai.in</span>
     </div>
     <div class="footer-bottom-row">
@@ -1295,7 +1294,7 @@
   </div>
 </footer>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+<script>
 // ── ANALYTICS ENGINE ───────────────────────────────────
 // Tracks: page visits, articles clicked, time on page
 // Stored in localStorage — private, no third-party
@@ -1382,10 +1381,11 @@ function updateAnalyticsDisplay() {
     ? `${Math.floor(avgSec/60)}m ${avgSec%60}s`
     : avgSec > 0 ? `${avgSec}s` : '—';
 
-  // Articles read today — prefer the GLOBAL site-wide server counter (same number
-  // on every device, counts ALL visitors), fall back to local only when offline.
-  const localArticles = (d.articlesRead || {})[TODAY] || 0;
-  const articlesToday = serverStats ? (serverStats.articlesReadToday || 0) : localArticles;
+  // Articles read — GLOBAL all-time total across every visitor & device (server
+  // counter). Local fallback sums this browser's per-day tallies when offline.
+  const localArticles = Object.values(d.articlesRead || {}).reduce((a,b) => a + (b||0), 0);
+  const articlesTotal = (serverStats && serverStats.articlesReadTotal != null)
+    ? serverStats.articlesReadTotal : localArticles;
 
   // Update analytics bar
   const fmt = n => n >= 1000 ? (n/1000).toFixed(1)+'k' : n.toString();
@@ -1393,9 +1393,9 @@ function updateAnalyticsDisplay() {
   set('stat-visitors',     fmt(totalVisits));
   set('stat-today-visits', fmt(todayVisits));
   set('stat-avg-read',     avgStr);
-  set('stat-articles-read',articlesToday);
+  set('stat-articles-read',fmt(articlesTotal));
   set('hero-stat-visitors', fmt(totalVisits));
-  set('hero-stat-articles', articlesToday ? fmt(articlesToday) : '—');
+  set('hero-stat-articles', articlesTotal ? fmt(articlesTotal) : '—');
 }
 
 // ── GLOBAL visitor counter (server-backed, /stats) ─────
@@ -1470,10 +1470,6 @@ const FALLBACK_NEWS = [
     desc:'Robotics research borrows large-scale pretraining and generalist policies to handle manipulation and navigation.',
     take:'The "GPT moment" for robotics hinges on data and generalisation — watch which labs solve the real-world data bottleneck.',
     url:'https://bair.berkeley.edu/blog/', image:'' },
-  { src:'gradient', topic:'Research', title:'Evaluation, not just capability, becomes the hard problem in AI',
-    desc:'As benchmarks saturate, the field grapples with measuring reliability, safety and real-world usefulness.',
-    take:'If you can\'t measure it, you can\'t ship it responsibly — eval is the new moat for serious AI teams.',
-    url:'https://thegradient.pub/', image:'' },
   { src:'marktechpost', topic:'Tools', title:'Small, fast models bring AI to phones, browsers and the edge',
     desc:'Distillation and quantisation push capable models onto devices with no server round-trip.',
     take:'On-device inference flips the privacy and latency story — expect a wave of offline-first AI features.',
@@ -1488,6 +1484,17 @@ const FALLBACK_NEWS = [
     url:'https://www.unite.ai/', image:'' },
 ].map(s => ({ ...s, ts: 0, seed: true }));
 
+// The hero "Trending" spotlight always features a Gradient deep-dive. This is the
+// curated default; it's upgraded to the freshest live Gradient article once the
+// Explainers feed loads (see fetchDynamicBlogs → window.__gradientFeatured).
+let GRADIENT_FEATURED = {
+  src:'gradient', topic:'Research',
+  title:'Evaluation, not just capability, becomes the hard problem in AI',
+  desc:'As benchmarks saturate, the field grapples with measuring reliability, safety and real-world usefulness — the new frontier for serious AI teams.',
+  take:'If you can\'t measure it, you can\'t ship it responsibly — evaluation is the real moat.',
+  url:'https://thegradient.pub/', image:'', ts: 0, seed: true,
+};
+
 // Paint SOMETHING immediately: prefer the last live feed cached locally, else the
 // curated fallback. Guarantees the feed is never an empty "Loading…" shell.
 function seedFeed() {
@@ -1497,7 +1504,7 @@ function seedFeed() {
     if (arch.length >= 6) seed = arch.slice(0, 18);
   } catch(e) {}
   if (!seed.length) seed = FALLBACK_NEWS;
-  allStories = seed;
+  allStories = (typeof rankStories === 'function') ? rankStories(seed) : seed;
   filtered = [...allStories];
   if (typeof buildTopicChips === 'function') buildTopicChips(allStories);
   renderPage(true);
@@ -1641,17 +1648,47 @@ function catColor(src) {
   };
   return map[src] || {bg:'#eff6ff', col:'#1d4ed8'};
 }
+
+// Topic → glyph for the generated card visual (used when a story has no photo).
+function topicGlyph(topic) {
+  const map = { LLMs:'🧠', Agents:'🤖', Vision:'👁', Robotics:'🦾', Research:'📄',
+                Tools:'🛠', Policy:'⚖️', General:'✨' };
+  return map[topic] || '✨';
+}
+// Returns the card's top visual: a real image when present, otherwise an on-brand
+// gradient header keyed to the source colour + topic, so every card looks intentional.
+function cardVisual(s) {
+  const c = catColor(s.src);
+  if (s.image) {
+    return `<img src="${s.image}" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="this.outerHTML=window.__fallbackVisual(this.dataset.src,this.dataset.topic)" data-src="${s.src}" data-topic="${s.topic||'General'}" class="news-card-img" style="width:100%;height:150px;object-fit:cover;display:block;background:#eef2f7;"/>`;
+  }
+  return fallbackVisual(s.src, s.topic || 'General');
+}
+function fallbackVisual(src, topic) {
+  const c = catColor(src);
+  const label = (topic && topic !== 'General') ? topic : sourceBadge(src).replace(/^\S+\s/, '');
+  const glyph = topicGlyph(topic);
+  return `<div class="news-card-img news-card-fallback" aria-hidden="true" style="width:100%;height:150px;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;background:linear-gradient(135deg, ${c.col}, color-mix(in srgb, ${c.col} 50%, #0a1628));">
+    <span style="position:absolute;right:-6px;bottom:-14px;font-size:5.2rem;line-height:1;opacity:0.22;filter:grayscale(0.2);">${glyph}</span>
+    <span style="position:relative;font-family:'DM Serif Display',serif;color:#fff;font-size:1.15rem;letter-spacing:0.01em;text-shadow:0 1px 8px rgba(0,0,0,0.25);padding:0 1rem;text-align:center;">${label}</span>
+  </div>`;
+}
+window.__fallbackVisual = fallbackVisual;
+
 function domainOf(url) {
   try { return new URL(url).hostname.replace('www.',''); } catch(e){ return ''; }
 }
 
 // ── SOURCE PRIORITY RANKING ──────────────────────────────
 const SOURCE_PRIORITY = {
-  openai:10, google:9, msr:9, mit:9, bair:8, hf:8,
+  // Editorial / deep-analysis sources lead — The Gradient first.
+  gradient:12,
+  openai:10, google:9, msr:9, mit:9, bair:8,
   marktechpost:7, uniteai:6, mistral:7, perplexity:7, tc:7, ars:7,
-  venturebeat:5, gradient:6, langchain:5, databricks:5, cohere:5,
-  analytics:3, tds:4, arxiv:4,
-  hn:1,
+  venturebeat:5, langchain:5, databricks:5, cohere:5,
+  analytics:3, tds:4,
+  // Aggregators / raw feeds rank last: Hugging Face, then arXiv, then Hacker News.
+  hf:2, arxiv:1, hn:0,
 };
 
 // Site-wide article popularity (url → read count), filled from /stats. Used to
@@ -1661,16 +1698,15 @@ let POPULAR = {};
 function rankStories(stories) {
   const now = Date.now();
   return [...stories].sort((a, b) => {
-    // Hacker News is deprioritised — it always sorts AFTER every other source,
-    // so HN stories appear at the very bottom of the feed regardless of recency.
-    const aHN = a.src === 'hn', bHN = b.src === 'hn';
-    if (aHN !== bHN) return aHN ? 1 : -1;
     const ageA = (now - (a.ts || now - 48*3.6e6)) / 3.6e6;   // hours old
     const ageB = (now - (b.ts || now - 48*3.6e6)) / 3.6e6;
     const popA = POPULAR[a.url] ? Math.min(POPULAR[a.url] / 3, 4) : 0;
     const popB = POPULAR[b.url] ? Math.min(POPULAR[b.url] / 3, 4) : 0;
-    const sA = (SOURCE_PRIORITY[a.src]||5) - Math.min(ageA/12,6) + (a.score ? Math.min(a.score/50,3) : 0) + popA;
-    const sB = (SOURCE_PRIORITY[b.src]||5) - Math.min(ageB/12,6) + (b.score ? Math.min(b.score/50,3) : 0) + popB;
+    // Source priority is weighted ×3 so the source order is the PRIMARY signal
+    // (The Gradient on top → Hugging Face → arXiv → Hacker News last), while
+    // recency / score / popularity act only as tie-breakers WITHIN a source.
+    const sA = (SOURCE_PRIORITY[a.src]??5)*3 - Math.min(ageA/12,6) + (a.score ? Math.min(a.score/50,3) : 0) + popA;
+    const sB = (SOURCE_PRIORITY[b.src]??5)*3 - Math.min(ageB/12,6) + (b.score ? Math.min(b.score/50,3) : 0) + popB;
     return sB - sA;
   });
 }
@@ -1697,9 +1733,7 @@ function renderCard(s) {
   const scoreStr = s.score ? ` · ⬆ ${s.score}` : '';
   const topicChip = (s.topic && s.topic !== 'General')
     ? `<span style="font-size:0.62rem;font-weight:600;color:#64748b;background:#f1f5f9;padding:2px 7px;border-radius:6px;white-space:nowrap;">${s.topic}</span>` : '';
-  const img = s.image
-    ? `<img src="${s.image}" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="this.style.display='none'" class="news-card-img" style="width:100%;height:150px;object-fit:cover;display:block;background:#eef2f7;"/>`
-    : '';
+  const img = cardVisual(s);
   div.innerHTML = `
     ${img}
     <div class="news-card-body" style="padding:1rem 1.1rem;display:flex;flex-direction:column;gap:0.45rem;flex:1;">
@@ -2109,12 +2143,13 @@ async function fetchTech() {
     { url:'https://openai.com/news/rss.xml',                                       src:'openai'     },
     { url:'https://www.marktechpost.com/feed/',                                    src:'marktechpost'},
     { url:'https://www.analyticsinsight.net/feed/',                                src:'analytics'  },
-    { url:'https://thegradient.pub/rss/',                                          src:'gradient'   },
-    { url:'https://medium.com/feed/towards-data-science',                          src:'tds'        },
     { url:'https://blog.research.google/feeds/posts/default',                      src:'google'     },
-    { url:'https://blog.langchain.dev/rss/',                                       src:'langchain'  },
     { url:'https://www.databricks.com/blog/feed',                                  src:'databricks' },
     { url:'https://cohere.com/blog/rss',                                           src:'cohere'     },
+    // NOTE: The Gradient, Towards Data Science, LangChain, Distill, fast.ai etc.
+    // are EVERGREEN explainers — they live in the "Learn → Explainers" section
+    // (BLOG_FEEDS), not here. arXiv lives in "Research". This keeps News = "what
+    // just happened" with no overlap across sections.
   ];
   const settled = await Promise.allSettled(feeds.map(f => fetchRSS(f.url, f.src, 8, CACHE_TTL_NEWS)));
   const results = [];
@@ -2198,18 +2233,12 @@ document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeModal(); });
 
 // ── UPDATE TRENDING HERO CARD ──────────────────────────
 function updateTrendingCard(stories) {
-  if (!stories || stories.length === 0) return;
-  // Prefer the most-read story site-wide (real trending); fall back to a daily pick.
-  let story;
-  const byPop = [...stories].filter(s => POPULAR[s.url]).sort((a,b) => (POPULAR[b.url]||0) - (POPULAR[a.url]||0));
-  if (byPop.length) {
-    story = byPop[0];
-  } else {
-    const now = new Date();
-    const dayOfYear = Math.floor((now - new Date(now.getFullYear(), 0, 0)) / 86400000);
-    story = stories[dayOfYear % stories.length];
-  }
+  // The Trending spotlight always features a Gradient deep-dive: prefer the
+  // freshest live Gradient article (from the Explainers feed) and fall back to
+  // the curated featured pick. `stories` is accepted for signature compatibility.
+  const story = (window.__gradientFeatured) || GRADIENT_FEATURED;
   const card  = document.getElementById('hero-trending');
+  if (!card || !story) return;
   document.getElementById('hero-trending-title').textContent = story.title;
   document.getElementById('hero-trending-desc').textContent  = (story.desc || domainOf(story.url) || '').slice(0,100) + ' →';
   card.onclick = () => openModal(story);
@@ -2227,21 +2256,19 @@ function updateTrendingCard(stories) {
 }
 
 // ── BOOT: progressive rendering ───────────────────────
-// HN loads in ~1s, shows immediately. arXiv + RSS stream in as they arrive.
+// HN loads in ~1s, shows immediately. RSS news streams in as it arrives.
 (async () => {
   try {
     seedFeed();   // paint cached/curated content instantly — never an empty shell
-    // ── Load HN + arXiv + all RSS feeds in parallel ──────────────
+    // ── Load HN + news RSS feeds in parallel (arXiv lives in Research, not News) ──
     document.getElementById('fetch-label').textContent = 'Fetching live AI news from all sources…';
-    const [hnResult, arxivResult, techResult] = await Promise.allSettled([
+    const [hnResult, techResult] = await Promise.allSettled([
       fetchHN(),
-      fetchArxiv(),
       fetchTech()
     ]);
 
     let live = [];
     if (hnResult.status === 'fulfilled' && hnResult.value.length)    live.push(...hnResult.value);
-    if (arxivResult.status === 'fulfilled' && arxivResult.value.length) live.push(...arxivResult.value);
     if (techResult.status === 'fulfilled' && techResult.value.length)  live.push(...techResult.value);
     const added = live.length;
 
@@ -2804,6 +2831,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   allBlogArticles = topUpBlogs(live, 10);
   archiveSave(allBlogArticles, 'blog');
   renderDynamicBlogPage(true);
+  // Feature the freshest live Gradient deep-dive in the hero "Trending" spotlight.
+  const grad = (live || []).find(b => b.src === 'gradient' && b.title && b.url);
+  if (grad) { window.__gradientFeatured = { ...grad, topic: 'Research' }; updateTrendingCard(); }
 });
 
 // Convert a curated ALL_BLOGS entry into the dynamic-card shape.
