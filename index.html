@@ -238,10 +238,18 @@
   .nav-drop-toggle { display: inline-flex; align-items: center; gap: 4px; }
   .nav-drop-toggle .caret { font-size: 0.7rem; transition: transform 0.2s; }
   .nav-dropdown:hover .caret, .nav-dropdown:focus-within .caret { transform: rotate(180deg); }
+  /* Invisible hover-bridge: spans the visual gap between toggle and menu so the
+     cursor never falls into a dead-zone that drops :hover before reaching items. */
+  .nav-dropdown::after {
+    content: ''; position: absolute; left: 0; right: 0; top: 100%;
+    height: 14px; display: none;
+  }
+  .nav-dropdown:hover::after, .nav-dropdown:focus-within::after { display: block; }
   .nav-submenu {
-    position: absolute; top: calc(100% + 6px); left: -10px; min-width: 196px;
+    position: absolute; top: 100%; left: -10px; min-width: 196px;
     background: #fff; border: 1px solid var(--border); border-radius: 12px;
-    box-shadow: 0 16px 40px rgba(10,22,40,0.14); padding: 6px; margin: 0;
+    box-shadow: 0 16px 40px rgba(10,22,40,0.14); padding: 6px;
+    margin-top: 10px; /* visual gap, now bridged by ::after so hover survives */
     list-style: none; display: none; z-index: 60;
   }
   .nav-dropdown:hover .nav-submenu, .nav-dropdown:focus-within .nav-submenu { display: block; }
@@ -660,7 +668,7 @@
     /* Learn submenu: flatten into the stacked mobile menu */
     .nav-submenu {
       position: static; display: block; box-shadow: none; border: none;
-      border-radius: 0; padding: 0; min-width: 0;
+      border-radius: 0; padding: 0; min-width: 0; margin-top: 0;
     }
     .nav-drop-toggle .caret { display: none; }
     .nav-submenu li a {
@@ -680,6 +688,18 @@
   }
   @media (max-width: 600px) {
     .papers-grid, .blog-grid, .tools-grid { grid-template-columns: 1fr; }
+    /* Compact, dense news feed on phones: horizontal rows instead of tall cards
+       so several stories are visible per screen and the feed isn't endless. */
+    #news-dynamic-grid { grid-template-columns: 1fr !important; gap: 0.6rem !important; }
+    .news-card { flex-direction: row !important; align-items: stretch; border-radius: 0 10px 10px 0; }
+    .news-card-img { width: 96px !important; height: auto !important; min-height: 100%; flex-shrink: 0; align-self: stretch; }
+    .news-card-body { padding: 0.6rem 0.75rem !important; gap: 0.3rem !important; }
+    .news-card-body h4 { font-size: 0.88rem !important; line-height: 1.3 !important;
+      display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+    /* Trim the heavy bits so rows stay short on mobile */
+    .news-card-desc { -webkit-line-clamp: 2 !important; font-size: 0.74rem !important; }
+    .news-card-take { display: none !important; }
+    .news-card-foot { padding-top: 0.25rem !important; }
     #blog-sub-grid { grid-template-columns: 1fr !important; }
     /* Featured card: stack image on top on mobile */
     #blog-grid > div[style*="grid-template-columns:2fr 3fr"] { grid-template-columns: 1fr !important; }
@@ -742,16 +762,16 @@
     <div>
       <div class="hero-stats">
         <div class="stat-card">
-          <span class="num" id="hero-stat-visitors">—</span>
-          <div class="lbl">Total visitors</div>
+          <span class="num">20+</span>
+          <div class="lbl">Sources tracked</div>
         </div>
         <div class="stat-card">
           <span class="num" id="hero-stat-articles">—</span>
           <div class="lbl">Articles read today</div>
         </div>
         <div class="stat-card">
-          <span class="num">Daily</span>
-          <div class="lbl">Content refresh</div>
+          <span class="num">Hourly</span>
+          <div class="lbl">Feed refresh</div>
         </div>
       </div>
       <div id="hero-trending" class="hero-featured" style="cursor:pointer;text-decoration:none;">
@@ -823,19 +843,7 @@
       <p>One continuously-updated feed across 20+ trusted sources — research labs, journals, and newsrooms. Releases, papers, and expert analysis as they happen, all without leaving the page.</p>
     </div>
 
-    <!-- Source tabs -->
-    <div style="display:flex;gap:0.6rem;flex-wrap:wrap;margin-bottom:1.5rem;">
-      <button class="src-btn active" onclick="switchSource('all',this)">All Sources</button>
-      <button class="src-btn" onclick="switchSource('openai',this)">🤖 OpenAI</button>
-      <button class="src-btn" onclick="switchSource('google',this)">🔵 Google AI</button>
-      <button class="src-btn" onclick="switchSource('hf',this)">🤗 Hugging Face</button>
-      <button class="src-btn" onclick="switchSource('marktechpost',this)">🧪 MarkTechPost</button>
-      <button class="src-btn" onclick="switchSource('tc',this)">📰 TechCrunch</button>
-      <button class="src-btn" onclick="switchSource('ars',this)">🔭 Ars Technica</button>
-      <button class="src-btn" onclick="switchSource('gradient',this)">🎓 The Gradient</button>
-      <button class="src-btn" onclick="switchSource('arxiv',this)">📄 arXiv</button>
-      <button class="src-btn" onclick="switchSource('hn',this)">🟠 Hacker News</button>
-    </div>
+    <!-- Source tabs collapsed into the compact dropdown in the controls row below -->
 
     <!-- Topic chips + unified search + For You (added) -->
     <div id="topic-chips" role="group" aria-label="Filter by topic" style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-bottom:1rem;"></div>
@@ -845,6 +853,38 @@
         <span aria-hidden="true" style="position:absolute;left:13px;top:50%;transform:translateY(-50%);font-size:0.85rem;color:#94a3b8;">🔍</span>
       </div>
       <button id="foryou-btn" onclick="toggleForYou(this)" aria-pressed="false" title="Show stories matching what you've been reading" style="padding:9px 16px;border-radius:20px;border:1px solid #e2e8f0;background:#fff;color:#475569;font-size:0.85rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap;">✨ For You</button>
+    </div>
+
+    <!-- Sort + time-range controls -->
+    <div style="display:flex;gap:0.75rem;flex-wrap:wrap;align-items:center;margin-bottom:1.1rem;">
+      <div id="time-toggle" role="group" aria-label="Filter by time" style="display:inline-flex;background:#f1f5f9;border-radius:20px;padding:3px;">
+        <button class="time-btn" data-time="all"   onclick="switchTime('all',this)"   aria-pressed="true"  style="padding:6px 14px;border:none;border-radius:18px;background:#fff;color:#0a1628;font-size:0.8rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;box-shadow:0 1px 3px rgba(0,0,0,0.08);">All</button>
+        <button class="time-btn" data-time="today" onclick="switchTime('today',this)" aria-pressed="false" style="padding:6px 14px;border:none;border-radius:18px;background:transparent;color:#64748b;font-size:0.8rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;">Today</button>
+        <button class="time-btn" data-time="week"  onclick="switchTime('week',this)"  aria-pressed="false" style="padding:6px 14px;border:none;border-radius:18px;background:transparent;color:#64748b;font-size:0.8rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;">This week</button>
+      </div>
+      <label style="display:inline-flex;align-items:center;gap:6px;font-size:0.8rem;color:#64748b;font-weight:500;">
+        Source
+        <select id="source-select" onchange="switchSourceSelect(this.value)" aria-label="Filter by source" style="padding:7px 10px;border:1px solid #e2e8f0;border-radius:8px;font-size:0.8rem;font-family:'DM Sans',sans-serif;color:#0a1628;background:#fff;cursor:pointer;outline:none;max-width:170px;">
+          <option value="all">All sources</option>
+          <option value="openai">🤖 OpenAI</option>
+          <option value="google">🔵 Google AI</option>
+          <option value="hf">🤗 Hugging Face</option>
+          <option value="marktechpost">🧪 MarkTechPost</option>
+          <option value="tc">📰 TechCrunch</option>
+          <option value="ars">🔭 Ars Technica</option>
+          <option value="gradient">🎓 The Gradient</option>
+          <option value="arxiv">📄 arXiv</option>
+          <option value="hn">🟠 Hacker News</option>
+        </select>
+      </label>
+      <label style="display:inline-flex;align-items:center;gap:6px;font-size:0.8rem;color:#64748b;font-weight:500;">
+        Sort
+        <select id="sort-select" onchange="switchSort(this.value)" aria-label="Sort stories" style="padding:7px 10px;border:1px solid #e2e8f0;border-radius:8px;font-size:0.8rem;font-family:'DM Sans',sans-serif;color:#0a1628;background:#fff;cursor:pointer;outline:none;">
+          <option value="top">Top stories</option>
+          <option value="new">Newest first</option>
+        </select>
+      </label>
+      <span id="feed-updated" style="margin-left:auto;font-size:0.76rem;color:#94a3b8;white-space:nowrap;"></span>
     </div>
 
     <div class="fetch-status">
@@ -1023,6 +1063,40 @@
     </div>
   </div>
 </section>
+
+<!-- AI EDUCATION (homepage preview → full page) -->
+<section class="education-section" id="education" style="background:var(--accent-subtle);border-top:1px solid #bfdbfe;border-bottom:1px solid #bfdbfe;">
+  <div class="section-inner">
+    <div class="section-header">
+      <div class="section-label">AI Education</div>
+      <h2>Go from curious to capable</h2>
+      <p>Free courses, learning paths, and prompt-engineering resources — hand-picked for quality. A structured way to actually learn AI, beyond the daily feed.</p>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1.25rem;">
+      <a href="education.html#courses" style="text-decoration:none;color:inherit;background:#fff;border:1px solid #bfdbfe;border-radius:14px;padding:1.6rem;display:flex;flex-direction:column;gap:0.5rem;transition:transform 0.18s,box-shadow 0.18s;" onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 14px 32px rgba(37,99,235,0.12)'" onmouseout="this.style.transform='';this.style.boxShadow=''">
+        <span style="font-size:1.6rem;">🎓</span>
+        <h4 style="font-family:'DM Serif Display',serif;font-size:1.15rem;color:#0a1628;margin:0;">Free Courses</h4>
+        <p style="font-size:0.86rem;color:#64748b;line-height:1.55;margin:0;">Vetted courses from top universities and AI labs — for every level, most free to audit.</p>
+        <span style="font-size:0.82rem;color:#2563eb;font-weight:600;margin-top:auto;padding-top:0.4rem;">Browse courses →</span>
+      </a>
+      <a href="education.html#paths" style="text-decoration:none;color:inherit;background:#fff;border:1px solid #bfdbfe;border-radius:14px;padding:1.6rem;display:flex;flex-direction:column;gap:0.5rem;transition:transform 0.18s,box-shadow 0.18s;" onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 14px 32px rgba(37,99,235,0.12)'" onmouseout="this.style.transform='';this.style.boxShadow=''">
+        <span style="font-size:1.6rem;">🧭</span>
+        <h4 style="font-family:'DM Serif Display',serif;font-size:1.15rem;color:#0a1628;margin:0;">Learning Paths</h4>
+        <p style="font-size:0.86rem;color:#64748b;line-height:1.55;margin:0;">Curated step-by-step sequences based on what you want to build or achieve with AI.</p>
+        <span style="font-size:0.82rem;color:#2563eb;font-weight:600;margin-top:auto;padding-top:0.4rem;">Pick a path →</span>
+      </a>
+      <a href="education.html#prompting" style="text-decoration:none;color:inherit;background:#fff;border:1px solid #bfdbfe;border-radius:14px;padding:1.6rem;display:flex;flex-direction:column;gap:0.5rem;transition:transform 0.18s,box-shadow 0.18s;" onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 14px 32px rgba(37,99,235,0.12)'" onmouseout="this.style.transform='';this.style.boxShadow=''">
+        <span style="font-size:1.6rem;">✍️</span>
+        <h4 style="font-family:'DM Serif Display',serif;font-size:1.15rem;color:#0a1628;margin:0;">Prompt Engineering</h4>
+        <p style="font-size:0.86rem;color:#64748b;line-height:1.55;margin:0;">Structured resources on writing effective prompts for ChatGPT, Claude, Gemini and more.</p>
+        <span style="font-size:0.82rem;color:#2563eb;font-weight:600;margin-top:auto;padding-top:0.4rem;">Learn prompting →</span>
+      </a>
+    </div>
+    <div style="text-align:center;margin-top:2.5rem;">
+      <a href="education.html" style="display:inline-block;background:#2563eb;color:#fff;text-decoration:none;padding:13px 34px;border-radius:8px;font-size:0.95rem;font-weight:600;transition:background 0.18s;" onmouseover="this.style.background='#1d4ed8'" onmouseout="this.style.background='#2563eb'">Explore AI Education →</a>
+    </div>
+  </div>
+</section>
 <!-- ABOUT -->
 <section class="about-section" id="about" style="padding:5rem 2rem;">
   <div class="about-inner">
@@ -1069,6 +1143,13 @@
     <div class="newsletter-icon">✉️</div>
     <h2>Stay ahead of AI</h2>
     <p>Get a weekly digest of the most important AI research, tools, and insights delivered straight to your inbox. No spam, ever.</p>
+
+    <!-- What's inside an issue — sets clear expectations, lifts conversion -->
+    <div style="display:flex;gap:0.6rem;flex-wrap:wrap;justify-content:center;margin:-0.75rem 0 1.75rem;">
+      <span style="display:inline-flex;align-items:center;gap:6px;background:#fff;border:1px solid #bfdbfe;border-radius:20px;padding:7px 14px;font-size:0.82rem;color:#1e3a8a;font-weight:500;">📰 5 must-read stories</span>
+      <span style="display:inline-flex;align-items:center;gap:6px;background:#fff;border:1px solid #bfdbfe;border-radius:20px;padding:7px 14px;font-size:0.82rem;color:#1e3a8a;font-weight:500;">🛠 3 new tools</span>
+      <span style="display:inline-flex;align-items:center;gap:6px;background:#fff;border:1px solid #bfdbfe;border-radius:20px;padding:7px 14px;font-size:0.82rem;color:#1e3a8a;font-weight:500;">📄 1 paper, explained</span>
+    </div>
     <!-- Newsletter signup — posts to the /subscribe Cloudflare Pages Function -->
     <form name="newsletter" id="newsletter-form" style="width:100%;" onsubmit="handleSubscribe(event)">
       <!-- Honeypot: hidden from real users; bots fill it and get silently dropped. -->
@@ -1078,7 +1159,16 @@
         <button type="submit" id="subscribe-btn">Subscribe →</button>
       </div>
     </form>
-    <div class="newsletter-note">Join researchers, engineers, and AI enthusiasts. Unsubscribe anytime.</div>
+    <div class="newsletter-note">
+      <span style="display:inline-flex;align-items:center;gap:9px;justify-content:center;flex-wrap:wrap;">
+        <span aria-hidden="true" style="display:inline-flex;">
+          <span style="width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,#2563eb,#7c3aed);border:2px solid var(--accent-subtle);display:inline-block;"></span>
+          <span style="width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,#059669,#2563eb);border:2px solid var(--accent-subtle);display:inline-block;margin-left:-8px;"></span>
+          <span style="width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,#f59e0b,#db2777);border:2px solid var(--accent-subtle);display:inline-block;margin-left:-8px;"></span>
+        </span>
+        <span>Read by AI engineers, researchers &amp; founders · Mondays · ~5 min · unsubscribe anytime</span>
+      </span>
+    </div>
     <div id="success-msg" style="display:none;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:12px 20px;margin-top:1rem;font-size:0.9rem;color:#15803d;">🎉 You're subscribed! Welcome to the PromptAI community.</div>
     <div id="error-msg" style="display:none;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:12px 20px;margin-top:1rem;font-size:0.9rem;color:#dc2626;"></div>
   </div>
@@ -1090,8 +1180,8 @@
     <div style="font-size:0.78rem;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;color:#60a5fa;margin-bottom:1rem;">Contact</div>
     <h2 style="font-family:'DM Serif Display',serif;font-size:2.2rem;color:#fff;margin-bottom:0.85rem;line-height:1.2;">Get in touch</h2>
     <p style="font-size:1rem;color:#94a3b8;line-height:1.7;margin-bottom:2rem;">Have feedback, a tool you'd like featured, a correction, or a partnership idea? We'd love to hear from you.</p>
-    <a href="mailto:hello@promptai.in" style="display:inline-flex;align-items:center;gap:9px;white-space:nowrap;background:#2563eb;color:#fff;padding:14px 30px;border-radius:10px;font-size:1rem;font-weight:600;text-decoration:none;transition:background 0.2s;" onmouseover="this.style.background='#1d4ed8'" onmouseout="this.style.background='#2563eb'">✉️ Email us</a>
-    <div style="margin-top:1.25rem;font-size:0.9rem;color:#64748b;">or write to <a href="mailto:hello@promptai.in" style="color:#93c5fd;text-decoration:none;font-weight:500;">hello@promptai.in</a></div>
+    <a href="/cdn-cgi/l/email-protection#f199949d9d9eb181839e9c81859098df989f" style="display:inline-flex;align-items:center;gap:9px;white-space:nowrap;background:#2563eb;color:#fff;padding:14px 30px;border-radius:10px;font-size:1rem;font-weight:600;text-decoration:none;transition:background 0.2s;" onmouseover="this.style.background='#1d4ed8'" onmouseout="this.style.background='#2563eb'">✉️ Email us</a>
+    <div style="margin-top:1.25rem;font-size:0.9rem;color:#64748b;">or write to <a href="/cdn-cgi/l/email-protection#e9818c858586a9999b8684999d8880c78087" style="color:#93c5fd;text-decoration:none;font-weight:500;"><span class="__cf_email__" data-cfemail="e28a878e8e8da292908d8f9296838bcc8b8c">[email&#160;protected]</span></a></div>
     <div style="display:flex;gap:0.75rem;justify-content:center;margin-top:2.25rem;">
       <a href="https://twitter.com/promptai_in" target="_blank" rel="noopener" aria-label="Twitter / X" style="width:44px;height:44px;display:flex;align-items:center;justify-content:center;border-radius:50%;border:1px solid rgba(255,255,255,0.15);color:#cbd5e1;font-size:1rem;text-decoration:none;transition:all 0.2s;" onmouseover="this.style.borderColor='#2563eb';this.style.color='#fff';this.style.background='rgba(37,99,235,0.18)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.15)';this.style.color='#cbd5e1';this.style.background='transparent'">𝕏</a>
       <a href="https://www.linkedin.com/company/promptai-in" target="_blank" rel="noopener" aria-label="LinkedIn" style="width:44px;height:44px;display:flex;align-items:center;justify-content:center;border-radius:50%;border:1px solid rgba(255,255,255,0.15);color:#cbd5e1;font-size:0.85rem;font-weight:700;text-decoration:none;transition:all 0.2s;" onmouseover="this.style.borderColor='#2563eb';this.style.color='#fff';this.style.background='rgba(37,99,235,0.18)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.15)';this.style.color='#cbd5e1';this.style.background='transparent'">in</a>
@@ -1192,8 +1282,8 @@
     <!-- Live stats bar -->
     <div id="analytics-bar" style="grid-column:1/-1;display:flex;gap:1.5rem;flex-wrap:wrap;justify-content:center;align-items:center;padding:0.85rem 1.5rem;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:10px;margin-bottom:1.25rem;">
       <span style="font-size:0.75rem;color:#64748b;">📊 Live stats</span>
-      <span style="font-size:0.78rem;color:#94a3b8;">👥 <strong id="stat-visitors" style="color:#e2e8f0;">—</strong> total visitors</span>
-      <span style="font-size:0.78rem;color:#94a3b8;">📅 <strong id="stat-today-visits" style="color:#e2e8f0;">—</strong> today</span>
+      <span style="font-size:0.78rem;color:#94a3b8;">🛰 <strong style="color:#e2e8f0;">20+</strong> sources tracked</span>
+      <span style="font-size:0.78rem;color:#94a3b8;">🔄 Refreshed <strong style="color:#e2e8f0;">hourly</strong></span>
       <span style="font-size:0.78rem;color:#94a3b8;">⏱ Avg read: <strong id="stat-avg-read" style="color:#e2e8f0;">—</strong></span>
       <span style="font-size:0.78rem;color:#94a3b8;">📖 <strong id="stat-articles-read" style="color:#e2e8f0;">—</strong> articles read today</span>
       <span style="font-size:0.72rem;color:#334155;">promptai.in</span>
@@ -1205,7 +1295,7 @@
   </div>
 </footer>
 
-<script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 // ── ANALYTICS ENGINE ───────────────────────────────────
 // Tracks: page visits, articles clicked, time on page
 // Stored in localStorage — private, no third-party
@@ -1340,6 +1430,98 @@ let filtered = [];
 let page = 0;
 const PAGE_SIZE = 9;
 let currentSource = 'all';
+let feedIsLive = false;   // true once real fetched stories replace the seed
+
+// ── FALLBACK / SEED STORIES ────────────────────────────
+// Curated, evergreen AI stories with real editorial takes. Used to (a) paint the
+// feed INSTANTLY at boot so the page is never an empty "Loading…" shell, and
+// (b) guarantee content if every live feed rate-limits or fails. Live results
+// replace these the moment they arrive.
+const FALLBACK_NEWS = [
+  { src:'openai', topic:'LLMs', title:'Frontier labs race to ship reasoning models that "think" before answering',
+    desc:'A wave of models now spend extra inference-time compute on step-by-step reasoning, trading latency for accuracy on hard math, code and planning tasks.',
+    take:'Reasoning-at-inference is the biggest architectural shift since RLHF — it changes how you price, prompt and evaluate models.',
+    url:'https://openai.com/news/', image:'' },
+  { src:'anthropic', topic:'Agents', title:'Agentic coding tools move from autocomplete to autonomous multi-file edits',
+    desc:'Developer tools increasingly plan, edit across a repo, run tests and iterate — shifting the human role from typing to reviewing.',
+    take:'The unit of AI coding work is becoming the task, not the line — review workflows and trust signals now matter more than raw generation.',
+    url:'https://www.anthropic.com/news', image:'' },
+  { src:'google', topic:'Vision', title:'Multimodal models close the gap on long-form video understanding',
+    desc:'New context windows and tokenisation let models reason over hours of video and dense documents in a single pass.',
+    take:'Long-context multimodality quietly unlocks search, support and analytics use-cases that were impossible a year ago.',
+    url:'https://blog.google/technology/ai/', image:'' },
+  { src:'hf', topic:'Tools', title:'Open-weight models keep landing within months of frontier closed models',
+    desc:'The performance gap between the best open and closed models continues to compress, with strong permissively-licensed releases.',
+    take:'Open weights reset the build-vs-buy math for anyone with privacy, cost or fine-tuning constraints.',
+    url:'https://huggingface.co/blog', image:'' },
+  { src:'msr', topic:'Research', title:'Retrieval-augmented generation matures into the default enterprise pattern',
+    desc:'Teams pair LLMs with vector search and structured tools to ground answers in proprietary data and cut hallucination.',
+    take:'RAG is now table-stakes plumbing — the differentiation has moved to evaluation, freshness and access control.',
+    url:'https://www.microsoft.com/en-us/research/blog/', image:'' },
+  { src:'mistral', topic:'LLMs', title:'Mixture-of-Experts pushes frontier quality at a fraction of inference cost',
+    desc:'Sparse MoE architectures activate only a slice of parameters per token, delivering large-model quality on smaller compute budgets.',
+    take:'MoE is why "cheaper and better" stopped being a contradiction — it reshapes the cost curve for serving AI at scale.',
+    url:'https://mistral.ai/news/', image:'' },
+  { src:'tc', topic:'Policy', title:'AI governance shifts from voluntary pledges to enforceable rules',
+    desc:'Regulators move on transparency, evaluation and copyright as deployment outpaces oversight.',
+    take:'Compliance is becoming a product requirement — provenance, eval logs and opt-outs are now design decisions, not afterthoughts.',
+    url:'https://techcrunch.com/category/artificial-intelligence/', image:'' },
+  { src:'bair', topic:'Robotics', title:'Embodied AI brings foundation-model techniques to real-world robots',
+    desc:'Robotics research borrows large-scale pretraining and generalist policies to handle manipulation and navigation.',
+    take:'The "GPT moment" for robotics hinges on data and generalisation — watch which labs solve the real-world data bottleneck.',
+    url:'https://bair.berkeley.edu/blog/', image:'' },
+  { src:'gradient', topic:'Research', title:'Evaluation, not just capability, becomes the hard problem in AI',
+    desc:'As benchmarks saturate, the field grapples with measuring reliability, safety and real-world usefulness.',
+    take:'If you can\'t measure it, you can\'t ship it responsibly — eval is the new moat for serious AI teams.',
+    url:'https://thegradient.pub/', image:'' },
+  { src:'marktechpost', topic:'Tools', title:'Small, fast models bring AI to phones, browsers and the edge',
+    desc:'Distillation and quantisation push capable models onto devices with no server round-trip.',
+    take:'On-device inference flips the privacy and latency story — expect a wave of offline-first AI features.',
+    url:'https://www.marktechpost.com/category/artificial-intelligence/', image:'' },
+  { src:'venturebeat', topic:'Agents', title:'Enterprises move AI pilots into production — and hit the integration wall',
+    desc:'The hard part isn\'t the model; it\'s data plumbing, evals, permissions and change management.',
+    take:'The winners in 2026 are operational, not just clever — distribution and reliability beat raw model IQ.',
+    url:'https://venturebeat.com/category/ai/', image:'' },
+  { src:'uniteai', topic:'Vision', title:'Generative media tools blur the line between prompt and production',
+    desc:'Text-to-image, video and audio tools reach quality usable in real creative pipelines.',
+    take:'Provenance and licensing are now the gating issues for generative media in any commercial workflow.',
+    url:'https://www.unite.ai/', image:'' },
+].map(s => ({ ...s, ts: 0, seed: true }));
+
+// Paint SOMETHING immediately: prefer the last live feed cached locally, else the
+// curated fallback. Guarantees the feed is never an empty "Loading…" shell.
+function seedFeed() {
+  let seed = [];
+  try {
+    const arch = JSON.parse(localStorage.getItem('pai_archive') || '[]').filter(a => a.type === 'news');
+    if (arch.length >= 6) seed = arch.slice(0, 18);
+  } catch(e) {}
+  if (!seed.length) seed = FALLBACK_NEWS;
+  allStories = seed;
+  filtered = [...allStories];
+  if (typeof buildTopicChips === 'function') buildTopicChips(allStories);
+  renderPage(true);
+  const loading = document.getElementById('news-loading');
+  if (loading) loading.style.display = 'none';
+  updateTrendingCard(allStories);
+  setFeedUpdated(seed === FALLBACK_NEWS ? null : 'cached');
+}
+
+// "Updated X ago" freshness stamp next to the feed controls.
+function setFeedUpdated(when) {
+  const el = document.getElementById('feed-updated');
+  if (!el) return;
+  if (when === 'cached') { el.textContent = '· showing your last cached feed'; el.style.color = '#94a3b8'; }
+  else if (when === null) { el.textContent = '· showing featured picks while we fetch live'; el.style.color = '#94a3b8'; }
+  else { el.innerHTML = '🟢 Updated ' + timeAgoMs(when); el.style.color = '#16a34a'; }
+}
+function timeAgoMs(ms) {
+  const s = Math.floor((Date.now() - ms) / 1000);
+  if (s < 60) return 'just now';
+  if (s < 3600) return Math.floor(s/60) + ' min ago';
+  if (s < 86400) return Math.floor(s/3600) + 'h ago';
+  return Math.floor(s/86400) + 'd ago';
+}
 
 // ── LOADING BAR ────────────────────────────────────────
 let w = 0;
@@ -1356,6 +1538,15 @@ function doneLoading(msg) {
 }
 
 // ── HELPERS ────────────────────────────────────────────
+// Normalise a story's timestamp to epoch-ms regardless of which field carries it.
+function storyMs(s) {
+  if (!s) return 0;
+  if (s.ts && s.ts > 1e11) return s.ts;            // already ms
+  if (s.ts) return s.ts * 1000;                     // seconds → ms
+  if (s.time) return s.time * 1000;                 // HN-style seconds → ms
+  if (s.date) { const t = Date.parse(s.date); return Number.isFinite(t) ? t : 0; }
+  return 0;
+}
 function timeAgo(ts) {
   const s = Math.floor((Date.now()/1000) - ts);
   if (s < 3600) return Math.floor(s/60) + 'm ago';
@@ -1494,6 +1685,7 @@ function renderCard(s) {
   div.tabIndex = 0;
   div.setAttribute('aria-label', s.title);
   div.style.cssText = `background:#fff;border:1px solid #e2e8f0;border-left:3px solid ${c.col};border-radius:0 12px 12px 0;padding:0;cursor:pointer;transition:all 0.2s;display:flex;flex-direction:column;overflow:hidden;`;
+  div.className = 'news-card';
   div.onmouseover = ()=>{ div.style.transform='translateX(3px)'; div.style.boxShadow='0 4px 16px rgba(0,0,0,0.07)'; div.style.background='#fafbff'; };
   div.onmouseout  = ()=>{ div.style.transform=''; div.style.boxShadow=''; div.style.background='#fff'; };
   div.onfocus = ()=>{ div.style.boxShadow='0 0 0 3px rgba(37,99,235,0.35)'; };
@@ -1506,11 +1698,11 @@ function renderCard(s) {
   const topicChip = (s.topic && s.topic !== 'General')
     ? `<span style="font-size:0.62rem;font-weight:600;color:#64748b;background:#f1f5f9;padding:2px 7px;border-radius:6px;white-space:nowrap;">${s.topic}</span>` : '';
   const img = s.image
-    ? `<img src="${s.image}" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="this.style.display='none'" style="width:100%;height:150px;object-fit:cover;display:block;background:#eef2f7;"/>`
+    ? `<img src="${s.image}" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="this.style.display='none'" class="news-card-img" style="width:100%;height:150px;object-fit:cover;display:block;background:#eef2f7;"/>`
     : '';
   div.innerHTML = `
     ${img}
-    <div style="padding:1rem 1.1rem;display:flex;flex-direction:column;gap:0.45rem;flex:1;">
+    <div class="news-card-body" style="padding:1rem 1.1rem;display:flex;flex-direction:column;gap:0.45rem;flex:1;">
       <div style="display:flex;align-items:center;justify-content:space-between;gap:0.5rem;">
         <span style="display:flex;gap:5px;align-items:center;min-width:0;">
           <span style="font-size:0.67rem;font-weight:700;text-transform:uppercase;letter-spacing:0.09em;color:${c.col};background:${c.bg};padding:2px 7px;border-radius:6px;flex-shrink:0;">${sourceBadge(s.src)}</span>
@@ -1519,8 +1711,9 @@ function renderCard(s) {
         <span style="font-size:0.7rem;color:#94a3b8;white-space:nowrap;">${timeStr}</span>
       </div>
       <h4 style="font-family:'DM Serif Display',serif;font-size:0.96rem;color:#0a1628;line-height:1.38;margin:0;">${s.title}</h4>
-      ${s.desc ? `<p style="font-size:0.79rem;color:#64748b;line-height:1.55;margin:0;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">${s.desc}</p>` : ''}
-      <div style="display:flex;justify-content:space-between;align-items:center;padding-top:0.35rem;border-top:1px solid #f1f5f9;margin-top:auto;">
+      ${s.desc ? `<p class="news-card-desc" style="font-size:0.79rem;color:#64748b;line-height:1.55;margin:0;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">${s.desc}</p>` : ''}
+      ${s.take ? `<p class="news-card-take" style="font-size:0.76rem;color:#1d4ed8;line-height:1.5;margin:0.15rem 0 0;background:#eff5ff;border-radius:7px;padding:7px 9px;"><span style="font-weight:700;">Why it matters · </span>${s.take}</p>` : ''}
+      <div class="news-card-foot" style="display:flex;justify-content:space-between;align-items:center;padding-top:0.35rem;border-top:1px solid #f1f5f9;margin-top:auto;">
         <span style="font-size:0.7rem;color:#94a3b8;">${domainOf(s.url)}${scoreStr}</span>
         <span style="font-size:0.76rem;color:#2563eb;font-weight:600;">Read →</span>
       </div>
@@ -1562,6 +1755,22 @@ function renderSkeletons(n = 6) {
 let currentTopic = 'all';
 let newsQuery = '';
 let forYouOn = false;
+let sortMode = 'top';   // 'top' = ranked, 'new' = newest first
+let timeMode = 'all';   // 'all' | 'today' | 'week'
+
+function switchSort(val) { sortMode = val; applyNewsFilters(); }
+
+function switchTime(val, btn) {
+  timeMode = val;
+  document.querySelectorAll('#time-toggle .time-btn').forEach(b => {
+    const on = b.dataset.time === val;
+    b.style.background = on ? '#fff' : 'transparent';
+    b.style.color = on ? '#0a1628' : '#64748b';
+    b.style.boxShadow = on ? '0 1px 3px rgba(0,0,0,0.08)' : 'none';
+    b.setAttribute('aria-pressed', on);
+  });
+  applyNewsFilters();
+}
 
 function switchSource(src, btn) {
   currentSource = src;
@@ -1569,6 +1778,12 @@ function switchSource(src, btn) {
     b.style.background='white'; b.style.color='#475569'; b.style.borderColor='#e2e8f0'; b.setAttribute('aria-pressed','false');
   });
   if (btn) { btn.style.background='#2563eb'; btn.style.color='white'; btn.style.borderColor='#2563eb'; btn.setAttribute('aria-pressed','true'); }
+  applyNewsFilters();
+}
+
+// Source filter via the compact dropdown (replaces the old button row).
+function switchSourceSelect(src) {
+  currentSource = src;
   applyNewsFilters();
 }
 
@@ -1630,6 +1845,18 @@ function applyNewsFilters() {
   if (forYouOn) {
     const prefs = preferredTopics();
     if (prefs.size) { const inPref = list.filter(s => prefs.has(s.topic)); list = inPref.length ? inPref : list; }
+  }
+  // Time-range filter (uses ts in ms, or time in seconds, when available)
+  if (timeMode !== 'all') {
+    const now = Date.now();
+    const win = timeMode === 'today' ? 24*3.6e6 : 7*24*3.6e6;
+    const dated = list.filter(s => storyMs(s) > 0);
+    // Only apply when we actually have timestamps, so we never blank the feed.
+    if (dated.length >= 4) list = dated.filter(s => now - storyMs(s) <= win);
+  }
+  // Sort
+  if (sortMode === 'new') {
+    list = [...list].sort((a, b) => storyMs(b) - storyMs(a));
   }
   filtered = list;
   renderPage(true);
@@ -2003,38 +2230,25 @@ function updateTrendingCard(stories) {
 // HN loads in ~1s, shows immediately. arXiv + RSS stream in as they arrive.
 (async () => {
   try {
-    renderSkeletons(6);
+    seedFeed();   // paint cached/curated content instantly — never an empty shell
     // ── Load HN + arXiv + all RSS feeds in parallel ──────────────
-    document.getElementById('fetch-label').textContent = 'Fetching AI news from all sources…';
+    document.getElementById('fetch-label').textContent = 'Fetching live AI news from all sources…';
     const [hnResult, arxivResult, techResult] = await Promise.allSettled([
       fetchHN(),
       fetchArxiv(),
       fetchTech()
     ]);
 
-    let added = 0;
-    if (hnResult.status === 'fulfilled' && hnResult.value.length) {
-      allStories.push(...hnResult.value);
-      added += hnResult.value.length;
-    }
-    if (arxivResult.status === 'fulfilled' && arxivResult.value.length) {
-      allStories.push(...arxivResult.value);
-      added += arxivResult.value.length;
-    }
-    if (techResult.status === 'fulfilled' && techResult.value.length) {
-      allStories.push(...techResult.value);
-      added += techResult.value.length;
-    }
-
-    // Show first batch immediately
-    if (allStories.length > 0) {
-      filtered = [...allStories];
-      renderPage(true);
-      document.getElementById('news-loading').style.display = 'none';
-      updateTrendingCard(allStories);
-    }
+    let live = [];
+    if (hnResult.status === 'fulfilled' && hnResult.value.length)    live.push(...hnResult.value);
+    if (arxivResult.status === 'fulfilled' && arxivResult.value.length) live.push(...arxivResult.value);
+    if (techResult.status === 'fulfilled' && techResult.value.length)  live.push(...techResult.value);
+    const added = live.length;
 
     if (added > 0) {
+      // Live data arrived — replace the seed entirely.
+      allStories = live;
+      feedIsLive = true;
       // ── Stronger cross-source dedupe ──────────────────────────
       // Drop exact-URL repeats AND near-duplicate titles (same story carried by
       // multiple outlets) using a stop-word-stripped 6-word signature.
@@ -2061,19 +2275,20 @@ function updateTrendingCard(stories) {
       document.getElementById('news-loading').style.display = 'none';
       updateTrendingCard(allStories);
       archiveSave(allStories, 'news');
+      setFeedUpdated(Date.now());
     }
 
     const liveSrcs = new Set(allStories.map(s=>s.src)).size;
     const failed = Object.values(SOURCE_STATUS).filter(v => v === 'fail').length;
-    doneLoading(`${allStories.length} stories · ${liveSrcs} sources live${failed ? ` · ${failed} unavailable` : ''}`);
-
-    if (allStories.length === 0) {
-      document.getElementById('news-loading').textContent = 'Could not load live news. Check back soon.';
-      document.getElementById('news-loading').style.display = 'block';
+    if (feedIsLive) {
+      doneLoading(`${allStories.length} stories · ${liveSrcs} sources live${failed ? ` · ${failed} unavailable` : ''}`);
+    } else {
+      // Live feeds unavailable — keep the seed visible rather than blanking out.
+      doneLoading('Showing recent picks — live feeds are catching up. Pull to refresh shortly.');
     }
   } catch(e) {
-    document.getElementById('news-loading').textContent = 'News feed temporarily unavailable.';
-    doneLoading('Error loading feed');
+    // Even on a hard error the seed is already on screen, so just note status.
+    doneLoading('Showing recent picks — live feeds are catching up.');
   }
 })();
 
