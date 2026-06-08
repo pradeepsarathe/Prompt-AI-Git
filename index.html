@@ -775,12 +775,12 @@
     <div>
       <div class="hero-stats">
         <div class="stat-card">
-          <span class="num">20+</span>
-          <div class="lbl">Sources tracked</div>
+          <span class="num" id="hero-stat-visitors">—</span>
+          <div class="lbl">Total visitors</div>
         </div>
         <div class="stat-card">
           <span class="num" id="hero-stat-articles">—</span>
-          <div class="lbl">Articles read</div>
+          <div class="lbl">Total reads</div>
         </div>
         <div class="stat-card">
           <span class="num">Hourly</span>
@@ -1437,6 +1437,14 @@ async function syncVisitorCounter() {
 analyticsInit();
 syncVisitorCounter();
 
+// Count tool-directory clicks as "reads" too — any interaction with any content
+// item on the page bumps the global read counter (delegated so it also covers
+// tool cards rendered/filtered later).
+document.addEventListener('click', e => {
+  const card = e.target.closest && e.target.closest('.tool-card');
+  if (card) { try { analyticsTrackArticle(card.href || 'tool'); } catch (_) {} }
+}, true);
+
 
 let allStories = [];
 let filtered = [];
@@ -1673,17 +1681,28 @@ function topicGlyph(topic) {
 function cardVisual(s) {
   const c = catColor(s.src);
   if (s.image) {
-    return `<img src="${s.image}" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="this.outerHTML=window.__fallbackVisual(this.dataset.src,this.dataset.topic)" data-src="${s.src}" data-topic="${s.topic||'General'}" class="news-card-img" style="width:100%;height:150px;object-fit:cover;display:block;background:#eef2f7;"/>`;
+    // Route real thumbnails through a server-side image proxy. This fixes the
+    // most common reasons feed images fail in-browser: hotlink/referrer blocks,
+    // http→https mixed content, and oversized originals. If the image is dead,
+    // it simply removes itself and the card collapses to its clean text form —
+    // no fake placeholder block.
+    const prox = 'https://images.weserv.nl/?url=' +
+      encodeURIComponent(s.image.replace(/^https?:\/\//, '')) +
+      '&w=680&h=220&fit=cover&output=webp&q=78';
+    return `<img src="${prox}" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="this.remove()" data-src="${s.src}" data-topic="${s.topic||'General'}" class="news-card-img" style="width:100%;height:110px;object-fit:cover;display:block;background:#eef2f7;"/>`;
   }
-  return fallbackVisual(s.src, s.topic || 'General');
+  // No real thumbnail (arXiv, Hacker News, most blog feeds) → compact text card,
+  // no placeholder. Source identity still comes from the coloured badge + the
+  // left accent stripe on the card.
+  return '';
 }
 function fallbackVisual(src, topic) {
   const c = catColor(src);
   const label = (topic && topic !== 'General') ? topic : sourceBadge(src).replace(/^\S+\s/, '');
   const glyph = topicGlyph(topic);
-  return `<div class="news-card-img news-card-fallback" aria-hidden="true" style="width:100%;height:150px;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;background:linear-gradient(135deg, ${c.col}, color-mix(in srgb, ${c.col} 50%, #0a1628));">
-    <span style="position:absolute;right:-6px;bottom:-14px;font-size:5.2rem;line-height:1;opacity:0.22;filter:grayscale(0.2);">${glyph}</span>
-    <span style="position:relative;font-family:'DM Serif Display',serif;color:#fff;font-size:1.15rem;letter-spacing:0.01em;text-shadow:0 1px 8px rgba(0,0,0,0.25);padding:0 1rem;text-align:center;">${label}</span>
+  return `<div class="news-card-img news-card-fallback" aria-hidden="true" style="width:100%;height:110px;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;background:linear-gradient(135deg, ${c.col}, color-mix(in srgb, ${c.col} 50%, #0a1628));">
+    <span style="position:absolute;right:-4px;bottom:-12px;font-size:3.7rem;line-height:1;opacity:0.2;filter:grayscale(0.2);">${glyph}</span>
+    <span style="position:relative;font-family:'DM Serif Display',serif;color:#fff;font-size:1rem;letter-spacing:0.01em;text-shadow:0 1px 8px rgba(0,0,0,0.25);padding:0 1rem;text-align:center;">${label}</span>
   </div>`;
 }
 window.__fallbackVisual = fallbackVisual;
@@ -1749,18 +1768,18 @@ function renderCard(s) {
   const img = cardVisual(s);
   div.innerHTML = `
     ${img}
-    <div class="news-card-body" style="padding:1rem 1.1rem;display:flex;flex-direction:column;gap:0.45rem;flex:1;">
+    <div class="news-card-body" style="padding:0.75rem 0.95rem;display:flex;flex-direction:column;gap:0.38rem;flex:1;">
       <div style="display:flex;align-items:center;justify-content:space-between;gap:0.5rem;">
         <span style="display:flex;gap:5px;align-items:center;min-width:0;">
-          <span style="font-size:0.67rem;font-weight:700;text-transform:uppercase;letter-spacing:0.09em;color:${c.col};background:${c.bg};padding:2px 7px;border-radius:6px;flex-shrink:0;">${sourceBadge(s.src)}</span>
+          <span style="font-size:0.67rem;font-weight:700;text-transform:uppercase;letter-spacing:0.09em;color:${c.col};background:${c.bg};padding:2px 7px;border-radius:6px;flex-shrink:0;white-space:nowrap;">${sourceBadge(s.src)}</span>
           ${topicChip}
         </span>
         <span style="font-size:0.7rem;color:#94a3b8;white-space:nowrap;">${timeStr}</span>
       </div>
-      <h4 style="font-family:'DM Serif Display',serif;font-size:0.96rem;color:#0a1628;line-height:1.38;margin:0;">${s.title}</h4>
-      ${s.desc ? `<p class="news-card-desc" style="font-size:0.79rem;color:#64748b;line-height:1.55;margin:0;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">${s.desc}</p>` : ''}
-      ${s.take ? `<p class="news-card-take" style="font-size:0.76rem;color:#1d4ed8;line-height:1.5;margin:0.15rem 0 0;background:#eff5ff;border-radius:7px;padding:7px 9px;"><span style="font-weight:700;">Why it matters · </span>${s.take}</p>` : ''}
-      <div class="news-card-foot" style="display:flex;justify-content:space-between;align-items:center;padding-top:0.35rem;border-top:1px solid #f1f5f9;margin-top:auto;">
+      <h4 style="font-family:'DM Serif Display',serif;font-size:0.92rem;color:#0a1628;line-height:1.34;margin:0;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">${s.title}</h4>
+      ${s.desc ? `<p class="news-card-desc" style="font-size:0.78rem;color:#64748b;line-height:1.5;margin:0;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">${s.desc}</p>` : ''}
+      ${s.take ? `<p class="news-card-take" style="font-size:0.74rem;color:#1d4ed8;line-height:1.45;margin:0.1rem 0 0;background:#eff5ff;border-radius:7px;padding:6px 8px;"><span style="font-weight:700;">Why it matters · </span>${s.take}</p>` : ''}
+      <div class="news-card-foot" style="display:flex;justify-content:space-between;align-items:center;padding-top:0.3rem;border-top:1px solid #f1f5f9;margin-top:auto;">
         <span style="font-size:0.7rem;color:#94a3b8;">${domainOf(s.url)}${scoreStr}</span>
         <span style="font-size:0.76rem;color:#2563eb;font-weight:600;">Read →</span>
       </div>
@@ -2259,7 +2278,9 @@ function updateTrendingCard(stories) {
   const himg = document.getElementById('hero-trending-img');
   if (himg) {
     if (story.image) {
-      himg.src = story.image;
+      himg.src = 'https://images.weserv.nl/?url=' +
+        encodeURIComponent(story.image.replace(/^https?:\/\//, '')) +
+        '&w=620&h=300&fit=cover&output=webp&q=80';
       himg.style.display = 'block';
       himg.onerror = () => { himg.style.display = 'none'; };
     } else {

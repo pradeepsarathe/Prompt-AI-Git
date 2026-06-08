@@ -2,5 +2,8 @@
 # Routes /feed.xml to the live Cloudflare Pages Function
 /feed.xml /feed 200
 
+# Routes /sitemap.xml to the live (dynamic, self-dating) sitemap Function
+/sitemap.xml /sitemap 200
+
 # www → apex redirect
 https://www.promptai.in/* https://promptai.in/:splat 301

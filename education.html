@@ -175,16 +175,64 @@
 
   /* LEARNING PATHS */
   .paths-section { background: var(--accent-subtle); border-top: 1px solid #bfdbfe; border-bottom: 1px solid #bfdbfe; }
-  .paths-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
-  .path-card { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.75rem; }
-  .path-card .path-num { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--accent); margin-bottom: 0.5rem; }
-  .path-card h3 { font-size: 1.15rem; color: var(--navy); margin-bottom: 0.75rem; }
-  .path-card p { font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6; margin-bottom: 1.25rem; }
-  .path-steps { list-style: none; display: flex; flex-direction: column; gap: 0.5rem; }
-  .path-steps li { font-size: 0.84rem; color: var(--text-secondary); display: flex; align-items: flex-start; gap: 8px; }
-  .path-steps li::before { content: '→'; color: var(--accent); font-weight: 700; flex-shrink: 0; margin-top: 1px; }
-  .path-steps a { color: var(--accent); font-weight: 600; text-decoration: none; border-bottom: 1px solid transparent; transition: border-color 0.15s; }
-  .path-steps a:hover { border-bottom-color: var(--accent); }
+  .paths-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; align-items: start; }
+  .path-card {
+    --lvl: var(--accent);
+    background: var(--white); border: 1px solid var(--border); border-radius: var(--radius-lg);
+    padding: 1.6rem 1.6rem 1.75rem; display: flex; flex-direction: column; position: relative; overflow: hidden;
+    transition: transform .22s ease, box-shadow .22s ease, border-color .22s ease;
+  }
+  .path-card[data-level="beginner"]     { --lvl: oklch(0.60 0.13 155); }
+  .path-card[data-level="intermediate"] { --lvl: oklch(0.58 0.15 256); }
+  .path-card[data-level="advanced"]     { --lvl: oklch(0.55 0.16 300); }
+  .path-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: var(--lvl); }
+  .path-card:hover { transform: translateY(-4px); box-shadow: 0 20px 42px -20px rgba(15,23,42,0.32); border-color: color-mix(in srgb, var(--lvl) 45%, var(--border)); }
+  .path-card-top { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; margin-bottom: 1.05rem; }
+  .path-badge {
+    width: 46px; height: 46px; border-radius: 13px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'DM Serif Display', serif; font-size: 1.35rem; color: #fff;
+    background: linear-gradient(150deg, var(--lvl), color-mix(in srgb, var(--lvl) 62%, #0a1628));
+    box-shadow: 0 8px 18px -8px var(--lvl);
+  }
+  .path-level {
+    font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em;
+    color: var(--lvl); background: color-mix(in srgb, var(--lvl) 12%, #fff);
+    border: 1px solid color-mix(in srgb, var(--lvl) 24%, #fff);
+    padding: 5px 11px; border-radius: 999px; white-space: nowrap;
+  }
+  .path-card h3 { font-size: 1.18rem; color: var(--navy); margin-bottom: 0.5rem; line-height: 1.2; }
+  .path-card > p { font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6; margin-bottom: 1.05rem; }
+  .path-meta { display: flex; gap: 1.25rem; margin-bottom: 1.25rem; padding-bottom: 1.25rem; border-bottom: 1px dashed var(--border); }
+  .path-meta-item { font-size: 0.74rem; color: var(--text-muted); font-weight: 500; display: flex; flex-direction: column; gap: 2px; }
+  .path-meta-item strong { font-family: 'DM Serif Display', serif; font-weight: 400; font-size: 1.05rem; color: var(--navy); }
+  .path-steps { list-style: none; counter-reset: step; display: flex; flex-direction: column; position: relative; }
+  .path-steps li {
+    position: relative; counter-increment: step; padding: 0 0 0.95rem 2.1rem;
+    font-size: 0.84rem; color: var(--text-secondary); line-height: 1.5;
+  }
+  .path-steps li:last-child { padding-bottom: 0; }
+  .path-steps li::before {
+    content: counter(step, decimal-leading-zero); position: absolute; left: 0; top: -1px;
+    width: 23px; height: 23px; border-radius: 50%;
+    background: color-mix(in srgb, var(--lvl) 13%, #fff); color: var(--lvl);
+    border: 1.5px solid color-mix(in srgb, var(--lvl) 38%, #fff);
+    font-size: 0.6rem; font-weight: 700; display: flex; align-items: center; justify-content: center;
+  }
+  .path-steps li::after {
+    content: ''; position: absolute; left: 11px; top: 24px; bottom: -1px; width: 1.5px;
+    background: color-mix(in srgb, var(--lvl) 24%, var(--border));
+  }
+  .path-steps li:last-child::after { display: none; }
+  .path-steps a { color: var(--lvl); font-weight: 600; text-decoration: none; border-bottom: 1px solid transparent; transition: border-color 0.15s; }
+  .path-steps a:hover { border-bottom-color: var(--lvl); }
+  .path-cta {
+    margin-top: 1.4rem; align-self: flex-start; display: inline-flex; align-items: center; gap: 7px;
+    font-size: 0.83rem; font-weight: 600; color: var(--lvl);
+    padding: 9px 16px; border-radius: 9px; border: 1px solid color-mix(in srgb, var(--lvl) 30%, #fff);
+    background: color-mix(in srgb, var(--lvl) 7%, #fff); transition: gap .15s ease, background .15s ease;
+  }
+  .path-cta:hover { gap: 11px; background: color-mix(in srgb, var(--lvl) 14%, #fff); }
 
   /* FOOTER */
   footer { background: var(--navy); padding: 3rem 2rem 2rem; border-top: 1px solid rgba(255,255,255,0.08); }
@@ -439,42 +487,69 @@
       <p>Curated sequences depending on what you want to achieve with AI.</p>
     </div>
     <div class="paths-grid">
-      <div class="path-card">
-        <div class="path-num">Path 01</div>
+      <article class="path-card" data-level="beginner">
+        <div class="path-card-top">
+          <span class="path-badge">1</span>
+          <span class="path-level">Beginner</span>
+        </div>
         <h3>Use AI Productively</h3>
         <p>For professionals who want to integrate AI tools into their daily workflow — no coding required.</p>
-        <ul class="path-steps">
+        <div class="path-meta">
+          <span class="path-meta-item">Time <strong>~20 hrs</strong></span>
+          <span class="path-meta-item">Steps <strong>5</strong></span>
+          <span class="path-meta-item">Cost <strong>Free</strong></span>
+        </div>
+        <ol class="path-steps">
           <li>Start with <a href="https://www.coursera.org/learn/ai-for-everyone" target="_blank" rel="noopener">AI for Everyone</a> (Andrew Ng)</li>
           <li>Learn <a href="https://www.coursera.org/learn/google-ai-essentials" target="_blank" rel="noopener">Google AI Essentials</a> for workplace tools</li>
           <li>Master prompt engineering via <a href="https://learnprompting.org/" target="_blank" rel="noopener">Learn Prompting</a></li>
           <li>Pick 1–2 tools: <a href="https://claude.ai" target="_blank" rel="noopener">Claude</a>, <a href="https://chatgpt.com" target="_blank" rel="noopener">ChatGPT</a>, <a href="https://www.perplexity.ai" target="_blank" rel="noopener">Perplexity</a></li>
           <li>Follow <a href="https://www.deeplearning.ai/the-batch/" target="_blank" rel="noopener">The Batch</a> newsletter weekly</li>
-        </ul>
-      </div>
-      <div class="path-card">
-        <div class="path-num">Path 02</div>
+        </ol>
+        <a class="path-cta" href="https://www.coursera.org/learn/ai-for-everyone" target="_blank" rel="noopener">Start with step 1 →</a>
+      </article>
+      <article class="path-card" data-level="intermediate">
+        <div class="path-card-top">
+          <span class="path-badge">2</span>
+          <span class="path-level">Intermediate</span>
+        </div>
         <h3>Build AI Applications</h3>
         <p>For developers who want to build products using AI APIs, fine-tuning, and deployment pipelines.</p>
-        <ul class="path-steps">
+        <div class="path-meta">
+          <span class="path-meta-item">Time <strong>~60 hrs</strong></span>
+          <span class="path-meta-item">Steps <strong>5</strong></span>
+          <span class="path-meta-item">Code <strong>Python</strong></span>
+        </div>
+        <ol class="path-steps">
           <li>Complete <a href="https://www.deeplearning.ai/courses/machine-learning-specialization/" target="_blank" rel="noopener">ML Specialization</a> (Andrew Ng)</li>
           <li>Do <a href="https://course.fast.ai/" target="_blank" rel="noopener">Practical Deep Learning</a> (fast.ai)</li>
           <li>Study the <a href="https://huggingface.co/learn/nlp-course/chapter1/1" target="_blank" rel="noopener">HuggingFace NLP Course</a></li>
           <li>Build with <a href="https://python.langchain.com/docs/introduction/" target="_blank" rel="noopener">LangChain</a> &amp; vector databases</li>
           <li>Deploy: <a href="https://www.deeplearning.ai/courses/large-language-models-application-through-production/" target="_blank" rel="noopener">LLMs in Production</a> (Databricks)</li>
-        </ul>
-      </div>
-      <div class="path-card">
-        <div class="path-num">Path 03</div>
+        </ol>
+        <a class="path-cta" href="https://www.deeplearning.ai/courses/machine-learning-specialization/" target="_blank" rel="noopener">Start with step 1 →</a>
+      </article>
+      <article class="path-card" data-level="advanced">
+        <div class="path-card-top">
+          <span class="path-badge">3</span>
+          <span class="path-level">Advanced</span>
+        </div>
         <h3>Research AI Systems</h3>
         <p>For those aiming to understand, replicate, or advance the state of the art in machine learning.</p>
-        <ul class="path-steps">
+        <div class="path-meta">
+          <span class="path-meta-item">Time <strong>~120 hrs</strong></span>
+          <span class="path-meta-item">Steps <strong>5</strong></span>
+          <span class="path-meta-item">Math <strong>Heavy</strong></span>
+        </div>
+        <ol class="path-steps">
           <li>Study the <a href="https://www.deeplearning.ai/courses/deep-learning-specialization/" target="_blank" rel="noopener">Deep Learning Specialization</a> rigorously</li>
           <li>Complete <a href="https://web.stanford.edu/class/cs224n/" target="_blank" rel="noopener">Stanford CS224N</a> or <a href="http://cs231n.stanford.edu/" target="_blank" rel="noopener">CS231N</a></li>
           <li>Rebuild GPT from scratch — <a href="https://karpathy.ai/zero-to-hero.html" target="_blank" rel="noopener">Karpathy's Zero to Hero</a></li>
           <li>Read arXiv papers daily via <a href="index.html#papers">PromptAI Papers</a></li>
           <li>Follow <a href="https://thegradient.pub/" target="_blank" rel="noopener">The Gradient</a> and <a href="https://distill.pub/" target="_blank" rel="noopener">Distill.pub</a></li>
-        </ul>
-      </div>
+        </ol>
+        <a class="path-cta" href="https://www.deeplearning.ai/courses/deep-learning-specialization/" target="_blank" rel="noopener">Start with step 1 →</a>
+      </article>
     </div>
   </div>
 </section>
