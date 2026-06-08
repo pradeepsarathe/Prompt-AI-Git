@@ -1,17 +1,10 @@
 # robots.txt — promptai.in
-# Allow all well-behaved crawlers full access.
+# Open access policy: every well-behaved crawler is welcome.
+# This includes both search-engine crawlers (Google, Bing, etc.) AND
+# AI crawlers (GPTBot, ClaudeBot, PerplexityBot, CCBot, Google-Extended, …).
+# We want our content discovered, indexed, and cited everywhere.
+
 User-agent: *
-Allow: /
-
-# Keep crawl budget on real content, not query-string permutations
-# of the archive search (same content, infinite URLs).
-Disallow: /archive.html?*
-
-# Explicitly welcome the major AI/search crawlers
-User-agent: Googlebot
-Allow: /
-
-User-agent: Bingbot
 Allow: /
 
 # Sitemap location (absolute URL, per spec)
