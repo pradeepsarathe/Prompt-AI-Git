@@ -2,6 +2,13 @@
 // Cloudflare Pages Function — builds a PromptAI briefing email
 // (5 news + 5 blogs + 1 research paper) from live feeds and sends it via Resend.
 //
+// v2 — IMAGE-LED "Netflix-grade" briefing:
+//   • Pulls a thumbnail/hero image from each feed item (media:content,
+//     media:thumbnail, enclosure, <img> in content:encoded/description, etc.)
+//   • Cinematic hero for the top story, poster-thumbnail cards for the rest.
+//   • Always degrades gracefully to a branded gradient poster when a feed
+//     gives no usable image — so the layout never looks broken.
+//
 // Two ways it's used:
 //   1. Recurring send to ALL subscribers. While testing we run it HOURLY:
 //        GET  https://promptai.in/send-digest?key=YOUR_CRON_SECRET
@@ -78,6 +85,8 @@ export async function onRequest(context) {
       cursor = page.list_complete ? null : page.cursor;
     } while (cursor);
   }
+  // Never treat rate-limit bookkeeping keys ("rl:<ip>") as subscribers.
+  emails = emails.filter(e => e && !e.startsWith('rl:'));
   if (emails.length === 0) return json({ sent: 0, message: 'No subscribers yet' });
 
   // ── send via Resend BATCH (≤100 personalized emails per request) ──
@@ -160,6 +169,7 @@ async function fetchViaRss2json(feed, take) {
         title: (item.title || '').trim(),
         link: item.link || item.guid || '',
         desc: truncate((item.description || item.content || '').replace(/<[^>]+>/g, '').trim(), 160),
+        img: cleanImg(item.thumbnail || item.enclosure?.link || firstImgIn(item.content || item.description || '')),
         src,
         date: item.pubDate ? new Date(item.pubDate) : new Date(0),
       }));
@@ -184,6 +194,52 @@ function decodeEntities(s) {
     .replace(/&#x([0-9a-f]+);/gi, (_, n) => String.fromCharCode(parseInt(n, 16)))
     .replace(/\s+/g, ' ').trim();
 }
+
+// ── image extraction ─────────────────────────────────────────────────
+// Pull the best image URL from a raw RSS <item>/<entry> block. RSS feeds
+// stash images in a half-dozen different places, so we try them in order of
+// reliability and fall back to "" (the email then renders a gradient poster).
+function pickImage(block) {
+  if (!block) return '';
+  const cands = [];
+  let m;
+  // media:content / media:thumbnail url="..."
+  const mediaRe = /<media:(?:content|thumbnail)\b[^>]*\burl=["']([^"']+)["']/gi;
+  while ((m = mediaRe.exec(block))) cands.push(m[1]);
+  // <enclosure url="..." type="image/..."> (or url that looks like an image)
+  const encRe = /<enclosure\b[^>]*>/gi;
+  while ((m = encRe.exec(block))) {
+    const tag = m[0];
+    const um = tag.match(/\burl=["']([^"']+)["']/i);
+    if (um && (/type=["']image\//i.test(tag) || isImgUrl(um[1]))) cands.push(um[1]);
+  }
+  // <itunes:image href="..."> and <image><url>...</url></image>
+  m = block.match(/<itunes:image\b[^>]*\bhref=["']([^"']+)["']/i); if (m) cands.push(m[1]);
+  m = block.match(/<image\b[^>]*>[\s\S]*?<url>([\s\S]*?)<\/url>/i);  if (m) cands.push(m[1]);
+  // first <img src="..."> anywhere (content:encoded / description CDATA)
+  const imgRe = /<img\b[^>]*\bsrc=["']([^"']+)["']/gi;
+  while ((m = imgRe.exec(block))) cands.push(m[1]);
+  for (const c of cands) {
+    const u = cleanImg(c);
+    if (u) return u;
+  }
+  return '';
+}
+function cleanImg(u) {
+  if (!u) return '';
+  u = decodeEntities(String(u)).trim();
+  if (u.startsWith('//')) u = 'https:' + u;
+  if (!/^https?:\/\//i.test(u)) return '';
+  // Skip tracking pixels, spacers, avatars and tiny/animated junk.
+  if (/feedburner|doubleclick|googlesyndication|\/pixel|1x1|spacer|gravatar|\.svg(\?|$)/i.test(u)) return '';
+  return u;
+}
+function isImgUrl(u) { return /\.(jpe?g|png|webp|avif|gif)(\?|$)/i.test(u || ''); }
+function firstImgIn(html) {
+  const m = (html || '').match(/<img\b[^>]*\bsrc=["']([^"']+)["']/i);
+  return m ? m[1] : '';
+}
+
 function parseFeed(xml, take) {
   const isRss = /<item[\s>]/i.test(xml);
   const chunks = xml.split(isRss ? /<item[\s>]/i : /<entry[\s>]/i).slice(1);
@@ -197,8 +253,9 @@ function parseFeed(xml, take) {
     }
     const descRaw = tagText(block, 'description') || tagText(block, 'summary') || tagText(block, 'content');
     const desc = truncate(decodeEntities(descRaw), 160);
+    const img = pickImage(block);
     const dt = tagText(block, 'pubDate') || tagText(block, 'published') || tagText(block, 'updated') || tagText(block, 'dc:date');
-    if (title && link) out.push({ title, link, desc, date: dt ? new Date(dt) : new Date(0) });
+    if (title && link) out.push({ title, link, desc, img, date: dt ? new Date(dt) : new Date(0) });
     if (out.length >= take) break;
   }
   return out;
@@ -242,62 +299,122 @@ export async function fetchLatestBlogs() {
 // ── email HTML ───────────────────────────────────────────────────────
 const esc = s => (s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
+// Branded gradient posters used when a feed item has no image. Deterministic
+// per-index so a given slot always looks consistent.
+const POSTERS = [
+  ['#0ea5e9', '#1e3a8a', '◆'], ['#8b5cf6', '#1e1b4b', '▲'], ['#10b981', '#064e3b', '●'],
+  ['#f59e0b', '#7c2d12', '✦'], ['#ef4444', '#581c1c', '❖'], ['#06b6d4', '#0c4a6e', '■'],
+];
+
+// A 150×96 poster cell: real feed image if present, else gradient + glyph.
+// Fallback uses a SOLID bgcolor base (Gmail/Outlook ignore CSS gradients) with
+// the gradient layered on top for clients that support it.
+function poster(item, i) {
+  if (item && item.img) {
+    return `<img src="${esc(item.img)}" width="150" height="96" alt="" style="display:block;width:150px;height:96px;border-radius:10px;object-fit:cover;border:0;outline:0;background:#1f2937;" />`;
+  }
+  const [a, b, g] = POSTERS[i % POSTERS.length];
+  return `<div style="width:150px;height:96px;border-radius:10px;background:${a};background-image:linear-gradient(135deg,${a},${b});text-align:center;line-height:96px;font-family:Georgia,serif;font-size:30px;color:rgba(255,255,255,0.9);">${g}</div>`;
+}
+
 function itemRow(b, i) {
   return `
-    <tr><td style="padding:${i === 0 ? '4' : '14'}px 40px 0;">
-      <table role="presentation" width="100%"><tr>
-        <td valign="top" width="30" style="font-family:Georgia,serif;font-size:16px;color:#cbd5e1;">${String(i + 1).padStart(2, '0')}</td>
-        <td valign="top" style="font-family:Helvetica,Arial,sans-serif;padding-left:6px;">
-          <a href="${esc(b.link)}" style="text-decoration:none;"><div style="font-size:16px;font-weight:bold;line-height:1.35;color:#0a1628;">${esc(b.title)}</div></a>
-          <div style="font-size:13px;line-height:1.6;color:#64748b;margin-top:4px;">${esc(b.desc)}</div>
-          <div style="font-size:12px;color:#94a3b8;margin-top:5px;">${esc(b.src)} · <a href="${esc(b.link)}" style="color:#2563eb;text-decoration:none;font-weight:600;">Read →</a></div>
+    <tr><td style="padding:${i === 0 ? '16' : '18'}px 36px 0;">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>
+        <td width="150" valign="top" style="padding-right:16px;">${poster(b, i)}</td>
+        <td valign="top" style="font-family:Helvetica,Arial,sans-serif;">
+          <a href="${esc(b.link)}" style="text-decoration:none;"><div style="font-size:16px;font-weight:bold;line-height:1.35;color:#f1f5f9;">${esc(b.title)}</div></a>
+          <div style="font-size:13px;line-height:1.55;color:#94a3b8;margin-top:5px;">${esc(b.desc)}</div>
+          <div style="font-size:11px;color:#5b6b8c;margin-top:7px;">${esc(b.src)} &nbsp;·&nbsp; <a href="${esc(b.link)}" style="color:#60a5fa;text-decoration:none;font-weight:600;">Read →</a></div>
         </td>
       </tr></table>
     </td></tr>`;
 }
 
-function sectionHeader(kicker, title) {
+function sectionHeader(kicker, meta) {
   return `
-    <tr><td style="padding:26px 40px 6px;font-family:Helvetica,Arial,sans-serif;">
-      <div style="font-size:11px;font-weight:bold;letter-spacing:1.5px;text-transform:uppercase;color:#2563eb;">${kicker}</div>
-      <h2 style="margin:6px 0 0;font-family:Georgia,serif;font-size:20px;line-height:1.25;color:#0a1628;font-weight:normal;">${title}</h2></td></tr>`;
-}
-
-function divider() {
-  return `<tr><td style="padding:18px 40px 0;"><div style="border-top:1px solid #eef2f7;"></div></td></tr>`;
+    <tr><td style="padding:30px 36px 4px;font-family:Helvetica,Arial,sans-serif;">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>
+        <td style="font-size:11px;font-weight:bold;letter-spacing:2px;text-transform:uppercase;color:#3b82f6;">${kicker}</td>
+        <td align="right" style="font-size:11px;color:#5b6b8c;">${meta || ''}</td>
+      </tr></table>
+      <div style="height:1px;background:rgba(255,255,255,0.07);margin-top:12px;"></div></td></tr>`;
 }
 
 export function digestHtml({ news = [], blogs = [], paper = null, dateStr, email }) {
   const unsub = 'https://promptai.in/unsubscribe?email=' + encodeURIComponent(email || '');
 
-  const newsRows  = news.map((b, i) => itemRow(b, i)).join('');
-  const blogRows  = blogs.map((b, i) => itemRow(b, i)).join('');
+  // Top story drives the hero; the rest fill the news list.
+  const hero = news[0] || blogs[0] || null;
+  const newsList = news[0] ? news.slice(1) : news;
+
+  // Gmail/Outlook-safe STACKED hero: a real <img> on top (renders everywhere),
+  // headline in a solid dark block beneath. No CSS background-image or overlay
+  // (Outlook desktop ignores those). When the top story has no image we drop
+  // in a branded gradient band with a solid bgcolor fallback.
+  const heroImage = hero && hero.img
+    ? `<a href="${esc(hero.link)}" style="text-decoration:none;"><img src="${esc(hero.img)}" width="600" alt="" style="display:block;width:100%;max-width:600px;height:auto;border:0;outline:0;" /></a>`
+    : `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" bgcolor="#1e3a8a" style="background:#1e3a8a;background-image:linear-gradient(135deg,#1e3a8a 0%,#0f172a 60%,#312e81 100%);"><tr><td height="190" style="height:190px;text-align:center;vertical-align:middle;font-family:Georgia,serif;font-size:40px;color:rgba(255,255,255,0.5);">◆</td></tr></table>`;
+
+  const heroBlock = hero ? `
+    <tr><td style="padding:0;font-size:0;line-height:0;" bgcolor="#1e3a8a">${heroImage}</td></tr>
+    <tr><td style="padding:24px 36px 4px;font-family:Helvetica,Arial,sans-serif;" bgcolor="#0b1020">
+      <div style="display:inline-block;background:#3b82f6;color:#ffffff;font-size:10px;font-weight:bold;letter-spacing:1.6px;text-transform:uppercase;padding:6px 11px;border-radius:6px;">★ Today's top story</div>
+      <a href="${esc(hero.link)}" style="text-decoration:none;"><div style="font-family:Georgia,serif;font-size:26px;line-height:1.22;color:#ffffff;margin:14px 0 8px;font-weight:bold;">${esc(hero.title)}</div></a>
+      <div style="font-size:13.5px;line-height:1.6;color:#c7d2e8;">${esc(hero.desc)}</div>
+      <div style="margin-top:16px;">
+        <a href="${esc(hero.link)}" style="font-family:Helvetica,Arial,sans-serif;font-size:13px;font-weight:bold;color:#ffffff;text-decoration:none;background:#3b82f6;padding:11px 20px;border-radius:8px;display:inline-block;">Read the breakdown →</a>
+        <span style="font-size:11px;color:#8a99b8;margin-left:12px;">${esc(hero.src)}</span>
+      </div>
+    </td></tr>` : '';
+
+  const newsRows = newsList.map((b, i) => itemRow(b, i)).join('');
+  const blogRows = blogs.map((b, i) => itemRow(b, i)).join('');
+
   const paperBlock = paper ? `
-    ${sectionHeader('📄 Research paper of the day', 'One paper worth your time')}
-    ${itemRow(paper, 0)}` : '';
+    <tr><td style="padding:30px 36px 6px;font-family:Helvetica,Arial,sans-serif;">
+      <div style="font-size:11px;font-weight:bold;letter-spacing:2px;text-transform:uppercase;color:#3b82f6;">📄 &nbsp;Research Paper of the Day</div></td></tr>
+    <tr><td style="padding:8px 36px 4px;">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" bgcolor="#111c34" style="background:#111c34;background-image:linear-gradient(135deg,#111c34,#0a1024);border:1px solid rgba(96,165,250,0.25);border-radius:14px;">
+        <tr><td style="padding:22px 24px;font-family:Helvetica,Arial,sans-serif;">
+          <div style="font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:#60a5fa;font-weight:bold;margin-bottom:8px;">${esc(paper.src || 'arXiv')}</div>
+          <a href="${esc(paper.link)}" style="text-decoration:none;"><div style="font-family:Georgia,serif;font-size:19px;line-height:1.3;color:#ffffff;margin-bottom:8px;">${esc(paper.title)}</div></a>
+          <div style="font-size:13.5px;line-height:1.6;color:#9fb0cc;margin-bottom:14px;">${esc(paper.desc)}</div>
+          <a href="${esc(paper.link)}" style="font-size:13px;font-weight:bold;color:#60a5fa;text-decoration:none;">Read the paper →</a>
+        </td></tr>
+      </table></td></tr>` : '';
 
-  return `<!DOCTYPE html><html><body style="margin:0;padding:0;background:#eef2f7;">
-  <table role="presentation" width="100%" style="background:#eef2f7;"><tr><td align="center" style="padding:32px 16px;">
-  <table role="presentation" width="600" style="width:600px;max-width:600px;background:#fff;border-radius:16px;overflow:hidden;">
-    <tr><td style="background:#0a1628;padding:26px 40px;">
-      <table role="presentation" width="100%"><tr>
-        <td style="font-family:Georgia,serif;font-size:20px;font-weight:bold;color:#fff;"><span style="display:inline-block;width:9px;height:9px;background:#2563eb;border-radius:50%;margin-right:8px;vertical-align:middle;"></span>PromptAI</td>
-        <td align="right" style="font-family:Helvetica,Arial,sans-serif;font-size:11px;letter-spacing:1px;text-transform:uppercase;color:#64748b;">${dateStr || ''}</td>
+  return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><meta name="x-apple-disable-message-reformatting"/><!--[if mso]><style>* { font-family: Helvetica, Arial, sans-serif !important; }</style><![endif]--></head>
+  <body style="margin:0;padding:0;background:#05070f;-webkit-text-size-adjust:100%;">
+  <div style="display:none;max-height:0;overflow:hidden;opacity:0;color:transparent;height:0;width:0;">Today in AI — the one story that matters, 5 headlines, 5 reads and the paper everyone's citing.</div>
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#05070f;"><tr><td align="center" style="padding:28px 14px;">
+  <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="width:600px;max-width:600px;background:#0b1020;border-radius:18px;overflow:hidden;">
+
+    <tr><td style="padding:22px 36px;border-bottom:1px solid rgba(255,255,255,0.06);">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>
+        <td style="font-family:Georgia,serif;font-size:19px;font-weight:bold;color:#ffffff;"><span style="display:inline-block;width:9px;height:9px;background:#3b82f6;border-radius:50%;margin-right:9px;vertical-align:middle;"></span>PromptAI</td>
+        <td align="right" style="font-family:Helvetica,Arial,sans-serif;font-size:10px;letter-spacing:1.8px;text-transform:uppercase;color:#5b6b8c;">The Briefing · ${esc(dateStr) || ''}</td>
       </tr></table></td></tr>
-    <tr><td style="padding:28px 40px 0;font-family:Helvetica,Arial,sans-serif;">
-      <div style="font-size:11px;font-weight:bold;letter-spacing:1.5px;text-transform:uppercase;color:#2563eb;">Today's AI briefing</div>
-      <h1 style="margin:8px 0 0;font-family:Georgia,serif;font-size:24px;line-height:1.25;color:#0a1628;font-weight:normal;">5 headlines, 5 reads, 1 paper</h1></td></tr>
 
-    ${news.length ? sectionHeader('📰 Top AI news', 'What happened today') + newsRows : ''}
-    ${blogs.length ? divider() + sectionHeader('✍️ Blogs &amp; deep dives', 'Hand-picked reads') + blogRows : ''}
-    ${paper ? divider() + paperBlock : ''}
+    ${heroBlock}
+    ${newsRows ? sectionHeader('📰 &nbsp;Top AI News', `${newsList.length} stories`) + newsRows : ''}
+    ${blogRows ? sectionHeader('✍️ &nbsp;Blogs &amp; Deep Dives', 'Hand-picked') + blogRows : ''}
+    ${paperBlock}
 
-    <tr><td style="padding:30px 40px 0;"></td></tr>
-    <tr><td style="background:#f8fafc;border-top:1px solid #e2e8f0;padding:24px 40px;font-family:Helvetica,Arial,sans-serif;font-size:12px;line-height:1.7;color:#94a3b8;text-align:center;">
-      <div style="font-family:Georgia,serif;font-size:15px;color:#0a1628;margin-bottom:6px;">PromptAI</div>
+    <tr><td align="center" style="padding:30px 36px 6px;">
+      <table role="presentation" cellpadding="0" cellspacing="0"><tr><td style="background:#3b82f6;border-radius:10px;">
+        <a href="https://promptai.in" style="display:inline-block;padding:15px 32px;font-family:Helvetica,Arial,sans-serif;font-size:14px;font-weight:bold;color:#ffffff;text-decoration:none;">Open the live feed →</a>
+      </td></tr></table></td></tr>
+    <tr><td align="center" style="padding:12px 36px 4px;font-family:Helvetica,Arial,sans-serif;font-size:12px;color:#5b6b8c;">The site updates daily. This briefing lands every Tuesday.</td></tr>
+
+    <tr><td style="padding:26px 36px 30px;border-top:1px solid rgba(255,255,255,0.06);font-family:Helvetica,Arial,sans-serif;font-size:12px;line-height:1.7;color:#5b6b8c;text-align:center;">
+      <div style="font-family:Georgia,serif;font-size:15px;color:#e2e8f0;margin-bottom:6px;">PromptAI</div>
       You're getting this because you subscribed at promptai.in.<br/>
-      <a href="${unsub}" style="color:#2563eb;">Unsubscribe</a> · <a href="https://promptai.in" style="color:#2563eb;">Read on the web</a></td></tr>
-  </table></td></tr></table></body></html>`;
+      <a href="${unsub}" style="color:#60a5fa;text-decoration:underline;">Unsubscribe</a> &nbsp;·&nbsp; <a href="https://promptai.in" style="color:#60a5fa;text-decoration:underline;">Read on the web</a></td></tr>
+
+  </table>
+  <div style="font-family:Helvetica,Arial,sans-serif;font-size:11px;color:#37425c;padding:16px 0 0;">© 2026 PromptAI · promptai.in</div>
+  </td></tr></table></body></html>`;
 }
 
 // Back-compat alias for older imports.
