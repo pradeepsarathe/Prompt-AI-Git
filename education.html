@@ -60,13 +60,14 @@
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,300;0,400;0,500;0,700;1,400&family=Roboto+Serif:opsz,wght@8..144,400;8..144,500;8..144,600&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="pai-chrome.css"/>
 <style>
   :root {
     --navy: #0a1628;
     --navy-mid: #102040;
     --navy-light: #1a3055;
-    --accent: #2563eb;
+    --accent: #1a73e8;
     --accent-light: #3b82f6;
     --accent-subtle: #eff6ff;
     --gold: #f59e0b;
@@ -81,18 +82,18 @@
   }
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   html { scroll-behavior: smooth; }
-  body { font-family: 'DM Sans', sans-serif; color: var(--text-primary); background: var(--white); line-height: 1.6; font-size: 16px; }
-  h1, h2, h3, h4 { font-family: 'DM Serif Display', serif; line-height: 1.2; }
+  body { font-family: 'Roboto', sans-serif; color: var(--text-primary); background: var(--white); line-height: 1.6; font-size: 16px; }
+  h1, h2, h3, h4 { font-family: 'Roboto Serif', serif; line-height: 1.2; }
   a { color: inherit; text-decoration: none; }
 
   /* NAV */
-  nav {
+  .legacy-nav {
     position: sticky; top: 0; z-index: 100;
     background: rgba(255,255,255,0.95); backdrop-filter: blur(12px);
     border-bottom: 1px solid var(--border); padding: 0 2rem;
   }
   .nav-inner { max-width: 1200px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; height: 64px; }
-  .nav-logo { display: flex; align-items: center; gap: 10px; font-family: 'DM Serif Display', serif; font-size: 1.4rem; color: var(--navy); }
+  .nav-logo { display: flex; align-items: center; gap: 10px; font-family: 'Roboto Serif', serif; font-size: 1.4rem; color: var(--navy); }
   .logo-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--accent); display: inline-block; }
   .nav-links { display: flex; align-items: center; gap: 2rem; list-style: none; }
   .nav-links a { font-size: 0.9rem; font-weight: 500; color: var(--text-secondary); transition: color 0.2s; }
@@ -100,7 +101,7 @@
   .nav-cta { background: var(--accent); color: white !important; padding: 8px 20px; border-radius: var(--radius); font-size: 0.88rem !important; font-weight: 500 !important; transition: background 0.2s !important; }
   .nav-cta:hover { background: #1d4ed8 !important; }
   /* account button — identical to home so the header never shifts between pages */
-  .user-btn { display:flex;align-items:center;gap:8px;padding:7px 16px;border-radius:8px;font-size:0.85rem;font-weight:500;cursor:pointer;border:none;font-family:'DM Sans',sans-serif;transition:all 0.2s; }
+  .user-btn { display:flex;align-items:center;gap:8px;padding:7px 16px;border-radius:8px;font-size:0.85rem;font-weight:500;cursor:pointer;border:none;font-family:'Roboto',sans-serif;transition:all 0.2s; }
   .user-btn.login { background:#eff6ff;color:#2563eb;border:1px solid #bfdbfe; }
   .user-btn.login:hover { background:#dbeafe; }
 
@@ -135,7 +136,7 @@
 
   /* LEVEL TABS */
   .level-tabs { display: flex; gap: 0.5rem; margin-bottom: 2.5rem; }
-  .level-tab { padding: 8px 22px; border-radius: 20px; font-size: 0.875rem; font-weight: 500; cursor: pointer; border: 1px solid var(--border); background: var(--white); color: var(--text-secondary); transition: all 0.2s; font-family: 'DM Sans', sans-serif; }
+  .level-tab { padding: 8px 22px; border-radius: 20px; font-size: 0.875rem; font-weight: 500; cursor: pointer; border: 1px solid var(--border); background: var(--white); color: var(--text-secondary); transition: all 0.2s; font-family: 'Roboto', sans-serif; }
   .level-tab.active, .level-tab:hover { background: var(--accent); color: white; border-color: var(--accent); }
 
   /* COURSE CARDS */
@@ -191,7 +192,7 @@
   .path-badge {
     width: 46px; height: 46px; border-radius: 13px; flex-shrink: 0;
     display: flex; align-items: center; justify-content: center;
-    font-family: 'DM Serif Display', serif; font-size: 1.35rem; color: #fff;
+    font-family: 'Roboto Serif', serif; font-size: 1.35rem; color: #fff;
     background: linear-gradient(150deg, var(--lvl), color-mix(in srgb, var(--lvl) 62%, #0a1628));
     box-shadow: 0 8px 18px -8px var(--lvl);
   }
@@ -205,7 +206,7 @@
   .path-card > p { font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6; margin-bottom: 1.05rem; }
   .path-meta { display: flex; gap: 1.25rem; margin-bottom: 1.25rem; padding-bottom: 1.25rem; border-bottom: 1px dashed var(--border); }
   .path-meta-item { font-size: 0.74rem; color: var(--text-muted); font-weight: 500; display: flex; flex-direction: column; gap: 2px; }
-  .path-meta-item strong { font-family: 'DM Serif Display', serif; font-weight: 400; font-size: 1.05rem; color: var(--navy); }
+  .path-meta-item strong { font-family: 'Roboto Serif', serif; font-weight: 400; font-size: 1.05rem; color: var(--navy); }
   .path-steps { list-style: none; counter-reset: step; display: flex; flex-direction: column; position: relative; }
   .path-steps li {
     position: relative; counter-increment: step; padding: 0 0 0.95rem 2.1rem;
@@ -237,7 +238,7 @@
   /* FOOTER */
   footer { background: var(--navy); padding: 3rem 2rem 2rem; border-top: 1px solid rgba(255,255,255,0.08); }
   .footer-inner { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 3rem; }
-  .footer-brand .logo { font-family: 'DM Serif Display', serif; font-size: 1.3rem; color: white; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 8px; }
+  .footer-brand .logo { font-family: 'Roboto Serif', serif; font-size: 1.3rem; color: white; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 8px; }
   .footer-brand p { font-size: 0.85rem; color: #64748b; line-height: 1.7; max-width: 260px; }
   .footer-col h5 { font-size: 0.85rem; font-weight: 600; color: white; margin-bottom: 1rem; }
   .footer-col ul { list-style: none; }
@@ -248,6 +249,7 @@
   .footer-bottom p { font-size: 0.82rem; color: #475569; }
 
   /* RESPONSIVE */
+  #courses { padding-top: 2.75rem; }
   @media (max-width: 900px) {
     .hero h1 { font-size: 2.2rem; }
     .course-grid { grid-template-columns: repeat(2, 1fr); }
@@ -280,46 +282,84 @@
 </head>
 <body>
 
-<!-- NAV -->
-<nav id="site-nav">
-  <div class="nav-inner">
-    <a href="index.html" class="nav-logo">
-      <span class="logo-dot"></span> PromptAI
-    </a>
-    <button class="nav-toggle" id="nav-toggle" onclick="toggleMobileNav()" aria-label="Toggle menu" aria-expanded="false">
-      <span></span><span></span><span></span>
-    </button>
-    <ul class="nav-links" id="nav-links">
-      <li><a href="index.html#news">News</a></li>
-      <li><a href="index.html#papers">Research</a></li>
-      <li><a href="index.html#blog">Blogs</a></li>
-      <li><a href="education.html" class="active">AI Education</a></li>
-      <li><a href="index.html#tools">Tools</a></li>
-      <li><a href="archive.html">Archive</a></li>
-      <li><a href="index.html#about">About</a></li>
-      <li><a href="index.html#newsletter" class="nav-cta">Subscribe</a></li>
-      <li><button id="nav-user-btn" class="user-btn login" onclick="goAccount()"><span id="nav-user-icon">👤</span><span id="nav-user-label">Sign In</span></button></li>
-    </ul>
+<!-- ════ TOP BAR ════ -->
+<header class="topbar">
+  <a class="brand" href="index.html" aria-label="PromptAI home" data-no-translate>
+    <span class="brand-mark"><svg viewBox="0 0 32 32"><rect x="1.5" y="1.5" width="29" height="29" rx="8" fill="var(--accent)"/><path d="M9.5 10.5 14.5 16l-5 5.5" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/><line x1="16.5" y1="21.5" x2="23" y2="21.5" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/></svg></span>
+    <span class="brand-text">Prompt<b>AI</b></span>
+  </a>
+  <div class="search-wrap">
+    <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 1 0-.7.7l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0A4.5 4.5 0 1 1 14 9.5 4.49 4.49 0 0 1 9.5 14z"/></svg>
+    <input id="pai-search" type="search" placeholder="Search AI news, papers, tools…" autocomplete="off" onkeydown="onChromeSearch(event)"/>
   </div>
+  <div class="topbar-spacer"></div>
+  <div class="topbar-actions">
+    <button class="icon-btn" onclick="toggleThemeMenu(event)" aria-label="Theme" title="Appearance"><svg viewBox="0 0 24 24"><path d="M12 22a10 10 0 0 1 0-20c5.51 0 10 4.04 10 9 0 3.31-2.69 6-6 6h-1.77c-.28 0-.5.22-.5.5 0 .12.05.23.13.33.41.47.64 1.06.64 1.67A2.5 2.5 0 0 1 12 22zm0-18a8 8 0 0 0 0 16c.28 0 .5-.22.5-.5a.54.54 0 0 0-.14-.35c-.41-.46-.63-1.05-.63-1.65a2.5 2.5 0 0 1 2.5-2.5H16a4 4 0 0 0 4-4c0-3.86-3.59-7-8-7zm-5.5 6a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3zm3-4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3zm5 0a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3z"/></svg></button>
+    <button class="icon-btn" id="lang-btn" onclick="toggleLangMenu(event)" aria-label="Language" title="Language"><svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zm6.93 6h-2.95a15.65 15.65 0 0 0-1.38-3.56A8.03 8.03 0 0 1 18.92 8zM12 4.04c.83 1.2 1.48 2.53 1.91 3.96h-3.82c.43-1.43 1.08-2.76 1.91-3.96zM4.26 14C4.1 13.36 4 12.69 4 12s.1-1.36.26-2h3.38c-.08.66-.14 1.32-.14 2 0 .68.06 1.34.14 2H4.26zm.82 2h2.95c.32 1.25.78 2.45 1.38 3.56A7.99 7.99 0 0 1 5.08 16zm2.95-8H5.08a7.99 7.99 0 0 1 4.33-3.56A15.65 15.65 0 0 0 8.03 8zM12 19.96c-.83-1.2-1.48-2.53-1.91-3.96h3.82c-.43 1.43-1.08 2.76-1.91 3.96zM14.34 14H9.66c-.09-.66-.16-1.32-.16-2 0-.68.07-1.35.16-2h4.68c.09.65.16 1.32.16 2 0 .68-.07 1.34-.16 2zm.25 5.56c.6-1.11 1.06-2.31 1.38-3.56h2.95a8.03 8.03 0 0 1-4.33 3.56zM16.36 14c.08-.66.14-1.32.14-2 0-.68-.06-1.34-.14-2h3.38c.16.64.26 1.31.26 2s-.1 1.36-.26 2h-3.38z"/></svg></button>
+    <button class="subscribe-cta" id="subscribe-btn" onclick="toggleSubscribe(event)">Subscribe</button>
+    <button class="signin-btn" id="signin-btn" onclick="openSheet()"><svg viewBox="0 0 24 24" width="18" height="18" style="fill:currentColor"><path d="M12 12a5 5 0 1 0-5-5 5 5 0 0 0 5 5zm0 2c-3.33 0-10 1.67-10 5v3h20v-3c0-3.33-6.67-5-10-5z"/></svg><span>Sign in</span></button>
+    <button class="avatar-btn" id="avatar-btn" onclick="openSheet()"></button>
+  </div>
+</header>
+
+<!-- theme menu -->
+<div class="theme-menu" id="theme-menu">
+  <h5>Appearance</h5>
+  <button class="theme-opt" data-theme="default" onclick="setTheme('default')"><span class="sw"><i style="background:#1a73e8"></i><i style="background:#ea4335"></i><i style="background:#fbbc04"></i><i style="background:#34a853"></i></span> Briefing (Google-style)<span class="chk">✓</span></button>
+  <button class="theme-opt" data-theme="promptai" onclick="setTheme('promptai')"><span class="sw"><i style="background:#2563eb"></i><i style="background:#1d4ed8"></i><i style="background:#0a1628"></i></span> PromptAI blue<span class="chk">✓</span></button>
+  <button class="theme-opt" data-theme="slate" onclick="setTheme('slate')"><span class="sw"><i style="background:#0f766e"></i><i style="background:#0d5d57"></i><i style="background:#1c1917"></i></span> Slate &amp; teal<span class="chk">✓</span></button>
+</div>
+
+<!-- subscribe popover -->
+<div class="sub-menu" id="sub-menu">
+  <h5>Get the briefing</h5>
+  <p class="sub-lead">The one story that matters, 5 headlines and the paper everyone's citing — every Tuesday.</p>
+  <form onsubmit="return doTopSubscribe(event)">
+    <input id="top-email" type="email" placeholder="you@example.com" required aria-label="Email"/>
+    <button type="submit">Subscribe free</button>
+  </form>
+  <p class="sub-note">No spam. Unsubscribe anytime.</p>
+</div>
+
+<!-- language popover -->
+<div class="lang-menu" id="lang-menu" data-no-translate>
+  <h5>Language</h5>
+  <button class="lang-opt" data-lang="en" onclick="setLang('en')"><span class="flag">🇬🇧</span> English<span class="chk">✓</span></button>
+  <button class="lang-opt" data-lang="zh-CN" onclick="setLang('zh-CN')"><span class="flag">🇨🇳</span> Chinese <span class="native">中文</span><span class="chk">✓</span></button>
+  <button class="lang-opt" data-lang="hi" onclick="setLang('hi')"><span class="flag">🇮🇳</span> Hindi <span class="native">हिन्दी</span><span class="chk">✓</span></button>
+  <button class="lang-opt" data-lang="es" onclick="setLang('es')"><span class="flag">🇪🇸</span> Spanish <span class="native">Español</span><span class="chk">✓</span></button>
+  <button class="lang-opt" data-lang="ar" onclick="setLang('ar')"><span class="flag">🇸🇦</span> Arabic <span class="native">العربية</span><span class="chk">✓</span></button>
+  <button class="lang-opt" data-lang="fr" onclick="setLang('fr')"><span class="flag">🇫🇷</span> French <span class="native">Français</span><span class="chk">✓</span></button>
+  <button class="lang-opt" data-lang="pt" onclick="setLang('pt')"><span class="flag">🇵🇹</span> Portuguese <span class="native">Português</span><span class="chk">✓</span></button>
+  <button class="lang-opt" data-lang="ru" onclick="setLang('ru')"><span class="flag">🇷🇺</span> Russian <span class="native">Русский</span><span class="chk">✓</span></button>
+  <button class="lang-opt" data-lang="bn" onclick="setLang('bn')"><span class="flag">🇧🇩</span> Bengali <span class="native">বাংলা</span><span class="chk">✓</span></button>
+  <button class="lang-opt" data-lang="ja" onclick="setLang('ja')"><span class="flag">🇯🇵</span> Japanese <span class="native">日本語</span><span class="chk">✓</span></button>
+</div>
+
+<!-- ════ TAB BAR ════ -->
+<nav class="tabs" aria-label="Sections">
+  <a class="tab" href="index.html#home">Home</a>
+  <a class="tab" href="index.html#news">News</a>
+  <a class="tab" href="index.html#research">Research</a>
+  <a class="tab" href="index.html#learn">Blogs</a>
+  <a class="tab" href="index.html#tools">Tools</a>
+  <a class="tab active" href="education.html">Learn AI</a>
+  <a class="tab" href="archive.html">Archive</a>
 </nav>
 
-<!-- HERO -->
-<section class="hero">
-  <div class="hero-inner">
-    <div class="hero-badge">
-      <span style="width:6px;height:6px;background:#60a5fa;border-radius:50%;display:inline-block;animation:pulse 2s infinite;"></span>
-      Free &amp; curated resources
-    </div>
-    <h1>Learn AI — from <em>curious</em> to capable</h1>
-    <p>Courses, guides, and learning paths to help you understand, use, and build with artificial intelligence — hand-picked for quality.</p>
-    <div class="hero-paths">
-      <a href="#courses" class="path-pill active">Free Courses</a>
-      <a href="#guides" class="path-pill">Tool Guides</a>
-      <a href="#prompting" class="path-pill">Prompt Engineering</a>
-      <a href="#paths" class="path-pill">Learning Paths</a>
+<!-- PAGE HEADER -->
+<div class="page-head">
+  <div class="page-head-inner">
+    <div class="sec-title"><span class="bar"></span> Learn AI</div>
+    <p class="sec-sub">Courses, guides, and learning paths to take you from curious to capable — hand-picked for quality.</p>
+    <div class="page-chips" id="edu-chips">
+      <a class="chip active" href="#courses" onclick="setEduChip(this)">Free Courses</a>
+      <a class="chip" href="#guides" onclick="setEduChip(this)">Tool Guides</a>
+      <a class="chip" href="#prompting" onclick="setEduChip(this)">Prompt Engineering</a>
+      <a class="chip" href="#paths" onclick="setEduChip(this)">Learning Paths</a>
     </div>
   </div>
-</section>
+</div>
 
 <!-- FREE COURSES -->
 <section id="courses" style="background:#fff;">
@@ -697,7 +737,30 @@
   @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
 </style>
 
+<!-- ════ SIGN-IN SHEET + TOAST (shared chrome) ════ -->
+<div class="sheet-overlay" id="sheet-overlay" onclick="closeSheet()"></div>
+<aside class="sheet" id="sheet">
+  <div class="sheet-h"><h3 id="sheet-title">Sign in to PromptAI</h3><button class="modal-x" onclick="closeSheet()">✕</button></div>
+  <div class="sheet-b" id="sheet-body"></div>
+</aside>
+<div id="toast"></div>
+<script src="pai-translate.js"></script>
+<script src="pai-chrome.js"></script>
+
 <script>
+function setEduChip(el){
+  document.querySelectorAll('#edu-chips .chip').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');
+}
+// scrollspy: highlight the chip for the section in view
+(function(){
+  const ids=['courses','guides','prompting','paths'];
+  const map={}; document.querySelectorAll('#edu-chips .chip').forEach(c=>{ map[c.getAttribute('href').slice(1)]=c; });
+  const obs=new IntersectionObserver((ents)=>{
+    ents.forEach(e=>{ if(e.isIntersecting){ const c=map[e.target.id]; if(c){ document.querySelectorAll('#edu-chips .chip').forEach(x=>x.classList.remove('active')); c.classList.add('active'); } } });
+  },{rootMargin:'-45% 0px -50% 0px',threshold:0});
+  ids.forEach(id=>{ const s=document.getElementById(id); if(s) obs.observe(s); });
+})();
 function filterCourses(level, btn) {
   document.querySelectorAll('.level-tab').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
@@ -706,21 +769,9 @@ function filterCourses(level, btn) {
   });
 }
 
-// ── Mobile menu ──
-function toggleMobileNav() {
-  const nav = document.getElementById('site-nav');
-  const open = nav.classList.toggle('open');
-  document.getElementById('nav-toggle').setAttribute('aria-expanded', open ? 'true' : 'false');
-}
-function closeMobileNav() {
-  document.getElementById('site-nav').classList.remove('open');
-  document.getElementById('nav-toggle').setAttribute('aria-expanded', 'false');
-}
-document.querySelectorAll('#nav-links a').forEach(a => a.addEventListener('click', closeMobileNav));
-document.addEventListener('click', (e) => {
-  const nav = document.getElementById('site-nav');
-  if (nav.classList.contains('open') && !nav.contains(e.target)) closeMobileNav();
-});
+// ── Mobile menu (legacy nav removed; guarded no-ops) ──
+function toggleMobileNav() {}
+function closeMobileNav() {}
 
 // ── nav account button (matches home; keeps the header identical) ──
 function goAccount() {
@@ -738,7 +789,7 @@ function goAccount() {
   const first = _p[0] || 'Account';
   const initials = (_p.length >= 2 ? (_p[0][0] + _p[1][0]) : _n.slice(0, 2)).toUpperCase();
   btn.className = 'user-btn';
-  btn.style.cssText = "background:#fff;border:1.5px solid #e2e8f0;color:#0f172a;display:flex;align-items:center;gap:7px;padding:5px 12px 5px 5px;border-radius:20px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:0.85rem;font-weight:600;";
+  btn.style.cssText = "background:#fff;border:1.5px solid #e2e8f0;color:#0f172a;display:flex;align-items:center;gap:7px;padding:5px 12px 5px 5px;border-radius:20px;cursor:pointer;font-family:'Roboto',sans-serif;font-size:0.85rem;font-weight:600;";
   if (icon) icon.outerHTML = '<span style="width:26px;height:26px;border-radius:50%;background:#2563eb;color:#fff;display:flex;align-items:center;justify-content:center;font-size:0.8rem;font-weight:700;">' + initials + '</span>';
   if (label) label.textContent = first;
 })();

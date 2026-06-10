@@ -50,28 +50,29 @@
 }
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
-<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,300;0,400;0,500;0,700;1,400&family=Roboto+Serif:opsz,wght@8..144,400;8..144,500;8..144,600&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="pai-chrome.css"/>
 <style>
   :root {
-    --navy:#0a1628; --accent:#2563eb; --accent-light:#eff6ff;
+    --navy:#0a1628; --accent:#1a73e8; --accent-light:#eff6ff;
     --text:#0f172a; --muted:#94a3b8; --border:#e2e8f0; --surface:#f8fafc;
   }
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: 'DM Sans', sans-serif; color: var(--text); background: var(--surface); }
-  h1,h2,h3 { font-family: 'DM Serif Display', serif; }
+  body { font-family: 'Roboto', sans-serif; color: var(--text); background: var(--surface); }
+  h1,h2,h3 { font-family: 'Roboto Serif', serif; }
   a { color: inherit; text-decoration: none; }
 
   /* NAV */
-  nav { background: rgba(255,255,255,0.95); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); padding: 0 2rem; position: sticky; top: 0; z-index: 100; }
+  .legacy-nav { background: rgba(255,255,255,0.95); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); padding: 0 2rem; position: sticky; top: 0; z-index: 100; }
   .nav-inner { max-width: 1200px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; height: 64px; }
-  .nav-logo { font-family: 'DM Serif Display', serif; font-size: 1.4rem; color: var(--navy); display: flex; align-items: center; gap: 8px; }
+  .nav-logo { font-family: 'Roboto Serif', serif; font-size: 1.4rem; color: var(--navy); display: flex; align-items: center; gap: 8px; }
   .logo-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--accent); display: inline-block; }
   .nav-links { display: flex; gap: 2rem; list-style: none; }
   .nav-links a { font-size: 0.9rem; font-weight: 500; color: #475569; transition: color 0.2s; }
   .nav-links a:hover, .nav-links a.active { color: var(--accent); }
   .nav-cta { background: var(--accent); color: white !important; padding: 7px 18px; border-radius: 8px; }
   /* account button — kept identical to the home page so the nav never shifts */
-  .user-btn { display:flex;align-items:center;gap:8px;padding:7px 16px;border-radius:8px;font-size:0.85rem;font-weight:500;cursor:pointer;border:none;font-family:'DM Sans',sans-serif;transition:all 0.2s; }
+  .user-btn { display:flex;align-items:center;gap:8px;padding:7px 16px;border-radius:8px;font-size:0.85rem;font-weight:500;cursor:pointer;border:none;font-family:'Roboto',sans-serif;transition:all 0.2s; }
   .user-btn.login { background:#eff6ff;color:#2563eb;border:1px solid #bfdbfe; }
   .user-btn.login:hover { background:#dbeafe; }
   .nav-toggle { display: none; background: none; border: none; cursor: pointer; flex-direction: column; justify-content: center; gap: 5px; width: 42px; height: 42px; padding: 9px; border-radius: 8px; }
@@ -82,28 +83,29 @@
   #site-nav.open .nav-toggle span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
 
   /* HEADER */
-  .archive-header { background: var(--navy); padding: 3.5rem 2rem 3rem; }
-  .archive-header-inner { max-width: 1200px; margin: 0 auto; }
-  .archive-header h1 { font-size: 2.5rem; color: white; margin-bottom: 0.5rem; }
-  .archive-header p { color: #94a3b8; font-size: 1rem; }
-  .archive-stats { display: flex; gap: 2rem; margin-top: 1.5rem; flex-wrap: wrap; }
-  .stat { background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.12); border-radius: 10px; padding: 0.75rem 1.25rem; }
-  .stat .n { font-family: 'DM Serif Display', serif; font-size: 1.6rem; color: white; }
-  .stat .l { font-size: 0.78rem; color: #64748b; margin-top: 2px; }
+  .archive-header { background: var(--bg); border-bottom: 1px solid var(--border-soft); padding: 30px 2rem 26px; }
+  .archive-header-inner { max-width: 1100px; margin: 0 auto; }
+  .archive-header h1 { display:flex; align-items:center; gap:11px; font-size: 1.7rem; color: var(--text); margin-bottom: 8px; letter-spacing:-0.3px; }
+  .archive-header h1 .bar { width:4px; height:26px; border-radius:3px; background:var(--accent); flex:none; }
+  .archive-header p { color: var(--text-2); font-size: 0.95rem; margin-left:15px; }
+  .archive-stats { display: flex; gap: 1rem; margin-top: 1.25rem; flex-wrap: wrap; }
+  .stat { background: var(--bg-subtle); border: 1px solid var(--border-soft); border-radius: 12px; padding: 0.75rem 1.25rem; min-width:120px; }
+  .stat .n { font-family: 'Roboto Serif', serif; font-size: 1.5rem; color: var(--text); font-weight:600; }
+  .stat .l { font-size: 0.76rem; color: var(--text-2); margin-top: 2px; }
 
   /* CONTROLS */
-  .controls { max-width: 1200px; margin: 2rem auto; padding: 0 2rem; display: flex; gap: 1rem; flex-wrap: wrap; align-items: center; }
+  .controls { max-width: 1100px; margin: 2rem auto; padding: 0 2rem; display: flex; gap: 1rem; flex-wrap: wrap; align-items: center; }
   .search-box { flex: 1; min-width: 240px; position: relative; }
-  .search-box input { width: 100%; padding: 10px 16px 10px 40px; border: 1px solid var(--border); border-radius: 8px; font-size: 0.9rem; font-family: 'DM Sans', sans-serif; background: white; outline: none; }
+  .search-box input { width: 100%; padding: 10px 16px 10px 40px; border: 1px solid var(--border); border-radius: 8px; font-size: 0.9rem; font-family: 'Roboto', sans-serif; background: white; outline: none; }
   .search-box input:focus { border-color: var(--accent); }
   .search-box::before { content: '🔍'; position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-size: 0.85rem; }
   .filter-group { display: flex; gap: 0.5rem; flex-wrap: wrap; }
   .pill { padding: 6px 14px; border-radius: 20px; font-size: 0.82rem; font-weight: 500; cursor: pointer; border: 1px solid var(--border); background: white; color: #475569; transition: all 0.2s; }
   .pill.active, .pill:hover { background: var(--accent); color: white; border-color: var(--accent); }
-  .sort-select { padding: 8px 14px; border: 1px solid var(--border); border-radius: 8px; font-size: 0.85rem; font-family: 'DM Sans', sans-serif; background: white; outline: none; cursor: pointer; color: #475569; }
+  .sort-select { padding: 8px 14px; border: 1px solid var(--border); border-radius: 8px; font-size: 0.85rem; font-family: 'Roboto', sans-serif; background: white; outline: none; cursor: pointer; color: #475569; }
 
   /* TIMELINE */
-  .archive-main { max-width: 1200px; margin: 0 auto; padding: 0 2rem 4rem; }
+  .archive-main { max-width: 1100px; margin: 0 auto; padding: 0 2rem 4rem; }
   .date-group { margin-bottom: 2.5rem; }
   .date-label { font-size: 0.78rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--accent); margin-bottom: 1rem; display: flex; align-items: center; gap: 10px; }
   .date-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
@@ -129,7 +131,7 @@
 
   /* LOAD MORE */
   .load-more-wrap { text-align: center; margin-top: 2rem; }
-  .load-more-btn { background: none; border: 1px solid var(--border); padding: 10px 28px; border-radius: 8px; font-size: 0.9rem; font-weight: 500; cursor: pointer; color: var(--accent); font-family: 'DM Sans', sans-serif; transition: all 0.2s; }
+  .load-more-btn { background: none; border: 1px solid var(--border); padding: 10px 28px; border-radius: 8px; font-size: 0.9rem; font-weight: 500; cursor: pointer; color: var(--accent); font-family: 'Roboto', sans-serif; transition: all 0.2s; }
   .load-more-btn:hover { background: var(--accent-light); }
 
   @media (max-width: 900px) {
@@ -156,29 +158,74 @@
 </head>
 <body>
 
-<nav id="site-nav">
-  <div class="nav-inner">
-    <a href="/" class="nav-logo"><span class="logo-dot"></span> PromptAI</a>
-    <button class="nav-toggle" id="nav-toggle" onclick="toggleMobileNav()" aria-label="Toggle menu" aria-expanded="false">
-      <span></span><span></span><span></span>
-    </button>
-    <ul class="nav-links" id="nav-links">
-      <li><a href="/#news">News</a></li>
-      <li><a href="/#papers">Research</a></li>
-      <li><a href="/#blog">Blogs</a></li>
-      <li><a href="/education.html">AI Education</a></li>
-      <li><a href="/#tools">Tools</a></li>
-      <li><a href="/archive.html" class="active">Archive</a></li>
-      <li><a href="/#about">About</a></li>
-      <li><a href="/#newsletter" class="nav-cta">Subscribe</a></li>
-      <li><button id="nav-user-btn" class="user-btn login" onclick="goAccount()"><span id="nav-user-icon">👤</span><span id="nav-user-label">Sign In</span></button></li>
-    </ul>
+<!-- ════ TOP BAR ════ -->
+<header class="topbar">
+  <a class="brand" href="index.html" aria-label="PromptAI home" data-no-translate>
+    <span class="brand-mark"><svg viewBox="0 0 32 32"><rect x="1.5" y="1.5" width="29" height="29" rx="8" fill="var(--accent)"/><path d="M9.5 10.5 14.5 16l-5 5.5" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/><line x1="16.5" y1="21.5" x2="23" y2="21.5" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/></svg></span>
+    <span class="brand-text">Prompt<b>AI</b></span>
+  </a>
+  <div class="search-wrap">
+    <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 1 0-.7.7l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0A4.5 4.5 0 1 1 14 9.5 4.49 4.49 0 0 1 9.5 14z"/></svg>
+    <input id="pai-search" type="search" placeholder="Search AI news, papers, tools…" autocomplete="off" onkeydown="onChromeSearch(event)"/>
   </div>
+  <div class="topbar-spacer"></div>
+  <div class="topbar-actions">
+    <button class="icon-btn" onclick="toggleThemeMenu(event)" aria-label="Theme" title="Appearance"><svg viewBox="0 0 24 24"><path d="M12 22a10 10 0 0 1 0-20c5.51 0 10 4.04 10 9 0 3.31-2.69 6-6 6h-1.77c-.28 0-.5.22-.5.5 0 .12.05.23.13.33.41.47.64 1.06.64 1.67A2.5 2.5 0 0 1 12 22zm0-18a8 8 0 0 0 0 16c.28 0 .5-.22.5-.5a.54.54 0 0 0-.14-.35c-.41-.46-.63-1.05-.63-1.65a2.5 2.5 0 0 1 2.5-2.5H16a4 4 0 0 0 4-4c0-3.86-3.59-7-8-7zm-5.5 6a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3zm3-4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3zm5 0a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3z"/></svg></button>
+    <button class="icon-btn" id="lang-btn" onclick="toggleLangMenu(event)" aria-label="Language" title="Language"><svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zm6.93 6h-2.95a15.65 15.65 0 0 0-1.38-3.56A8.03 8.03 0 0 1 18.92 8zM12 4.04c.83 1.2 1.48 2.53 1.91 3.96h-3.82c.43-1.43 1.08-2.76 1.91-3.96zM4.26 14C4.1 13.36 4 12.69 4 12s.1-1.36.26-2h3.38c-.08.66-.14 1.32-.14 2 0 .68.06 1.34.14 2H4.26zm.82 2h2.95c.32 1.25.78 2.45 1.38 3.56A7.99 7.99 0 0 1 5.08 16zm2.95-8H5.08a7.99 7.99 0 0 1 4.33-3.56A15.65 15.65 0 0 0 8.03 8zM12 19.96c-.83-1.2-1.48-2.53-1.91-3.96h3.82c-.43 1.43-1.08 2.76-1.91 3.96zM14.34 14H9.66c-.09-.66-.16-1.32-.16-2 0-.68.07-1.35.16-2h4.68c.09.65.16 1.32.16 2 0 .68-.07 1.34-.16 2zm.25 5.56c.6-1.11 1.06-2.31 1.38-3.56h2.95a8.03 8.03 0 0 1-4.33 3.56zM16.36 14c.08-.66.14-1.32.14-2 0-.68-.06-1.34-.14-2h3.38c.16.64.26 1.31.26 2s-.1 1.36-.26 2h-3.38z"/></svg></button>
+    <button class="subscribe-cta" id="subscribe-btn" onclick="toggleSubscribe(event)">Subscribe</button>
+    <button class="signin-btn" id="signin-btn" onclick="openSheet()"><svg viewBox="0 0 24 24" width="18" height="18" style="fill:currentColor"><path d="M12 12a5 5 0 1 0-5-5 5 5 0 0 0 5 5zm0 2c-3.33 0-10 1.67-10 5v3h20v-3c0-3.33-6.67-5-10-5z"/></svg><span>Sign in</span></button>
+    <button class="avatar-btn" id="avatar-btn" onclick="openSheet()"></button>
+  </div>
+</header>
+
+<!-- theme menu -->
+<div class="theme-menu" id="theme-menu">
+  <h5>Appearance</h5>
+  <button class="theme-opt" data-theme="default" onclick="setTheme('default')"><span class="sw"><i style="background:#1a73e8"></i><i style="background:#ea4335"></i><i style="background:#fbbc04"></i><i style="background:#34a853"></i></span> Briefing (Google-style)<span class="chk">✓</span></button>
+  <button class="theme-opt" data-theme="promptai" onclick="setTheme('promptai')"><span class="sw"><i style="background:#2563eb"></i><i style="background:#1d4ed8"></i><i style="background:#0a1628"></i></span> PromptAI blue<span class="chk">✓</span></button>
+  <button class="theme-opt" data-theme="slate" onclick="setTheme('slate')"><span class="sw"><i style="background:#0f766e"></i><i style="background:#0d5d57"></i><i style="background:#1c1917"></i></span> Slate &amp; teal<span class="chk">✓</span></button>
+</div>
+
+<!-- subscribe popover -->
+<div class="sub-menu" id="sub-menu">
+  <h5>Get the briefing</h5>
+  <p class="sub-lead">The one story that matters, 5 headlines and the paper everyone's citing — every Tuesday.</p>
+  <form onsubmit="return doTopSubscribe(event)">
+    <input id="top-email" type="email" placeholder="you@example.com" required aria-label="Email"/>
+    <button type="submit">Subscribe free</button>
+  </form>
+  <p class="sub-note">No spam. Unsubscribe anytime.</p>
+</div>
+
+<!-- language popover -->
+<div class="lang-menu" id="lang-menu" data-no-translate>
+  <h5>Language</h5>
+  <button class="lang-opt" data-lang="en" onclick="setLang('en')"><span class="flag">🇬🇧</span> English<span class="chk">✓</span></button>
+  <button class="lang-opt" data-lang="zh-CN" onclick="setLang('zh-CN')"><span class="flag">🇨🇳</span> Chinese <span class="native">中文</span><span class="chk">✓</span></button>
+  <button class="lang-opt" data-lang="hi" onclick="setLang('hi')"><span class="flag">🇮🇳</span> Hindi <span class="native">हिन्दी</span><span class="chk">✓</span></button>
+  <button class="lang-opt" data-lang="es" onclick="setLang('es')"><span class="flag">🇪🇸</span> Spanish <span class="native">Español</span><span class="chk">✓</span></button>
+  <button class="lang-opt" data-lang="ar" onclick="setLang('ar')"><span class="flag">🇸🇦</span> Arabic <span class="native">العربية</span><span class="chk">✓</span></button>
+  <button class="lang-opt" data-lang="fr" onclick="setLang('fr')"><span class="flag">🇫🇷</span> French <span class="native">Français</span><span class="chk">✓</span></button>
+  <button class="lang-opt" data-lang="pt" onclick="setLang('pt')"><span class="flag">🇵🇹</span> Portuguese <span class="native">Português</span><span class="chk">✓</span></button>
+  <button class="lang-opt" data-lang="ru" onclick="setLang('ru')"><span class="flag">🇷🇺</span> Russian <span class="native">Русский</span><span class="chk">✓</span></button>
+  <button class="lang-opt" data-lang="bn" onclick="setLang('bn')"><span class="flag">🇧🇩</span> Bengali <span class="native">বাংলা</span><span class="chk">✓</span></button>
+  <button class="lang-opt" data-lang="ja" onclick="setLang('ja')"><span class="flag">🇯🇵</span> Japanese <span class="native">日本語</span><span class="chk">✓</span></button>
+</div>
+
+<!-- ════ TAB BAR ════ -->
+<nav class="tabs" aria-label="Sections">
+  <a class="tab" href="index.html#home">Home</a>
+  <a class="tab" href="index.html#news">News</a>
+  <a class="tab" href="index.html#research">Research</a>
+  <a class="tab" href="index.html#learn">Blogs</a>
+  <a class="tab" href="index.html#tools">Tools</a>
+  <a class="tab" href="education.html">Learn AI</a>
+  <a class="tab active" href="archive.html">Archive</a>
 </nav>
 
 <div class="archive-header">
   <div class="archive-header-inner">
-    <h1>📚 Archive</h1>
+    <h1><span class="bar"></span> Archive</h1>
     <p>Every article, paper and blog post seen on PromptAI — searchable, filterable, browsable by date.</p>
     <div class="archive-stats">
       <div class="stat"><div class="n" id="stat-total">0</div><div class="l">Total articles</div></div>
@@ -471,26 +518,24 @@ function goAccount() {
   const first = _p[0] || 'Account';
   const initials = (_p.length >= 2 ? (_p[0][0] + _p[1][0]) : _n.slice(0, 2)).toUpperCase();
   btn.className = 'user-btn';
-  btn.style.cssText = "background:#fff;border:1.5px solid #e2e8f0;color:#0f172a;display:flex;align-items:center;gap:7px;padding:5px 12px 5px 5px;border-radius:20px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:0.85rem;font-weight:600;";
+  btn.style.cssText = "background:#fff;border:1.5px solid #e2e8f0;color:#0f172a;display:flex;align-items:center;gap:7px;padding:5px 12px 5px 5px;border-radius:20px;cursor:pointer;font-family:'Roboto',sans-serif;font-size:0.85rem;font-weight:600;";
   if (icon) icon.outerHTML = '<span style="width:26px;height:26px;border-radius:50%;background:#2563eb;color:#fff;display:flex;align-items:center;justify-content:center;font-size:0.8rem;font-weight:700;">' + initials + '</span>';
   if (label) label.textContent = first;
 })();
 
-// ── Mobile menu ──
-function toggleMobileNav() {
-  const nav = document.getElementById('site-nav');
-  const open = nav.classList.toggle('open');
-  document.getElementById('nav-toggle').setAttribute('aria-expanded', open ? 'true' : 'false');
-}
-function closeMobileNav() {
-  document.getElementById('site-nav').classList.remove('open');
-  document.getElementById('nav-toggle').setAttribute('aria-expanded', 'false');
-}
-document.querySelectorAll('#nav-links a').forEach(a => a.addEventListener('click', closeMobileNav));
-document.addEventListener('click', (e) => {
-  const nav = document.getElementById('site-nav');
-  if (nav.classList.contains('open') && !nav.contains(e.target)) closeMobileNav();
-});
+// ── Mobile menu (legacy nav removed; guarded no-ops) ──
+function toggleMobileNav() {}
+function closeMobileNav() {}
 </script>
+
+<!-- ════ SIGN-IN SHEET + TOAST (shared chrome) ════ -->
+<div class="sheet-overlay" id="sheet-overlay" onclick="closeSheet()"></div>
+<aside class="sheet" id="sheet">
+  <div class="sheet-h"><h3 id="sheet-title">Sign in to PromptAI</h3><button class="modal-x" onclick="closeSheet()">✕</button></div>
+  <div class="sheet-b" id="sheet-body"></div>
+</aside>
+<div id="toast"></div>
+<script src="pai-translate.js"></script>
+<script src="pai-chrome.js"></script>
 </body>
 </html>
