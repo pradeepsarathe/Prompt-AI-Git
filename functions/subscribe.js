@@ -5,7 +5,7 @@
 // via Resend.
 // Setup: Pages → Settings → Functions → KV namespace bindings → add SUBSCRIBERS
 
-import { fetchDigestContent, digestHtml } from './send-digest.js';
+import { fetchDigestContent, digestHtml, digestText } from './send-digest.js';
 
 export async function onRequest(context) {
   const { request, env } = context;
@@ -112,6 +112,10 @@ export async function onRequest(context) {
         const html = hasContent
           ? digestHtml({ ...content, dateStr, email })
           : welcomeHtml(email); // fallback if feeds are temporarily empty
+        const text = hasContent
+          ? digestText({ ...content, dateStr, email })
+          : welcomeText(email);
+        const unsub = 'https://promptai.in/unsubscribe?email=' + encodeURIComponent(email);
         const resp = await fetch('https://api.resend.com/emails', {
           method: 'POST',
           headers: {
@@ -125,6 +129,12 @@ export async function onRequest(context) {
               ? `✅ You're subscribed — your PromptAI briefing inside`
               : `Welcome to PromptAI 🎉`,
             html,
+            // Plain-text alternative + one-click unsubscribe for deliverability.
+            text,
+            headers: {
+              'List-Unsubscribe': '<' + unsub + '>',
+              'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
+            },
           }),
         });
         if (resp.ok) { emailSent = true; }
@@ -164,9 +174,9 @@ function welcomeHtml(email) {
       <p style="margin:0 0 16px;">Thanks for subscribing. Every week we read the firehose — arXiv, Hacker News, the best ML blogs — so you don't have to, and send only what matters.</p>
       <p style="margin:0 0 6px;font-weight:bold;color:#0a1628;">Every Tuesday you'll get:</p>
       <ul style="margin:0 0 4px;padding-left:20px;color:#475569;">
-        <li style="margin:6px 0;"><b>3 must-read papers</b> — summarized in plain English.</li>
-        <li style="margin:6px 0;"><b>The headlines that count</b> — launches, funding, shifts. No hype.</li>
-        <li style="margin:6px 0;"><b>One deep dive</b> — a hand-picked explainer for the weekend.</li>
+        <li style="margin:6px 0;"><b>The headlines that count</b> — launches, funding, research. No hype.</li>
+        <li style="margin:6px 0;"><b>Hand-picked deep dives</b> — the best explainers and blog posts.</li>
+        <li style="margin:6px 0;"><b>One paper, explained</b> — the research everyone's citing, in plain English.</li>
       </ul></td></tr>
     <tr><td align="center" style="padding:24px 40px 36px;">
       <a href="https://promptai.in" style="display:inline-block;padding:15px 34px;background:#2563eb;border-radius:10px;font-family:Helvetica,Arial,sans-serif;font-size:15px;font-weight:bold;color:#fff;text-decoration:none;">Read today's feed →</a></td></tr>
@@ -174,4 +184,28 @@ function welcomeHtml(email) {
       You're receiving this because you subscribed at promptai.in.<br/>
       <a href="${unsub}" style="color:#2563eb;">Unsubscribe</a> · <a href="https://promptai.in" style="color:#2563eb;">Visit site</a></td></tr>
   </table></td></tr></table></body></html>`;
+}
+
+// Plain-text alternative for the welcome email (sent alongside welcomeHtml).
+function welcomeText(email) {
+  const unsub = 'https://promptai.in/unsubscribe?email=' + encodeURIComponent(email);
+  return [
+    'PROMPTAI — WELCOME ABOARD',
+    '====================================',
+    '',
+    "You're in. Smarter AI starts Tuesday.",
+    '',
+    "Thanks for subscribing. Every week we read the firehose — arXiv, Hacker News,",
+    "the best ML blogs — so you don't have to, and send only what matters.",
+    '',
+    'Every Tuesday you\'ll get:',
+    '* The headlines that count — launches, funding, research. No hype.',
+    '* Hand-picked deep dives — the best explainers and blog posts.',
+    '* One paper, explained — the research everyone\'s citing, in plain English.',
+    '',
+    "Read today's feed: https://promptai.in",
+    '',
+    "You're receiving this because you subscribed at promptai.in.",
+    'Unsubscribe: ' + unsub,
+  ].join('\n');
 }

@@ -98,12 +98,23 @@ export async function onRequest(context) {
   let lastResendError = null;
   for (let i = 0; i < emails.length; i += 100) {
     const chunk = emails.slice(i, i + 100);
-    const batch = chunk.map((email) => ({
-      from: env.FROM_EMAIL,
-      to: [email],
-      subject,
-      html: digestHtml({ ...content, dateStr, email }),
-    }));
+    const batch = chunk.map((email) => {
+      const unsub = 'https://promptai.in/unsubscribe?email=' + encodeURIComponent(email);
+      return {
+        from: env.FROM_EMAIL,
+        to: [email],
+        subject,
+        html: digestHtml({ ...content, dateStr, email }),
+        // Plain-text alternative — HTML-only mail scores worse with spam filters.
+        text: digestText({ ...content, dateStr, email }),
+        // One-click unsubscribe — now required by Gmail/Yahoo for bulk senders and
+        // a meaningful inbox-placement signal.
+        headers: {
+          'List-Unsubscribe': '<' + unsub + '>',
+          'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
+        },
+      };
+    });
     try {
       const r = await fetch('https://api.resend.com/emails/batch', {
         method: 'POST',
@@ -415,6 +426,52 @@ export function digestHtml({ news = [], blogs = [], paper = null, dateStr, email
   </table>
   <div style="font-family:Helvetica,Arial,sans-serif;font-size:11px;color:#37425c;padding:16px 0 0;">© 2026 PromptAI · promptai.in</div>
   </td></tr></table></body></html>`;
+}
+
+// ── plain-text alternative ───────────────────────────────────────────
+// A readable text/plain version of the briefing. Sent alongside the HTML so
+// spam filters see a multipart message (HTML-only mail is penalised) and
+// text-only / accessibility clients still get the full content.
+export function digestText({ news = [], blogs = [], paper = null, dateStr, email }) {
+  const unsub = 'https://promptai.in/unsubscribe?email=' + encodeURIComponent(email || '');
+  const hero = news[0] || blogs[0] || null;
+  const newsList = news[0] ? news.slice(1) : news;
+  const lines = [];
+  lines.push('PROMPTAI — THE BRIEFING' + (dateStr ? ' \u00b7 ' + dateStr : ''));
+  lines.push('====================================');
+  lines.push('');
+  if (hero) {
+    lines.push("TODAY'S TOP STORY");
+    lines.push(hero.title);
+    if (hero.desc) lines.push(hero.desc);
+    lines.push(hero.link + (hero.src ? '  (' + hero.src + ')' : ''));
+    lines.push('');
+  }
+  const block = (label, items) => {
+    if (!items || !items.length) return;
+    lines.push(label);
+    lines.push('------------------------------------');
+    items.forEach((b) => {
+      lines.push('* ' + b.title + (b.src ? '  (' + b.src + ')' : ''));
+      lines.push('  ' + b.link);
+    });
+    lines.push('');
+  };
+  block('TOP AI NEWS', newsList);
+  block('BLOGS & DEEP DIVES', blogs);
+  if (paper) {
+    lines.push('RESEARCH PAPER OF THE DAY');
+    lines.push('------------------------------------');
+    lines.push(paper.title + (paper.src ? '  (' + paper.src + ')' : ''));
+    if (paper.desc) lines.push(paper.desc);
+    lines.push(paper.link);
+    lines.push('');
+  }
+  lines.push('Open the live feed: https://promptai.in');
+  lines.push('');
+  lines.push("You're getting this because you subscribed at promptai.in.");
+  lines.push('Unsubscribe: ' + unsub);
+  return lines.join('\n');
 }
 
 // Back-compat alias for older imports.
