@@ -313,8 +313,8 @@ const esc = s => (s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(
 // Branded gradient posters used when a feed item has no image. Deterministic
 // per-index so a given slot always looks consistent.
 const POSTERS = [
-  ['#0ea5e9', '#1e3a8a', '◆'], ['#8b5cf6', '#1e1b4b', '▲'], ['#10b981', '#064e3b', '●'],
-  ['#f59e0b', '#7c2d12', '✦'], ['#ef4444', '#581c1c', '❖'], ['#06b6d4', '#0c4a6e', '■'],
+  ['#1a73e8', '#174ea6', '◆'], ['#0f766e', '#134e4a', '▲'], ['#8430ce', '#4c1d95', '●'],
+  ['#b06000', '#7c2d12', '✦'], ['#1967d2', '#0a1628', '❖'], ['#137333', '#064e3b', '■'],
 ];
 
 // A 150×96 poster cell: real feed image if present, else gradient + glyph.
@@ -322,7 +322,7 @@ const POSTERS = [
 // the gradient layered on top for clients that support it.
 function poster(item, i) {
   if (item && item.img) {
-    return `<img src="${esc(item.img)}" width="150" height="96" alt="" style="display:block;width:150px;height:96px;border-radius:10px;object-fit:cover;border:0;outline:0;background:#1f2937;" />`;
+    return `<img src="${esc(item.img)}" width="150" height="96" alt="" style="display:block;width:150px;height:96px;border-radius:10px;object-fit:cover;border:0;outline:0;background:#f1f3f4;" />`;
   }
   const [a, b, g] = POSTERS[i % POSTERS.length];
   return `<div style="width:150px;height:96px;border-radius:10px;background:${a};background-image:linear-gradient(135deg,${a},${b});text-align:center;line-height:96px;font-family:Georgia,serif;font-size:30px;color:rgba(255,255,255,0.9);">${g}</div>`;
@@ -334,9 +334,9 @@ function itemRow(b, i) {
       <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>
         <td width="150" valign="top" style="padding-right:16px;">${poster(b, i)}</td>
         <td valign="top" style="font-family:Helvetica,Arial,sans-serif;">
-          <a href="${esc(b.link)}" style="text-decoration:none;"><div style="font-size:16px;font-weight:bold;line-height:1.35;color:#f1f5f9;">${esc(b.title)}</div></a>
-          <div style="font-size:13px;line-height:1.55;color:#94a3b8;margin-top:5px;">${esc(b.desc)}</div>
-          <div style="font-size:11px;color:#5b6b8c;margin-top:7px;">${esc(b.src)} &nbsp;·&nbsp; <a href="${esc(b.link)}" style="color:#60a5fa;text-decoration:none;font-weight:600;">Read →</a></div>
+          <a href="${esc(b.link)}" style="text-decoration:none;"><div style="font-family:Georgia,serif;font-size:16px;font-weight:bold;line-height:1.35;color:#202124;">${esc(b.title)}</div></a>
+          <div style="font-size:13px;line-height:1.55;color:#5f6368;margin-top:5px;">${esc(b.desc)}</div>
+          <div style="font-size:11px;color:#80868b;margin-top:7px;">${esc(b.src)} &nbsp;·&nbsp; <a href="${esc(b.link)}" style="color:#1a73e8;text-decoration:none;font-weight:600;">Read →</a></div>
         </td>
       </tr></table>
     </td></tr>`;
@@ -346,10 +346,10 @@ function sectionHeader(kicker, meta) {
   return `
     <tr><td style="padding:30px 36px 4px;font-family:Helvetica,Arial,sans-serif;">
       <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>
-        <td style="font-size:11px;font-weight:bold;letter-spacing:2px;text-transform:uppercase;color:#3b82f6;">${kicker}</td>
-        <td align="right" style="font-size:11px;color:#5b6b8c;">${meta || ''}</td>
+        <td style="font-size:11px;font-weight:bold;letter-spacing:2px;text-transform:uppercase;color:#1a73e8;">${kicker}</td>
+        <td align="right" style="font-size:11px;color:#80868b;">${meta || ''}</td>
       </tr></table>
-      <div style="height:1px;background:rgba(255,255,255,0.07);margin-top:12px;"></div></td></tr>`;
+      <div style="height:1px;background:#e8eaed;margin-top:12px;"></div></td></tr>`;
 }
 
 export function digestHtml({ news = [], blogs = [], paper = null, dateStr, email }) {
@@ -360,22 +360,22 @@ export function digestHtml({ news = [], blogs = [], paper = null, dateStr, email
   const newsList = news[0] ? news.slice(1) : news;
 
   // Gmail/Outlook-safe STACKED hero: a real <img> on top (renders everywhere),
-  // headline in a solid dark block beneath. No CSS background-image or overlay
-  // (Outlook desktop ignores those). When the top story has no image we drop
-  // in a branded gradient band with a solid bgcolor fallback.
+  // headline in a clean white block beneath — matches the briefing site's lead
+  // card. When the top story has no image we drop in a branded gradient band
+  // with a solid bgcolor fallback (Outlook ignores CSS gradients).
   const heroImage = hero && hero.img
     ? `<a href="${esc(hero.link)}" style="text-decoration:none;"><img src="${esc(hero.img)}" width="600" alt="" style="display:block;width:100%;max-width:600px;height:auto;border:0;outline:0;" /></a>`
-    : `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" bgcolor="#1e3a8a" style="background:#1e3a8a;background-image:linear-gradient(135deg,#1e3a8a 0%,#0f172a 60%,#312e81 100%);"><tr><td height="190" style="height:190px;text-align:center;vertical-align:middle;font-family:Georgia,serif;font-size:40px;color:rgba(255,255,255,0.5);">◆</td></tr></table>`;
+    : `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" bgcolor="#1a73e8" style="background:#1a73e8;background-image:linear-gradient(135deg,#1a73e8 0%,#174ea6 100%);"><tr><td height="190" style="height:190px;text-align:center;vertical-align:middle;font-family:Georgia,serif;font-size:40px;color:rgba(255,255,255,0.6);">◆</td></tr></table>`;
 
   const heroBlock = hero ? `
-    <tr><td style="padding:0;font-size:0;line-height:0;" bgcolor="#1e3a8a">${heroImage}</td></tr>
-    <tr><td style="padding:24px 36px 4px;font-family:Helvetica,Arial,sans-serif;" bgcolor="#0b1020">
-      <div style="display:inline-block;background:#3b82f6;color:#ffffff;font-size:10px;font-weight:bold;letter-spacing:1.6px;text-transform:uppercase;padding:6px 11px;border-radius:6px;">★ Today's top story</div>
-      <a href="${esc(hero.link)}" style="text-decoration:none;"><div style="font-family:Georgia,serif;font-size:26px;line-height:1.22;color:#ffffff;margin:14px 0 8px;font-weight:bold;">${esc(hero.title)}</div></a>
-      <div style="font-size:13.5px;line-height:1.6;color:#c7d2e8;">${esc(hero.desc)}</div>
+    <tr><td style="padding:0;font-size:0;line-height:0;" bgcolor="#f1f3f4">${heroImage}</td></tr>
+    <tr><td style="padding:24px 36px 4px;font-family:Helvetica,Arial,sans-serif;" bgcolor="#ffffff">
+      <div style="display:inline-block;background:#e8f0fe;color:#1967d2;font-size:10px;font-weight:bold;letter-spacing:1.6px;text-transform:uppercase;padding:6px 11px;border-radius:6px;">★ Today's top story</div>
+      <a href="${esc(hero.link)}" style="text-decoration:none;"><div style="font-family:Georgia,serif;font-size:26px;line-height:1.22;color:#202124;margin:14px 0 8px;font-weight:bold;">${esc(hero.title)}</div></a>
+      <div style="font-size:13.5px;line-height:1.6;color:#5f6368;">${esc(hero.desc)}</div>
       <div style="margin-top:16px;">
-        <a href="${esc(hero.link)}" style="font-family:Helvetica,Arial,sans-serif;font-size:13px;font-weight:bold;color:#ffffff;text-decoration:none;background:#3b82f6;padding:11px 20px;border-radius:8px;display:inline-block;">Read the breakdown →</a>
-        <span style="font-size:11px;color:#8a99b8;margin-left:12px;">${esc(hero.src)}</span>
+        <a href="${esc(hero.link)}" style="font-family:Helvetica,Arial,sans-serif;font-size:13px;font-weight:bold;color:#ffffff;text-decoration:none;background:#1a73e8;padding:11px 20px;border-radius:8px;display:inline-block;">Read the breakdown →</a>
+        <span style="font-size:11px;color:#80868b;margin-left:12px;">${esc(hero.src)}</span>
       </div>
     </td></tr>` : '';
 
@@ -384,27 +384,27 @@ export function digestHtml({ news = [], blogs = [], paper = null, dateStr, email
 
   const paperBlock = paper ? `
     <tr><td style="padding:30px 36px 6px;font-family:Helvetica,Arial,sans-serif;">
-      <div style="font-size:11px;font-weight:bold;letter-spacing:2px;text-transform:uppercase;color:#3b82f6;">📄 &nbsp;Research Paper of the Day</div></td></tr>
+      <div style="font-size:11px;font-weight:bold;letter-spacing:2px;text-transform:uppercase;color:#1a73e8;">📄 &nbsp;Research Paper of the Day</div></td></tr>
     <tr><td style="padding:8px 36px 4px;">
-      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" bgcolor="#111c34" style="background:#111c34;background-image:linear-gradient(135deg,#111c34,#0a1024);border:1px solid rgba(96,165,250,0.25);border-radius:14px;">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" bgcolor="#e8f0fe" style="background:#e8f0fe;border:1px solid #d2e3fc;border-radius:14px;">
         <tr><td style="padding:22px 24px;font-family:Helvetica,Arial,sans-serif;">
-          <div style="font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:#60a5fa;font-weight:bold;margin-bottom:8px;">${esc(paper.src || 'arXiv')}</div>
-          <a href="${esc(paper.link)}" style="text-decoration:none;"><div style="font-family:Georgia,serif;font-size:19px;line-height:1.3;color:#ffffff;margin-bottom:8px;">${esc(paper.title)}</div></a>
-          <div style="font-size:13.5px;line-height:1.6;color:#9fb0cc;margin-bottom:14px;">${esc(paper.desc)}</div>
-          <a href="${esc(paper.link)}" style="font-size:13px;font-weight:bold;color:#60a5fa;text-decoration:none;">Read the paper →</a>
+          <div style="font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:#1967d2;font-weight:bold;margin-bottom:8px;">${esc(paper.src || 'arXiv')}</div>
+          <a href="${esc(paper.link)}" style="text-decoration:none;"><div style="font-family:Georgia,serif;font-size:19px;line-height:1.3;color:#202124;margin-bottom:8px;">${esc(paper.title)}</div></a>
+          <div style="font-size:13.5px;line-height:1.6;color:#5f6368;margin-bottom:14px;">${esc(paper.desc)}</div>
+          <a href="${esc(paper.link)}" style="font-size:13px;font-weight:bold;color:#1a73e8;text-decoration:none;">Read the paper →</a>
         </td></tr>
       </table></td></tr>` : '';
 
   return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><meta name="x-apple-disable-message-reformatting"/><!--[if mso]><style>* { font-family: Helvetica, Arial, sans-serif !important; }</style><![endif]--></head>
-  <body style="margin:0;padding:0;background:#05070f;-webkit-text-size-adjust:100%;">
+  <body style="margin:0;padding:0;background:#f1f3f4;-webkit-text-size-adjust:100%;">
   <div style="display:none;max-height:0;overflow:hidden;opacity:0;color:transparent;height:0;width:0;">Today in AI — the one story that matters, 5 headlines, 5 reads and the paper everyone's citing.</div>
-  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#05070f;"><tr><td align="center" style="padding:28px 14px;">
-  <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="width:600px;max-width:600px;background:#0b1020;border-radius:18px;overflow:hidden;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f1f3f4;"><tr><td align="center" style="padding:28px 14px;">
+  <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="width:600px;max-width:600px;background:#ffffff;border-radius:18px;overflow:hidden;border:1px solid #e8eaed;">
 
-    <tr><td style="padding:22px 36px;border-bottom:1px solid rgba(255,255,255,0.06);">
+    <tr><td style="padding:22px 36px;border-bottom:1px solid #e8eaed;" bgcolor="#ffffff">
       <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>
-        <td style="font-family:Georgia,serif;font-size:19px;font-weight:bold;color:#ffffff;"><span style="display:inline-block;width:9px;height:9px;background:#3b82f6;border-radius:50%;margin-right:9px;vertical-align:middle;"></span>PromptAI</td>
-        <td align="right" style="font-family:Helvetica,Arial,sans-serif;font-size:10px;letter-spacing:1.8px;text-transform:uppercase;color:#5b6b8c;">The Briefing · ${esc(dateStr) || ''}</td>
+        <td style="font-family:Georgia,serif;font-size:19px;font-weight:bold;color:#202124;"><span style="display:inline-block;width:9px;height:9px;background:#1a73e8;border-radius:50%;margin-right:9px;vertical-align:middle;"></span>Prompt<span style="color:#1a73e8;">AI</span></td>
+        <td align="right" style="font-family:Helvetica,Arial,sans-serif;font-size:10px;letter-spacing:1.8px;text-transform:uppercase;color:#80868b;">The Briefing · ${esc(dateStr) || ''}</td>
       </tr></table></td></tr>
 
     ${heroBlock}
@@ -413,18 +413,24 @@ export function digestHtml({ news = [], blogs = [], paper = null, dateStr, email
     ${paperBlock}
 
     <tr><td align="center" style="padding:30px 36px 6px;">
-      <table role="presentation" cellpadding="0" cellspacing="0"><tr><td style="background:#3b82f6;border-radius:10px;">
+      <table role="presentation" cellpadding="0" cellspacing="0"><tr><td style="background:#1a73e8;border-radius:10px;">
         <a href="https://promptai.in" style="display:inline-block;padding:15px 32px;font-family:Helvetica,Arial,sans-serif;font-size:14px;font-weight:bold;color:#ffffff;text-decoration:none;">Open the live feed →</a>
       </td></tr></table></td></tr>
-    <tr><td align="center" style="padding:12px 36px 4px;font-family:Helvetica,Arial,sans-serif;font-size:12px;color:#5b6b8c;">The site updates daily. This briefing lands every Tuesday.</td></tr>
+    <tr><td align="center" style="padding:12px 36px 4px;font-family:Helvetica,Arial,sans-serif;font-size:12px;color:#80868b;">The site updates daily. This briefing lands every Tuesday.</td></tr>
 
-    <tr><td style="padding:26px 36px 30px;border-top:1px solid rgba(255,255,255,0.06);font-family:Helvetica,Arial,sans-serif;font-size:12px;line-height:1.7;color:#5b6b8c;text-align:center;">
-      <div style="font-family:Georgia,serif;font-size:15px;color:#e2e8f0;margin-bottom:6px;">PromptAI</div>
+    <tr><td align="center" style="padding:18px 36px 0;font-family:Helvetica,Arial,sans-serif;font-size:12px;color:#5f6368;">
+      <a href="https://promptai.in/#news" style="color:#1a73e8;text-decoration:none;font-weight:bold;">News</a> &nbsp;·&nbsp;
+      <a href="https://promptai.in/#research" style="color:#1a73e8;text-decoration:none;font-weight:bold;">Research</a> &nbsp;·&nbsp;
+      <a href="https://promptai.in/education.html" style="color:#1a73e8;text-decoration:none;font-weight:bold;">Learn AI</a> &nbsp;·&nbsp;
+      <a href="https://promptai.in/archive.html" style="color:#1a73e8;text-decoration:none;font-weight:bold;">Archive</a></td></tr>
+
+    <tr><td style="padding:26px 36px 30px;border-top:1px solid #e8eaed;font-family:Helvetica,Arial,sans-serif;font-size:12px;line-height:1.7;color:#80868b;text-align:center;">
+      <div style="font-family:Georgia,serif;font-size:15px;color:#202124;margin-bottom:6px;">PromptAI</div>
       You're getting this because you subscribed at promptai.in.<br/>
-      <a href="${unsub}" style="color:#60a5fa;text-decoration:underline;">Unsubscribe</a> &nbsp;·&nbsp; <a href="https://promptai.in" style="color:#60a5fa;text-decoration:underline;">Read on the web</a></td></tr>
+      <a href="${unsub}" style="color:#1a73e8;text-decoration:underline;">Unsubscribe</a> &nbsp;·&nbsp; <a href="https://promptai.in" style="color:#1a73e8;text-decoration:underline;">Read on the web</a></td></tr>
 
   </table>
-  <div style="font-family:Helvetica,Arial,sans-serif;font-size:11px;color:#37425c;padding:16px 0 0;">© 2026 PromptAI · promptai.in</div>
+  <div style="font-family:Helvetica,Arial,sans-serif;font-size:11px;color:#9aa0a6;padding:16px 0 0;">© 2026 PromptAI · promptai.in</div>
   </td></tr></table></body></html>`;
 }
 
