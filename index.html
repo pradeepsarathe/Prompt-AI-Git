@@ -42,15 +42,23 @@
     --radius:8px; --maxmain:760px;
     --serif:'Roboto Serif',Georgia,serif;
   }
+  /* PromptAI blue — cool tinted canvas, navy ink, saturated blue accent */
   :root[data-theme="promptai"] {
-    --accent:#2563eb; --accent-2:#1d4ed8; --accent-subtle:#eff6ff;
-    --text:#0a1628; --text-2:#475569; --text-3:#94a3b8;
-    --border:#e2e8f0; --border-soft:#eef2f7; --bg-subtle:#f4f7fb;
+    --accent:#2563eb; --accent-2:#1d4ed8; --accent-subtle:#dbeafe;
+    --bg:#f3f6fc; --bg-subtle:#e7edf8; --bg-rail:#ffffff; --card:#ffffff;
+    --text:#0a1628; --text-2:#44546e; --text-3:#8294ad;
+    --border:#ccd8ea; --border-soft:#dde6f3;
+    --shadow:0 1px 2px rgba(10,22,40,0.08),0 2px 6px rgba(10,22,40,0.06);
+    --shadow-hover:0 2px 6px rgba(10,22,40,0.14),0 8px 20px rgba(10,22,40,0.1);
   }
+  /* Slate & teal — warm paper canvas, stone ink, deep teal accent */
   :root[data-theme="slate"] {
-    --accent:#0f766e; --accent-2:#0d5d57; --accent-subtle:#ecfdf7;
+    --accent:#0f766e; --accent-2:#0d5d57; --accent-subtle:#d8efe9;
+    --bg:#f7f5f1; --bg-subtle:#edeae3; --bg-rail:#fffefb; --card:#fffefb;
     --text:#1c1917; --text-2:#57534e; --text-3:#a8a29e;
-    --border:#e7e5e4; --border-soft:#f0efee; --bg-subtle:#f5f4f2;
+    --border:#d6d1c7; --border-soft:#e5e1d8;
+    --shadow:0 1px 2px rgba(28,25,23,0.08),0 2px 6px rgba(28,25,23,0.05);
+    --shadow-hover:0 2px 6px rgba(28,25,23,0.13),0 8px 20px rgba(28,25,23,0.09);
   }
 
   * { margin:0; padding:0; box-sizing:border-box; }
@@ -96,13 +104,14 @@
   }
   #pai-search::placeholder { color:var(--text-3); }
   #pai-search:focus {
-    outline:none; background:var(--bg); border-color:var(--border-soft);
+    outline:none; background:var(--card); border-color:var(--border-soft);
     box-shadow:var(--shadow);
   }
+  #search-toggle { display:none; }
   .topbar-actions { display:flex; align-items:center; gap:4px; flex:none; }
   .signin-btn {
     display:flex; align-items:center; gap:8px; height:40px; padding:0 18px; border-radius:20px;
-    border:1px solid var(--border); background:var(--bg); color:var(--accent); font-weight:500; font-size:0.9rem;
+    border:1px solid var(--border); background:var(--card); color:var(--accent); font-weight:500; font-size:0.9rem;
     transition:background .15s,box-shadow .15s;
   }
   .signin-btn:hover { background:var(--accent-subtle); box-shadow:var(--shadow); }
@@ -116,15 +125,15 @@
     display:none; align-items:center; justify-content:center; background:var(--accent);
   }
 
-  /* theme menu */
+  /* theme menu — FIXED so it stays glued under the sticky top bar after scroll */
   .theme-menu {
-    position:absolute; top:58px; right:12px; background:var(--bg); border:1px solid var(--border-soft);
+    position:fixed; top:60px; right:12px; background:var(--card); border:1px solid var(--border-soft);
     border-radius:14px; box-shadow:var(--shadow-hover); padding:8px; width:230px; z-index:80; display:none;
   }
   .theme-menu.open { display:block; }
   /* subscribe popover */
   .sub-menu {
-    position:absolute; top:60px; right:16px; background:var(--bg); border:1px solid var(--border-soft);
+    position:fixed; top:60px; right:16px; background:var(--card); border:1px solid var(--border-soft);
     border-radius:14px; box-shadow:var(--shadow-hover); padding:16px; width:288px; z-index:80; display:none;
   }
   .sub-menu.open { display:block; }
@@ -138,7 +147,7 @@
   .sub-menu .sub-note { font-size:0.72rem; color:var(--text-3); margin-top:9px; line-height:1.5; }
   /* language menu */
   .lang-menu {
-    position:absolute; top:60px; right:16px; background:var(--bg); border:1px solid var(--border-soft);
+    position:fixed; top:60px; right:16px; background:var(--card); border:1px solid var(--border-soft);
     border-radius:14px; box-shadow:var(--shadow-hover); padding:8px; width:240px; z-index:80; display:none;
     max-height:min(70vh,460px); overflow-y:auto;
   }
@@ -194,10 +203,13 @@
   }
   .sec-title .bar { width:4px; height:22px; border-radius:3px; background:var(--accent); }
   .sec-sub { font-size:0.86rem; color:var(--text-2); margin:0 0 18px 14px; }
-  .sec-divider { display:flex; align-items:center; gap:12px; margin:34px 0 16px; }
-  .sec-divider h3 { font-size:1.05rem; font-weight:500; color:var(--text); white-space:nowrap; }
-  .sec-divider .line { flex:1; height:1px; background:var(--border-soft); }
-  .sec-divider a { font-size:0.82rem; color:var(--accent); font-weight:500; }
+  .sec-divider { margin:42px 0 18px; }
+  .sec-divider .sec-kick { display:flex; align-items:center; gap:10px; font-size:0.7rem; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; color:var(--accent); margin-bottom:6px; }
+  .sec-divider .sec-kick::before { content:''; width:18px; height:3px; border-radius:2px; background:var(--accent); }
+  .sec-divider .sec-row { display:flex; align-items:baseline; gap:14px; }
+  .sec-divider h3 { font-family:var(--serif); font-size:1.5rem; font-weight:600; letter-spacing:-0.3px; color:var(--text); white-space:nowrap; }
+  .sec-divider .line { flex:1; height:1px; background:var(--border-soft); align-self:center; }
+  .sec-divider a { font-size:0.84rem; color:var(--accent); font-weight:500; white-space:nowrap; }
 
   /* ════ CHIPS (sticky filter bar) ════ */
   .chips {
@@ -207,7 +219,7 @@
   }
   .chip {
     height:32px; padding:0 16px; border-radius:16px; border:1px solid var(--border);
-    background:var(--bg); color:var(--text-2); font-size:0.82rem; font-weight:500;
+    background:var(--card); color:var(--text-2); font-size:0.82rem; font-weight:500;
     display:inline-flex; align-items:center; gap:6px; transition:all .12s;
   }
   .chip:hover { background:var(--bg-subtle); }
@@ -217,7 +229,7 @@
   .load-more-wrap { display:flex; justify-content:center; padding:14px 0 4px; }
   .load-more {
     height:42px; padding:0 30px; border-radius:21px; border:1px solid var(--border);
-    background:var(--bg); color:var(--accent); font-weight:500; font-size:0.9rem;
+    background:var(--card); color:var(--accent); font-weight:500; font-size:0.9rem;
     display:inline-flex; align-items:center; gap:8px; transition:background .15s, box-shadow .15s;
   }
   .load-more:hover { background:var(--accent-subtle); box-shadow:var(--shadow); }
@@ -281,6 +293,19 @@
   .tool-tag { font-size:0.72rem; font-weight:500; color:var(--text-2); background:var(--bg-subtle); padding:3px 10px; border-radius:8px; }
   .tool-open { font-size:0.78rem; font-weight:500; color:var(--accent); display:flex; align-items:center; gap:3px; }
 
+  /* ════ VISUAL CARDS (image-on-top — Blogs tab) ════ */
+  .vis-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:14px; margin-bottom:12px; }
+  .vis-card {
+    background:var(--card); border:1px solid var(--border-soft); border-radius:12px; box-shadow:var(--shadow);
+    overflow:hidden; cursor:pointer; transition:box-shadow .15s; display:flex; flex-direction:column;
+  }
+  .vis-card:hover { box-shadow:var(--shadow-hover); }
+  .vis-card .vis-img { width:100%; height:158px; object-fit:cover; background:var(--bg-subtle); display:block; }
+  .vis-card .vis-body { padding:14px 16px 16px; display:flex; flex-direction:column; gap:8px; flex:1; }
+  .vis-card h4 { font-family:var(--serif); font-size:0.98rem; line-height:1.35; font-weight:500; color:var(--text); flex:1; margin:0; }
+  .vis-card:hover h4 { text-decoration:underline; text-decoration-color:var(--border); text-underline-offset:2px; }
+  .vis-card .card-src { margin-bottom:0; }
+
   /* paper cards reuse .card with category pill */
   .pill { display:inline-block; font-size:0.7rem; font-weight:600; padding:3px 10px; border-radius:20px; letter-spacing:0.03em; }
   .cat-llm{background:#e8f0fe;color:#1967d2;} .cat-cv{background:#e6f4ea;color:#137333;}
@@ -314,6 +339,10 @@
   .trend-num { font-family:var(--serif); font-size:1rem; font-weight:600; color:var(--text-3); flex:none; width:18px; }
   .trend-item h5 { font-size:0.84rem; font-weight:500; line-height:1.35; color:var(--text); }
   .trend-item span { font-size:0.72rem; color:var(--text-3); }
+  .about-panel p { font-size:0.84rem; color:var(--text-2); line-height:1.6; margin-bottom:10px; }
+  .about-panel ul { list-style:none; margin:0 0 4px; padding:0; display:flex; flex-direction:column; gap:7px; }
+  .about-panel li { display:flex; gap:8px; font-size:0.8rem; color:var(--text-2); line-height:1.5; }
+  .about-panel li::before { content:'→'; color:var(--accent); font-weight:700; flex:none; }
 
   /* ════ MODAL ════ */
   .modal-overlay { display:none; position:fixed; inset:0; z-index:200; background:rgba(32,33,36,0.6); backdrop-filter:blur(3px); overflow-y:auto; }
@@ -352,6 +381,20 @@
   .sheet-btn:hover { background:var(--accent-2); }
   .signed-card { text-align:center; padding:10px 0 20px; }
   .signed-card .big-av { width:64px; height:64px; border-radius:50%; background:var(--accent); color:#fff; font-size:1.6rem; font-weight:600; display:flex; align-items:center; justify-content:center; margin:0 auto 14px; }
+  .sheet-btn:disabled { opacity:0.6; cursor:default; }
+  /* account sheet — login/signup tabs + saved-data lists */
+  .acct-tabs { display:flex; gap:6px; background:var(--bg-subtle); border-radius:12px; padding:4px; margin-bottom:18px; }
+  .acct-tab { flex:1; height:38px; border:none; border-radius:9px; background:none; font-family:inherit; font-size:0.88rem; font-weight:500; color:var(--text-2); cursor:pointer; }
+  .acct-tab.active { background:var(--card); color:var(--accent); box-shadow:var(--shadow); }
+  .acct-err { color:#c5221f; font-size:0.82rem; line-height:1.5; margin:2px 0 6px; }
+  .acct-h { font-family:var(--serif); font-size:0.98rem; font-weight:600; color:var(--text); margin:20px 0 10px; padding-top:18px; border-top:1px solid var(--border-soft); }
+  .acct-empty { font-size:0.82rem; color:var(--text-3); line-height:1.55; }
+  .acct-list { display:flex; flex-direction:column; }
+  .acct-item { display:flex; flex-direction:column; gap:2px; padding:9px 10px; margin:0 -10px; border-radius:10px; }
+  .acct-item:hover { background:var(--bg-subtle); }
+  .acct-item .t { font-size:0.86rem; font-weight:500; color:var(--text); line-height:1.35; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+  .acct-item .m { font-size:0.72rem; color:var(--text-3); }
+  .acct-offline { display:inline-block; margin-top:10px; font-size:0.7rem; color:#b06000; background:#fef7e0; border-radius:8px; padding:4px 10px; }
 
   /* ════ TOAST ════ */
   #toast { position:fixed; bottom:26px; left:50%; transform:translateX(-50%) translateY(20px); background:#202124; color:#fff; padding:12px 22px; border-radius:10px; font-size:0.88rem; opacity:0; pointer-events:none; transition:all .25s; z-index:300; }
@@ -365,16 +408,32 @@
   /* ════ RESPONSIVE ════ */
   @media (max-width:1120px){ .canvas{ grid-template-columns:minmax(0,1fr); } .rightrail{ display:none; } }
   @media (max-width:900px){
-    .canvas{ padding:18px 18px 70px; }
+    .canvas{ padding:18px 16px 70px; }
     .tabs{ padding:0 10px; top:64px; }
     .search-wrap{ display:none; }
     .topbar-spacer{ flex:1; }
+    #search-toggle{ display:flex; }
+    /* mobile search: tap the magnifier to drop the search bar under the top bar */
+    .topbar.search-open .search-wrap{
+      display:flex; position:fixed; top:64px; left:0; right:0; z-index:59;
+      margin:0; max-width:none; padding:10px 12px; background:var(--bg);
+      border-bottom:1px solid var(--border-soft); box-shadow:var(--shadow);
+    }
+    .topbar.search-open .search-wrap svg{ left:28px; }
   }
   @media (min-width:901px){ .topbar-spacer{ display:none; } }
   @media (max-width:560px){
     .lead h2{ font-size:1.4rem; } .lead-img{ height:200px; }
+    .card{ padding:15px 16px; }
     .card-thumb{ width:96px; height:74px; }
     .brand-text{ font-size:1.25rem; }
+    .topbar{ padding:0 10px; gap:4px; }
+    .signin-btn{ padding:0 12px; }
+    .signin-btn span{ display:none; }
+    .subscribe-cta{ padding:0 14px; font-size:0.84rem; }
+    .vis-grid{ grid-template-columns:1fr; }
+    .sec-divider h3{ font-size:1.3rem; }
+    .modal{ margin:0 auto; min-height:100vh; border-radius:0; }
   }
 
   /* ════ GOOGLE TRANSLATE (hide its chrome; keep our own UI) ════ */
@@ -386,7 +445,7 @@
   .goog-tooltip { display:none !important; }
 </style>
 </head>
-<body style="background-color: rgb(255, 255, 255)">
+<body>
 
 <!-- ════ TOP BAR ════ -->
 <header class="topbar">
@@ -398,10 +457,13 @@
   </a>
   <div class="search-wrap">
     <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 1 0-.7.7l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0A4.5 4.5 0 1 1 14 9.5 4.49 4.49 0 0 1 9.5 14z"/></svg>
-    <input id="pai-search" type="search" placeholder="Search AI news, papers, tools…" autocomplete="off" oninput="onSearch(this.value)"/>
+    <input id="pai-search" type="search" placeholder="Search AI news, papers, tools…" autocomplete="off" oninput="onSearch(this.value)" onkeydown="if(event.key==='Enter')this.blur()"/>
   </div>
   <div class="topbar-spacer"></div>
   <div class="topbar-actions">
+    <button class="icon-btn" id="search-toggle" onclick="toggleMobileSearch(event)" aria-label="Search" title="Search">
+      <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 1 0-.7.7l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0A4.5 4.5 0 1 1 14 9.5 4.49 4.49 0 0 1 9.5 14z"/></svg>
+    </button>
     <button class="icon-btn" onclick="toggleThemeMenu(event)" aria-label="Theme" title="Appearance">
       <svg viewBox="0 0 24 24"><path d="M12 22a10 10 0 0 1 0-20c5.51 0 10 4.04 10 9 0 3.31-2.69 6-6 6h-1.77c-.28 0-.5.22-.5.5 0 .12.05.23.13.33.41.47.64 1.06.64 1.67A2.5 2.5 0 0 1 12 22zm0-18a8 8 0 0 0 0 16c.28 0 .5-.22.5-.5a.54.54 0 0 0-.14-.35c-.41-.46-.63-1.05-.63-1.65a2.5 2.5 0 0 1 2.5-2.5H16a4 4 0 0 0 4-4c0-3.86-3.59-7-8-7zm-5.5 6a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3zm3-4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3zm5 0a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3z"/></svg>
     </button>
@@ -421,15 +483,15 @@
 <div class="theme-menu" id="theme-menu">
   <h5>Appearance</h5>
   <button class="theme-opt" data-theme="default" onclick="setTheme('default')">
-    <span class="sw"><i style="background:#1a73e8"></i><i style="background:#ea4335"></i><i style="background:#fbbc04"></i><i style="background:#34a853"></i></span>
-    Briefing (Google-style)<span class="chk">✓</span>
+    <span class="sw"><i style="background:#1a73e8"></i><i style="background:#ffffff"></i><i style="background:#202124"></i></span>
+    Briefing (clean white)<span class="chk">✓</span>
   </button>
   <button class="theme-opt" data-theme="promptai" onclick="setTheme('promptai')">
-    <span class="sw"><i style="background:#2563eb"></i><i style="background:#1d4ed8"></i><i style="background:#0a1628"></i></span>
+    <span class="sw"><i style="background:#2563eb"></i><i style="background:#f3f6fc"></i><i style="background:#0a1628"></i></span>
     PromptAI blue<span class="chk">✓</span>
   </button>
   <button class="theme-opt" data-theme="slate" onclick="setTheme('slate')">
-    <span class="sw"><i style="background:#0f766e"></i><i style="background:#0d5d57"></i><i style="background:#1c1917"></i></span>
+    <span class="sw"><i style="background:#0f766e"></i><i style="background:#f7f5f1"></i><i style="background:#1c1917"></i></span>
     Slate &amp; teal<span class="chk">✓</span>
   </button>
 </div>
@@ -483,12 +545,29 @@
         <div class="sec-title"><span class="bar"></span> Your briefing</div>
         <p class="sec-sub">The AI world right now — top story, latest research, and what to read next.</p>
         <div id="home-lead"></div>
-        <div class="sec-divider"><h3>Top stories</h3><div class="line"></div><a href="#" onclick="go('news');return false;">Full feed →</a></div>
+        <div class="sec-divider"><div class="sec-kick">News</div><div class="sec-row"><h3>Top stories</h3><div class="line"></div><a href="#" onclick="go('news');return false;">Full feed →</a></div></div>
         <div class="stack" id="home-top"></div>
-        <div class="sec-divider"><h3>Fresh from research</h3><div class="line"></div><a href="#" onclick="go('research');return false;">All papers →</a></div>
+        <div class="sec-divider"><div class="sec-kick">Papers</div><div class="sec-row"><h3>Fresh from research</h3><div class="line"></div><a href="#" onclick="go('research');return false;">All papers →</a></div></div>
         <div class="stack" id="home-research"></div>
-        <div class="sec-divider"><h3>Worth learning</h3><div class="line"></div><a href="#" onclick="go('learn');return false;">All explainers →</a></div>
+        <div class="sec-divider"><div class="sec-kick">Blogs</div><div class="sec-row"><h3>Worth learning</h3><div class="line"></div><a href="#" onclick="go('learn');return false;">All explainers →</a></div></div>
         <div class="stack" id="home-learn"></div>
+        <div class="sec-divider"><div class="sec-kick">Tools</div><div class="sec-row"><h3>Tools to try</h3><div class="line"></div><a href="#" onclick="go('tools');return false;">All tools →</a></div></div>
+        <div class="tools-grid" id="home-tools"></div>
+        <div class="sec-divider"><div class="sec-kick">Learn AI</div><div class="sec-row"><h3>Start learning</h3><div class="line"></div><a href="education.html">Open Learn AI →</a></div></div>
+        <div class="stack" id="home-edu">
+          <a class="card" href="education.html#courses" style="display:block">
+            <div class="card-src"><span class="name">🎓 Free courses</span><span class="dot"></span><span class="topic">12 picks</span></div>
+            <div class="card-body"><h4>Learn AI at every level — from Elements of AI to Karpathy's Zero to Hero</h4><p class="excerpt">Vetted courses from top universities and AI labs, filterable by level. Most are free to audit.</p></div>
+          </a>
+          <a class="card" href="education.html#paths" style="display:block">
+            <div class="card-src"><span class="name">🧭 Learning paths</span><span class="dot"></span><span class="topic">3 tracks</span></div>
+            <div class="card-body"><h4>Pick your direction: use AI productively, build apps, or do research</h4><p class="excerpt">Step-by-step sequences with time estimates — from 20-hour starter tracks to deep research prep.</p></div>
+          </a>
+          <a class="card" href="education.html#prompting" style="display:block">
+            <div class="card-src"><span class="name">⌨️ Prompt engineering</span><span class="dot"></span><span class="topic">4 guides</span></div>
+            <div class="card-body"><h4>Get more from Claude, ChatGPT and Gemini with structured prompting</h4><p class="excerpt">Official guides from Anthropic and OpenAI plus the best community resources.</p></div>
+          </a>
+        </div>
       </section>
 
       <!-- NEWS -->
@@ -529,9 +608,16 @@
         </div>
         <div class="tools-grid" id="tools-grid"></div>
       </section>
+
+      <!-- SEARCH RESULTS -->
+      <section class="view" id="view-search">
+        <div class="sec-title"><span class="bar"></span> Search results</div>
+        <p class="sec-sub">Matches for “<span id="search-q"></span>” across news, research papers, blogs and tools. <a href="#" onclick="clearSearch();return false;" style="color:var(--accent);font-weight:500">Clear search</a></p>
+        <div id="search-list"></div>
+      </section>
     </main>
 
-    <!-- RIGHT RAIL -->
+    <!-- RIGHT RAIL : Subscribe → Trending → Top sources → Live stats → About -->
     <aside class="rightrail">
       <div class="panel news-promo">
         <h4>The Briefing</h4>
@@ -543,6 +629,14 @@
         </form>
       </div>
       <div class="panel">
+        <div class="panel-h"><svg viewBox="0 0 24 24"><path d="m16 6 2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z"/></svg> Trending now</div>
+        <div class="panel-b" id="trend-panel"><div class="empty" style="padding:20px">Loading…</div></div>
+      </div>
+      <div class="panel">
+        <div class="panel-h"><svg viewBox="0 0 24 24"><path d="M12 2 4 5v6c0 5 3.4 9.7 8 11 4.6-1.3 8-6 8-11V5l-8-3z"/></svg> Top sources</div>
+        <div class="panel-b" id="rail-sources"></div>
+      </div>
+      <div class="panel">
         <div class="panel-h"><svg viewBox="0 0 24 24"><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z"/></svg> Live stats</div>
         <div class="panel-b" id="stats-panel">
           <div class="stat-row"><span class="k">Total visitors</span><span class="v" id="stat-visitors">—</span></div>
@@ -550,13 +644,16 @@
           <div class="stat-row"><span class="k">Sources tracked</span><span class="v">20+</span></div>
         </div>
       </div>
-      <div class="panel">
-        <div class="panel-h"><svg viewBox="0 0 24 24"><path d="m16 6 2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z"/></svg> Trending now</div>
-        <div class="panel-b" id="trend-panel"><div class="empty" style="padding:20px">Loading…</div></div>
-      </div>
-      <div class="panel">
-        <div class="panel-h"><svg viewBox="0 0 24 24"><path d="M12 2 4 5v6c0 5 3.4 9.7 8 11 4.6-1.3 8-6 8-11V5l-8-3z"/></svg> Top sources</div>
-        <div class="panel-b" id="rail-sources"></div>
+      <div class="panel about-panel">
+        <div class="panel-h"><svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg> About PromptAI</div>
+        <div class="panel-b">
+          <p>An independent hub making AI research accessible, understandable and actionable.</p>
+          <ul>
+            <li>Curated paper summaries — no PhD required</li>
+            <li>Honest, hands-on tool reviews</li>
+            <li>Free and open — no paywalls, ever</li>
+          </ul>
+        </div>
       </div>
     </aside>
   </div>
@@ -597,5 +694,6 @@
 <script src="pai-translate.js"></script>
 <script src="pai-feed-engine.js"></script>
 <script src="pai-google-ui.js"></script>
+<script src="pai-account.js"></script>
 </body>
 </html>
