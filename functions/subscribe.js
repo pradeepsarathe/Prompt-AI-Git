@@ -1,11 +1,34 @@
 // functions/subscribe.js
-// Cloudflare Pages Function — Newsletter subscribe endpoint
-// Stores emails in Cloudflare KV (namespace binding: SUBSCRIBERS) and sends the
-// new subscriber an immediate confirmation briefing (5 news + 5 blogs + 1 paper)
-// via Resend.
-// Setup: Pages → Settings → Functions → KV namespace bindings → add SUBSCRIBERS
+// Cloudflare Pages Function — Newsletter subscribe endpoint (double opt-in).
+//
+// June 2026: switched from "add + send briefing immediately" to DOUBLE OPT-IN:
+//   1. POST /subscribe { email } → stores a pending record + emails a
+//      confirmation link (protects sender reputation: typos, bots and
+//      prank entries never reach the real list — and it's the consent
+//      model GDPR/DPDP expect).
+//   2. The link hits /confirm?email=…&token=… (functions/confirm.js) which
+//      activates the address and sends the first briefing.
+//
+// Existing subscribers (stored before double opt-in) are grandfathered as
+// active — nothing changes for them.
+//
+// KV layout (SUBSCRIBERS binding):
+//   <email>            → active subscriber  { email, subscribedAt, source, confirmedAt? }
+//   pending:<email>    → { token, at }      (TTL 7 days)
+//   rl:<ip>            → signup rate-limit counters
+//   meta:*             → operational bookkeeping (never emailed)
+//
+// Setup: Pages → Settings → Functions → KV namespace bindings → SUBSCRIBERS
 
 import { fetchDigestContent, digestHtml, digestText } from './send-digest.js';
+
+const PENDING_TTL = 60 * 60 * 24 * 7; // unconfirmed signups expire after 7 days
+
+const json = (obj, status = 200) =>
+  new Response(JSON.stringify(obj), {
+    status,
+    headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
+  });
 
 export async function onRequest(context) {
   const { request, env } = context;
@@ -21,12 +44,7 @@ export async function onRequest(context) {
     });
   }
 
-  if (request.method !== 'POST') {
-    return new Response(JSON.stringify({ error: 'Method not allowed' }), {
-      status: 405,
-      headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
-    });
-  }
+  if (request.method !== 'POST') return json({ error: 'Method not allowed' }, 405);
 
   try {
     let email = '';
@@ -46,26 +64,16 @@ export async function onRequest(context) {
 
     // ── Honeypot: real users never fill the hidden "website" field. If it's
     // populated, silently pretend success so the bot gets no signal. ──
-    if (honeypot.trim()) {
-      return new Response(JSON.stringify({ success: true, message: 'Subscribed!' }), {
-        status: 200,
-        headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
-      });
-    }
+    if (honeypot.trim()) return json({ success: true, message: 'Subscribed!' });
 
     email = email.trim().toLowerCase();
 
     // Validate
     if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      return new Response(JSON.stringify({ error: 'Invalid email address' }), {
-        status: 400,
-        headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
-      });
+      return json({ error: 'Invalid email address' }, 400);
     }
 
     // ── Rate limiting: max 5 signups per IP per hour (KV-backed). ──
-    // Stops a single client hammering the endpoint / Resend. Fails open if the
-    // KV binding is missing so a config gap never blocks real subscribers.
     if (env.SUBSCRIBERS) {
       const ip = request.headers.get('CF-Connecting-IP')
         || request.headers.get('X-Forwarded-For') || 'unknown';
@@ -78,134 +86,132 @@ export async function onRequest(context) {
             headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*', 'Retry-After': '3600' },
           });
         }
-        // TTL resets the window 1h after the FIRST hit (KV min TTL is 60s).
         await env.SUBSCRIBERS.put(rlKey, String(count + 1), { expirationTtl: 3600 });
       } catch (e) { /* fail open */ }
     }
 
-    // Store in KV if binding exists
-    let isNew = false;
-    if (env.SUBSCRIBERS) {
-      const existing = await env.SUBSCRIBERS.get(email);
-      if (!existing) {
-        isNew = true;
-        await env.SUBSCRIBERS.put(email, JSON.stringify({
-          email,
-          subscribedAt: new Date().toISOString(),
-          source: 'promptai.in',
-        }));
+    const canEmail = !!(env.RESEND_API_KEY && env.FROM_EMAIL);
+
+    // ── No KV configured → legacy behavior: just send the briefing once ──
+    if (!env.SUBSCRIBERS) {
+      let emailSent = false, emailError = null;
+      if (canEmail) {
+        const r = await sendFirstBriefing(env, email);
+        emailSent = r.sent; emailError = r.error;
       }
+      return json({ success: true, message: 'Subscribed!', emailSent, emailError });
     }
 
-    // Send the confirmation briefing (Resend) on EVERY subscribe click, as long
-    // as RESEND_API_KEY + FROM_EMAIL are configured. Never blocks the response.
-    // We also report back whether it actually sent, to make debugging easy.
+    // ── Already an ACTIVE subscriber → nothing to do ──
+    const active = await env.SUBSCRIBERS.get(email);
+    if (active) {
+      return json({ success: true, alreadySubscribed: true,
+        message: 'You’re already subscribed — see you Tuesday!' });
+    }
+
+    // ── Pending or new → (re)issue the confirmation link ──
+    let token = '';
+    try {
+      const rawPending = await env.SUBSCRIBERS.get('pending:' + email);
+      if (rawPending) token = (JSON.parse(rawPending).token || '');
+    } catch (e) {}
+    if (!token) token = crypto.randomUUID().replace(/-/g, '');
+    await env.SUBSCRIBERS.put('pending:' + email,
+      JSON.stringify({ token, at: new Date().toISOString() }),
+      { expirationTtl: PENDING_TTL });
+
     let emailSent = false;
     let emailError = null;
-    if (env.RESEND_API_KEY && env.FROM_EMAIL) {
+    if (canEmail) {
+      const confirmUrl = 'https://promptai.in/confirm?email=' + encodeURIComponent(email) + '&token=' + token;
       try {
-        const content = await fetchDigestContent(); // { news, blogs, paper }
-        const hasContent = content.news.length + content.blogs.length > 0 || content.paper;
-        const dateStr = new Date().toLocaleString('en-US', {
-          month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit',
-        });
-        const html = hasContent
-          ? digestHtml({ ...content, dateStr, email })
-          : welcomeHtml(email); // fallback if feeds are temporarily empty
-        const text = hasContent
-          ? digestText({ ...content, dateStr, email })
-          : welcomeText(email);
-        const unsub = 'https://promptai.in/unsubscribe?email=' + encodeURIComponent(email);
         const resp = await fetch('https://api.resend.com/emails', {
           method: 'POST',
-          headers: {
-            'Authorization': 'Bearer ' + env.RESEND_API_KEY,
-            'Content-Type': 'application/json',
-          },
+          headers: { 'Authorization': 'Bearer ' + env.RESEND_API_KEY, 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            from: env.FROM_EMAIL,                 // e.g. "PromptAI <briefing@promptai.in>"
+            from: env.FROM_EMAIL,
             to: [email],
-            subject: hasContent
-              ? `✅ You're subscribed — your PromptAI briefing inside`
-              : `Welcome to PromptAI 🎉`,
-            html,
-            // Plain-text alternative + one-click unsubscribe for deliverability.
-            text,
-            headers: {
-              'List-Unsubscribe': '<' + unsub + '>',
-              'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
-            },
+            subject: 'Confirm your PromptAI subscription',
+            html: confirmHtml(confirmUrl),
+            text: confirmText(confirmUrl),
           }),
         });
-        if (resp.ok) { emailSent = true; }
-        else { emailError = (await resp.text()).slice(0, 300); } // Resend's reason
+        if (resp.ok) emailSent = true;
+        else emailError = (await resp.text()).slice(0, 300);
       } catch (e) { emailError = e.message; }
     } else {
       emailError = 'RESEND_API_KEY / FROM_EMAIL not configured';
     }
 
-    // Always succeed for the UI — but include diagnostics so you can see whether
-    // the email actually went out (check the Network tab / curl response).
-    return new Response(JSON.stringify({ success: true, message: 'Subscribed!', isNew, emailSent, emailError }), {
-      status: 200,
-      headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
-    });
+    return json({ success: true, pending: true, emailSent, emailError,
+      message: 'Almost done — check your inbox to confirm.' });
 
   } catch (err) {
-    return new Response(JSON.stringify({ error: 'Server error', detail: err.message }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
-    });
+    return json({ error: 'Server error', detail: err.message }, 500);
   }
 }
 
-// Branded welcome email (mirrors emails/welcome.html, inlined for the runtime).
-function welcomeHtml(email) {
-  const unsub = 'https://promptai.in/unsubscribe?email=' + encodeURIComponent(email);
+// Used only on the no-KV legacy path; /confirm sends the briefing normally.
+async function sendFirstBriefing(env, email) {
+  try {
+    const content = await fetchDigestContent();
+    const hasContent = content.news.length + content.blogs.length > 0 || content.paper;
+    if (!hasContent) return { sent: false, error: 'No content available' };
+    const dateStr = new Date().toLocaleString('en-US', {
+      month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit',
+    });
+    const unsub = 'https://promptai.in/unsubscribe?email=' + encodeURIComponent(email);
+    const resp = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + env.RESEND_API_KEY, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        from: env.FROM_EMAIL,
+        to: [email],
+        subject: `✅ You're subscribed — your PromptAI briefing inside`,
+        html: digestHtml({ ...content, dateStr, email }),
+        text: digestText({ ...content, dateStr, email }),
+        headers: {
+          'List-Unsubscribe': '<' + unsub + '>',
+          'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
+        },
+      }),
+    });
+    if (resp.ok) return { sent: true, error: null };
+    return { sent: false, error: (await resp.text()).slice(0, 300) };
+  } catch (e) { return { sent: false, error: e.message }; }
+}
+
+// ── confirmation email (light briefing brand) ────────────────────────
+function confirmHtml(confirmUrl) {
   return `<!DOCTYPE html><html><body style="margin:0;padding:0;background:#eef2f7;">
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#eef2f7;"><tr><td align="center" style="padding:32px 16px;">
   <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="width:600px;max-width:600px;background:#fff;border-radius:16px;overflow:hidden;">
-    <tr><td style="background:#0a1628;padding:30px 40px;font-family:Georgia,serif;font-size:22px;font-weight:bold;color:#fff;">
+    <tr><td style="background:#0a1628;padding:26px 40px;font-family:Georgia,serif;font-size:22px;font-weight:bold;color:#fff;">
       <span style="display:inline-block;width:10px;height:10px;background:#2563eb;border-radius:50%;margin-right:9px;vertical-align:middle;"></span>PromptAI</td></tr>
-    <tr><td style="padding:44px 40px 8px;font-family:Helvetica,Arial,sans-serif;">
-      <div style="font-size:12px;font-weight:bold;letter-spacing:1.5px;text-transform:uppercase;color:#2563eb;">Welcome aboard</div>
-      <h1 style="margin:14px 0 0;font-family:Georgia,serif;font-size:32px;line-height:1.2;color:#0a1628;font-weight:normal;">You're in. Smarter AI starts Tuesday.</h1></td></tr>
-    <tr><td style="padding:20px 40px 8px;font-family:Helvetica,Arial,sans-serif;font-size:16px;line-height:1.7;color:#475569;">
-      <p style="margin:0 0 16px;">Thanks for subscribing. Every week we read the firehose — arXiv, Hacker News, the best ML blogs — so you don't have to, and send only what matters.</p>
-      <p style="margin:0 0 6px;font-weight:bold;color:#0a1628;">Every Tuesday you'll get:</p>
-      <ul style="margin:0 0 4px;padding-left:20px;color:#475569;">
-        <li style="margin:6px 0;"><b>The headlines that count</b> — launches, funding, research. No hype.</li>
-        <li style="margin:6px 0;"><b>Hand-picked deep dives</b> — the best explainers and blog posts.</li>
-        <li style="margin:6px 0;"><b>One paper, explained</b> — the research everyone's citing, in plain English.</li>
-      </ul></td></tr>
-    <tr><td align="center" style="padding:24px 40px 36px;">
-      <a href="https://promptai.in" style="display:inline-block;padding:15px 34px;background:#2563eb;border-radius:10px;font-family:Helvetica,Arial,sans-serif;font-size:15px;font-weight:bold;color:#fff;text-decoration:none;">Read today's feed →</a></td></tr>
-    <tr><td style="background:#f8fafc;border-top:1px solid #e2e8f0;padding:26px 40px;font-family:Helvetica,Arial,sans-serif;font-size:12px;line-height:1.7;color:#94a3b8;text-align:center;">
-      You're receiving this because you subscribed at promptai.in.<br/>
-      <a href="${unsub}" style="color:#2563eb;">Unsubscribe</a> · <a href="https://promptai.in" style="color:#2563eb;">Visit site</a></td></tr>
+    <tr><td style="padding:40px 40px 8px;font-family:Helvetica,Arial,sans-serif;">
+      <div style="font-size:12px;font-weight:bold;letter-spacing:1.5px;text-transform:uppercase;color:#2563eb;">One last step</div>
+      <h1 style="margin:12px 0 0;font-family:Georgia,serif;font-size:30px;line-height:1.2;color:#0a1628;font-weight:normal;">Confirm your subscription</h1></td></tr>
+    <tr><td style="padding:18px 40px 6px;font-family:Helvetica,Arial,sans-serif;font-size:16px;line-height:1.7;color:#475569;">
+      <p style="margin:0 0 14px;">Tap the button below and your first PromptAI briefing — the one story that matters, 5 headlines and the paper everyone's citing — lands right away. Then every Tuesday after that.</p></td></tr>
+    <tr><td align="center" style="padding:16px 40px 32px;">
+      <a href="${confirmUrl}" style="display:inline-block;padding:15px 36px;background:#2563eb;border-radius:10px;font-family:Helvetica,Arial,sans-serif;font-size:15px;font-weight:bold;color:#fff;text-decoration:none;">Confirm &amp; get my first briefing →</a></td></tr>
+    <tr><td style="background:#f8fafc;border-top:1px solid #e2e8f0;padding:24px 40px;font-family:Helvetica,Arial,sans-serif;font-size:12px;line-height:1.7;color:#94a3b8;text-align:center;">
+      Didn’t sign up at promptai.in? Ignore this email and you won’t be subscribed.<br/>
+      The link expires in 7 days.</td></tr>
   </table></td></tr></table></body></html>`;
 }
 
-// Plain-text alternative for the welcome email (sent alongside welcomeHtml).
-function welcomeText(email) {
-  const unsub = 'https://promptai.in/unsubscribe?email=' + encodeURIComponent(email);
+function confirmText(confirmUrl) {
   return [
-    'PROMPTAI — WELCOME ABOARD',
+    'PROMPTAI — CONFIRM YOUR SUBSCRIPTION',
     '====================================',
     '',
-    "You're in. Smarter AI starts Tuesday.",
+    'One last step: confirm your email and your first PromptAI briefing',
+    'lands right away — then every Tuesday after that.',
     '',
-    "Thanks for subscribing. Every week we read the firehose — arXiv, Hacker News,",
-    "the best ML blogs — so you don't have to, and send only what matters.",
+    'Confirm: ' + confirmUrl,
     '',
-    'Every Tuesday you\'ll get:',
-    '* The headlines that count — launches, funding, research. No hype.',
-    '* Hand-picked deep dives — the best explainers and blog posts.',
-    '* One paper, explained — the research everyone\'s citing, in plain English.',
-    '',
-    "Read today's feed: https://promptai.in",
-    '',
-    "You're receiving this because you subscribed at promptai.in.",
-    'Unsubscribe: ' + unsub,
+    'Didn\u2019t sign up at promptai.in? Ignore this email and you won\u2019t be subscribed.',
+    'The link expires in 7 days.',
   ].join('\n');
 }
