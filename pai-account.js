@@ -178,9 +178,10 @@
         '<form onsubmit="return doSignIn(event)">' +
           '<div class="field" id="f-name" style="display:none"><label>Name</label><input id="si-name" type="text" placeholder="Your name" autocomplete="name"/></div>' +
           '<div class="field"><label>Email</label><input id="si-email" type="email" placeholder="you@example.com" required autocomplete="email"/></div>' +
-          '<div class="field"><label>Password</label><input id="si-pass" type="password" placeholder="At least 6 characters" required minlength="6" autocomplete="current-password"/></div>' +
+          '<div class="field"><label>Password</label><input id="si-pass" type="password" placeholder="At least 8 characters" required minlength="8" autocomplete="current-password"/></div>' +
           '<div class="acct-err" id="acct-err"></div>' +
           '<button class="sheet-btn" type="submit" id="si-submit">Sign in</button>' +
+          '<p class="acct-forgot" id="acct-forgot" style="margin-top:12px;text-align:center;font-size:0.84rem"><a href="#" onclick="return acctForgot()" style="color:var(--accent)">Forgot password?</a></p>' +
         '</form>';
     }
     $('#sheet').classList.add('open'); $('#sheet-overlay').classList.add('open');
@@ -199,6 +200,7 @@
     $('#f-name').style.display = login ? 'none' : 'block';
     $('#si-name') && ($('#si-name').required = !login);
     $('#si-submit').textContent = login ? 'Sign in' : 'Create account';
+    const fg = $('#acct-forgot'); if (fg) fg.style.display = login ? 'block' : 'none';
     $('#acct-copy').textContent = login
       ? 'Welcome back — your saved learning and reading history sync to every device.'
       : 'One account, every device — keep your learning progress and reading history wherever you sign in.';
@@ -247,6 +249,86 @@
     closeSheet(); say('Signed out');
   };
 
+  // ── password reset ──────────────────────────────
+  // Step 1 — “Forgot password?” swaps the sheet to a send-link form.
+  function openSheetShell(title, html) {
+    const body = $('#sheet-body'); if (!body) return;
+    $('#sheet-title').textContent = title;
+    body.innerHTML = html;
+    $('#sheet').classList.add('open'); $('#sheet-overlay').classList.add('open');
+  }
+  window.acctForgot = function () {
+    const known = ($('#si-email') && $('#si-email').value || '').trim();
+    openSheetShell('Reset your password',
+      '<p class="lead-copy">Enter your account email and we’ll send a reset link. It works once and expires in 30 minutes.</p>' +
+      '<form onsubmit="return doResetRequest(event)">' +
+        '<div class="field"><label>Email</label><input id="rs-email" type="email" placeholder="you@example.com" required autocomplete="email" value="' + esc(known) + '"/></div>' +
+        '<div class="acct-err" id="acct-err"></div>' +
+        '<button class="sheet-btn" type="submit" id="rs-submit">Email me a reset link</button>' +
+        '<p style="margin-top:12px;text-align:center;font-size:0.84rem"><a href="#" onclick="openSheet();return false;" style="color:var(--accent)">← Back to sign in</a></p>' +
+      '</form>');
+    return false;
+  };
+  window.doResetRequest = function (e) {
+    e.preventDefault();
+    const email = ($('#rs-email').value || '').trim();
+    const btn = $('#rs-submit');
+    if (!email) return false;
+    btn.disabled = true; btn.textContent = 'Sending…';
+    api({ action: 'reset-request', email })
+      .then(() => {
+        openSheetShell('Check your inbox',
+          '<p class="lead-copy">If an account exists for <b>' + esc(email) + '</b>, a reset link is on its way. ' +
+          'It expires in 30 minutes — check spam if you don’t see it.</p>' +
+          '<button class="sheet-btn" onclick="closeSheet()">Done</button>');
+      })
+      .catch(() => {
+        const err = $('#acct-err'); if (err) err.textContent = 'Couldn’t reach the server — try again in a minute.';
+        btn.disabled = false; btn.textContent = 'Email me a reset link';
+      });
+    return false;
+  };
+  // Step 2 — the emailed link lands on /?reset=<token>: show a new-password form.
+  function maybeResetFromLink() {
+    let token = '';
+    try { token = new URLSearchParams(location.search).get('reset') || ''; } catch (e) {}
+    if (!token) return;
+    openSheetShell('Choose a new password',
+      '<p class="lead-copy">Set a new password for your PromptAI account. You’ll be signed in right away.</p>' +
+      '<form onsubmit="return doResetConfirm(event)">' +
+        '<div class="field"><label>New password</label><input id="rc-pass" type="password" placeholder="At least 8 characters" required minlength="8" autocomplete="new-password"/></div>' +
+        '<div class="acct-err" id="acct-err"></div>' +
+        '<button class="sheet-btn" type="submit" id="rc-submit">Save new password</button>' +
+      '</form>');
+    window._paiResetToken = token;
+    // clean the token out of the address bar so it isn’t shared/bookmarked
+    try { history.replaceState(null, '', location.pathname + location.hash); } catch (e) {}
+  }
+  window.doResetConfirm = function (e) {
+    e.preventDefault();
+    const pass = ($('#rc-pass').value || '').trim();
+    const btn = $('#rc-submit');
+    const err = $('#acct-err');
+    if (!pass) return false;
+    btn.disabled = true; btn.textContent = 'Saving…';
+    api({ action: 'reset-confirm', token: window._paiResetToken || '', password: pass })
+      .then(r => {
+        if (r && r.token && r.user) {
+          setSession({ email: r.user.email, name: r.user.name || '' }, r.token);
+          closeSheet(); say('Password updated — you’re signed in.');
+          pullData();
+        } else {
+          if (err) err.textContent = (r && r.error) || 'This link may have expired — request a new one.';
+          btn.disabled = false; btn.textContent = 'Save new password';
+        }
+      })
+      .catch(() => {
+        if (err) err.textContent = 'Couldn’t reach the server — try again in a minute.';
+        btn.disabled = false; btn.textContent = 'Save new password';
+      });
+    return false;
+  };
+
   // validate an existing token in the background; drop it if expired
   function validate() {
     const token = getToken(), sess = getSession();
@@ -264,6 +346,6 @@
   window.paiAccount = { record, getSession, getData, pullData, renderUser };
 
   // ── boot ──────────────────────────────────────────────
-  function boot() { renderUser(); validate(); }
+  function boot() { renderUser(); validate(); maybeResetFromLink(); }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
 })();

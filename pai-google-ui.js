@@ -45,6 +45,17 @@
     return 'https://images.weserv.nl/?url=' + encodeURIComponent(url.replace(/^https?:\/\//, '')) + `&w=${w || 300}&h=${h || 220}&fit=cover&output=webp&q=80`;
   }
   function esc(s) { const d = document.createElement('div'); d.textContent = s || ''; return d.innerHTML; }
+  // Make a card reachable + operable by keyboard (R24): real tab stop,
+  // announced as a button, Enter/Space activate. aria-label = story title.
+  function actionable(node, fn, label) {
+    node.tabIndex = 0;
+    node.setAttribute('role', 'button');
+    if (label) node.setAttribute('aria-label', label);
+    node.onclick = fn;
+    node.onkeydown = e => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fn(); }
+    };
+  }
   // Clean excerpt → '' when the source 'description' is really just a URL / junk.
   function goodExcerpt(desc, words) {
     const t = P.summarizeContent(desc, words || 34);
@@ -71,13 +82,13 @@
        </div>
        <div class="card-row">
          <div class="card-body">
-           <h4>${esc(s.title)}</h4>
+           <h3>${esc(s.title)}</h3>
            ${goodExcerpt(s.desc, 34) ? `<p class="excerpt">${esc(goodExcerpt(s.desc, 34))}</p>` : ''}
            <div class="card-meta">${time ? `<span>${time}</span>` : ''}${s.score ? `<span>▲ ${s.score}</span>` : ''}</div>
          </div>
          ${img}
        </div>`;
-    c.onclick = () => openModal(s);
+    actionable(c, () => openModal(s), s.title);
     return c;
   }
 
@@ -93,10 +104,10 @@
            <span class="name">${esc(P.srcLabel(s.src))}</span>
            ${s.topic && s.topic !== 'General' ? `<span class="dot"></span><span class="topic">${esc(s.topic)}</span>` : ''}
          </div>
-         <h4>${esc(s.title)}</h4>
+         <h3>${esc(s.title)}</h3>
          <div class="card-meta">${time ? `<span>${time}</span>` : ''}</div>
        </div>`;
-    c.onclick = () => openModal(s);
+    actionable(c, () => openModal(s), s.title);
     return c;
   }
 
@@ -118,7 +129,7 @@
          ${goodExcerpt(s.desc, 46) ? `<p class="excerpt">${esc(goodExcerpt(s.desc, 46))}</p>` : ''}
          <div class="card-meta">${P.timeAgo(P.storyMs(s)) ? `<span>${P.timeAgo(P.storyMs(s))}</span>` : ''}</div>
        </div>`;
-    c.onclick = () => openModal(s);
+    actionable(c, () => openModal(s), s.title);
     return c;
   }
   // Among the freshest stories, lead with the first one that has an image so
@@ -150,11 +161,11 @@
          <span class="pill ${p.cls}">${esc(p.cat)}</span>
        </div>
        <div class="card-body">
-         <h4>${esc(p.title)}</h4>
+         <h3>${esc(p.title)}</h3>
          ${goodExcerpt(p.desc, 38) ? `<p class="excerpt">${esc(goodExcerpt(p.desc, 38))}</p>` : ''}
          <div class="card-meta"><span>${esc((p.authors || 'arXiv').slice(0, 60))}</span>${p.date ? `<span>${esc(p.date)}</span>` : ''}</div>
        </div>`;
-    c.onclick = () => openModal({ src:'arxiv', title:p.title, url:p.url, desc:p.desc, date:p.date, topic:p.cat });
+    actionable(c, () => openModal({ src:'arxiv', title:p.title, url:p.url, desc:p.desc, date:p.date, topic:p.cat }), p.title);
     return c;
   }
 
@@ -168,7 +179,7 @@
          <img class="tool-logo" src="${favicon(t.dom)}" alt="" loading="lazy" onerror="this.style.visibility='hidden'"/>
          <span class="access ${ac.c}">${ac.t}</span>
        </div>
-       <h4>${esc(t.name)}</h4>
+       <h3>${esc(t.name)}</h3>
        <p>${esc(t.desc)}</p>
        <div class="tool-foot">
          <span class="tool-tag">${esc(t.tag)}</span>
@@ -358,7 +369,7 @@
     top.forEach((s, i) => {
       const d = el('div', 'trend-item');
       d.innerHTML = `<span class="trend-num">${i + 1}</span><div><h5>${esc(s.title)}</h5><span>${esc(P.srcLabel(s.src))} · ${P.timeAgo(P.storyMs(s)) || ''}</span></div>`;
-      d.onclick = () => openModal(s);
+      actionable(d, () => openModal(s), s.title);
       box.appendChild(d);
     });
   }
@@ -381,7 +392,7 @@
   function searchGroup(title, items, make, frag) {
     if (!items.length) return 0;
     const d = el('div', 'sec-divider');
-    d.innerHTML = `<div class="sec-row"><h3>${title}</h3><div class="line"></div><span style="font-size:0.8rem;color:var(--text-3)">${items.length} result${items.length === 1 ? '' : 's'}</span></div>`;
+    d.innerHTML = `<div class="sec-row"><h2>${title}</h2><div class="line"></div><span style="font-size:0.8rem;color:var(--text-3)">${items.length} result${items.length === 1 ? '' : 's'}</span></div>`;
     frag.appendChild(d);
     items.slice(0, 6).forEach(i => frag.appendChild(make(i)));
     return items.length;
@@ -395,11 +406,11 @@
     let total = 0;
     total += searchGroup('News', _news.filter(s => match(s.title + ' ' + (s.desc || ''))), s => storyCard(s), frag);
     total += searchGroup('Research papers', _papers.filter(p => match(p.title + ' ' + (p.desc || ''))), paperCard, frag);
-    total += searchGroup('Blogs & explainers', _blogs.filter(s => match(s.title + ' ' + (s.desc || ''))), s => storyCard(s, { noThumb: true }), frag);
+    total += searchGroup('Deep dives & explainers', _blogs.filter(s => match(s.title + ' ' + (s.desc || ''))), s => storyCard(s, { noThumb: true }), frag);
     const toolHits = TOOLS.filter(t => match(t.name + ' ' + t.desc + ' ' + t.tag));
     if (toolHits.length) {
       const d = el('div', 'sec-divider');
-      d.innerHTML = `<div class="sec-row"><h3>Tools</h3><div class="line"></div><span style="font-size:0.8rem;color:var(--text-3)">${toolHits.length} result${toolHits.length === 1 ? '' : 's'}</span></div>`;
+      d.innerHTML = `<div class="sec-row"><h2>Tools</h2><div class="line"></div><span style="font-size:0.8rem;color:var(--text-3)">${toolHits.length} result${toolHits.length === 1 ? '' : 's'}</span></div>`;
       frag.appendChild(d);
       const grid = el('div', 'tools-grid');
       toolHits.slice(0, 6).forEach(t => grid.appendChild(toolCard(t)));
@@ -420,11 +431,17 @@
   };
 
   // ── NAV ───────────────────────────────────────────────
+  const VIEWS = ['home', 'news', 'research', 'learn', 'tools'];
   function showView(view) {
     _view = view;
     document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
     const target = $('#view-' + view); if (target) target.classList.add('active');
-    document.querySelectorAll('.tab[data-nav]').forEach(r => r.classList.toggle('active', r.dataset.nav === view));
+    document.querySelectorAll('.tab[data-nav]').forEach(r => {
+      const active = r.dataset.nav === view;
+      r.classList.toggle('active', active);
+      if (active) r.setAttribute('aria-current', 'true');
+      else r.removeAttribute('aria-current');
+    });
     // keep the active tab visible on narrow screens (no scrollIntoView — it
     // can scroll ancestors; nudge the tab strip's own scrollLeft instead)
     const tabsEl = $('#tabs'), at = document.querySelector('.tab.active[data-nav]');
@@ -436,6 +453,9 @@
     }
     window.scrollTo({ top: 0, behavior: 'auto' });
   }
+  // R27: each section lives at its own URL (#news, #research …) so Back
+  // works, sections are linkable, and a refresh keeps your place.
+  let _navFromUrl = false;
   window.go = function (view) {
     // navigating away from search clears the query
     if (_query) { _query = ''; const si = $('#pai-search'); if (si) si.value = ''; }
@@ -443,12 +463,30 @@
     if (view === 'research' && !_loaded.research) loadResearch('all');
     if (view === 'learn' && !_loaded.learn) loadLearn();
     if (view === 'tools') renderTools();
+    if (!_navFromUrl && VIEWS.includes(view)) {
+      const target = view === 'home'
+        ? location.pathname + location.search
+        : '#' + view;
+      const current = location.hash || '';
+      if ((view === 'home' && current) || (view !== 'home' && current !== target)) {
+        try { history.pushState(null, '', target); } catch (e) { location.hash = view; }
+      }
+    }
   };
+  function applyLocation() {
+    const h = (location.hash || '').replace('#', '');
+    const v = VIEWS.includes(h) ? h : 'home';
+    if (v !== _view) { _navFromUrl = true; go(v); _navFromUrl = false; }
+  }
+  window.addEventListener('popstate', applyLocation);
+  window.addEventListener('hashchange', applyLocation);
   window.toggleRail = function () {};
 
   // ── MODAL ─────────────────────────────────────────────
   let _modalUrl = '';
+  let _modalOpener = null; // focus returns here on close (a11y)
   window.openModal = function (s) {
+    _modalOpener = document.activeElement;
     _modalUrl = s.url;
     P.bumpReadCount(s.url);
     if (window.paiAccount) window.paiAccount.record('history', { url: s.url, title: s.title, src: P.srcLabel(s.src) });
@@ -467,8 +505,13 @@
     $('#m-li').href = `https://www.linkedin.com/sharing/share-offsite/?url=${su}`;
     $('#m-copy').textContent = '🔗 Copy';
     $('#modal').classList.add('open'); document.body.style.overflow = 'hidden';
+    const x = document.querySelector('#modal .modal-x'); if (x) x.focus();
   };
-  window.closeModal = function () { $('#modal').classList.remove('open'); document.body.style.overflow = ''; };
+  window.closeModal = function () {
+    $('#modal').classList.remove('open'); document.body.style.overflow = '';
+    if (_modalOpener && _modalOpener.focus) { try { _modalOpener.focus(); } catch (e) {} }
+    _modalOpener = null;
+  };
   window.copyLink = function () {
     navigator.clipboard.writeText(_modalUrl).then(() => { $('#m-copy').textContent = '✓ Copied'; setTimeout(() => $('#m-copy').textContent = '🔗 Copy', 1800); }).catch(() => toast('Copy failed'));
   };

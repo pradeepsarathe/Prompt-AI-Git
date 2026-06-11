@@ -48,7 +48,14 @@ export async function onRequest(context) {
   const url = new URL(request.url);
 
   // ── auth ──
-  if (!env.CRON_SECRET || url.searchParams.get('key') !== env.CRON_SECRET) {
+  // Preferred: Authorization: Bearer <CRON_SECRET> (query strings end up in
+  // logs/history). ?key= still works for existing cron-job.org schedules —
+  // migrate it when convenient.
+  const authz = request.headers.get('Authorization') || '';
+  const presentedKey = authz.startsWith('Bearer ')
+    ? authz.slice(7).trim()
+    : (url.searchParams.get('key') || '');
+  if (!env.CRON_SECRET || presentedKey !== env.CRON_SECRET) {
     return json({ error: 'Unauthorized' }, 401);
   }
   if (!env.RESEND_API_KEY || !env.FROM_EMAIL) {
@@ -85,8 +92,9 @@ export async function onRequest(context) {
       cursor = page.list_complete ? null : page.cursor;
     } while (cursor);
   }
-  // Never treat rate-limit bookkeeping keys ("rl:<ip>") as subscribers.
-  emails = emails.filter(e => e && !e.startsWith('rl:'));
+  // Never treat bookkeeping keys as subscribers: rate limits ("rl:"),
+  // unconfirmed double-opt-in signups ("pending:"), ops metadata ("meta:").
+  emails = emails.filter(e => e && !e.startsWith('rl:') && !e.startsWith('pending:') && !e.startsWith('meta:'));
   if (emails.length === 0) return json({ sent: 0, message: 'No subscribers yet' });
 
   // ── send via Resend BATCH (≤100 personalized emails per request) ──
@@ -125,6 +133,18 @@ export async function onRequest(context) {
       else lastResendError = (await r.text()).slice(0, 300);
     } catch (e) { lastResendError = e.message; }
     if (i + 100 < emails.length) await sleep(600); // stay under 2 req/sec
+  }
+
+  // ── last-run health report (read it back any time at meta:lastRun) ──
+  // Surfaces silent failures: dead feeds (0 items), Resend errors, send counts.
+  if (env.SUBSCRIBERS) {
+    try {
+      await env.SUBSCRIBERS.put('meta:lastRun', JSON.stringify({
+        at: new Date().toISOString(),
+        recipients: emails.length, sent, subject, lastResendError,
+        counts: { news: content.news.length, blogs: content.blogs.length, paper: content.paper ? 1 : 0 },
+      }));
+    } catch (e) { /* non-fatal */ }
   }
 
   return json({ success: true, recipients: emails.length, sent, subject, lastResendError,
