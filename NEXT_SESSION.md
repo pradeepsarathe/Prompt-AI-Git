@@ -1,44 +1,36 @@
-# Next Session — Punch List (updated 11 Jun 2026, evening)
+# Next Session — Punch List (updated 11 Jun 2026, late)
 
-Current state: new briefing design live as `index.html`; **Learn AI and Archive now
-fully redesigned to the briefing layout**. Deploy set = index.html, education.html,
-archive.html + pai-feed-engine.js, pai-google-ui.js, pai-translate.js,
-pai-chrome.css, pai-chrome.js, **pai-account.js (NEW — must ship)** +
-functions/send-digest.js (restyled email).
-Old homepage preserved locally as `index_classic_backup.html`.
+Current state: hardening + a11y/SEO session done. Deploy package =
+`deploy-2026-06-11/` (see `ACTIONS_REQUIRED.md` inside it for the full file
+list + manual steps). Repo `pradeepsarathe/Prompt-AI-Git@main` does NOT have
+these changes yet — push the package.
 
-## Done this session (push to git to deploy)
+## Done this session
+1. ✅ auth.js — KV rate limiting + login lockout, PBKDF2 600k (transparent
+   upgrade of legacy 100k hashes), email password reset, CORS locked down,
+   delete-account endpoint. (R11/R12)
+2. ✅ Double opt-in: subscribe.js issues a confirmation link; NEW confirm.js
+   activates + sends the first briefing. Old subscribers grandfathered. (R18)
+3. ✅ send-digest.js — Bearer-header auth (?key= still works), skips
+   pending:/meta: keys, writes meta:lastRun health report. (R9/R14)
+4. ✅ _headers — HSTS, nosniff, XFO, Referrer-Policy, Permissions-Policy +
+   noindex on backup/prototype pages. No CSP yet (inline handlers). (R15)
+5. ✅ privacy.html + terms.html, linked from a new homepage footer. (R16)
+6. ✅ index.html — real h1/h2/h3 hierarchy, "Blogs" tab → "Deep dives",
+   dialog/toast ARIA, aria-current tabs. (R20/R34/R26)
+7. ✅ pai-google-ui.js — cards keyboard-accessible (R24), sections get URLs
+   #news/#research/… with working Back (R27), modal focus return.
+8. ✅ pai-account.js — Forgot password? flow + /?reset=<token> landing;
+   password min length 8 to match backend.
+9. ✅ og-image.jpg 48 KB (was 552 KB png); all 3 pages re-pointed. (R7)
 
-1. ✅ Sign-in restored — new `pai-account.js` wires the sheet to the existing /auth
-   functions (signup/login/session/logout + getdata/setdata). Account sheet now shows
-   🎓 Continue learning + 🕐 Recently read, synced per user. Device-only fallback when
-   /auth is unreachable. Loaded on all 3 pages AFTER the other scripts.
-2. ✅ Learn AI (education.html) — full briefing redesign (canvas + right rail with
-   Subscribe / Your learning / About).
-3. ✅ Archive — full briefing redesign (stats + About in the rail, chips for filters).
-4. ✅ Lead card: leads with the first story that has an image; image error chain
-   proxied thumb → original URL → branded gradient.
-5. ✅ Right rail order: Subscribe → Trending → Top sources → Live stats.
-6. ✅ About: compact "About PromptAI" panel at the bottom of the right rail on all
-   3 pages (condensed from the classic homepage About section).
-7. ✅ Homepage section headings: kicker + large serif heading style.
-8. ✅ Blogs tab: stories with images promoted into a 2-col image-on-top grid.
-9. ✅ Appearance themes: 3 clearly distinct looks (clean white / blue-tinted +
-   navy / warm paper + teal) — page bg, cards, borders, shadows all retheme.
-10. ✅ Popovers (language/theme/subscribe) now position:fixed — work after scrolling.
-11. ✅ Search: dedicated results view across news + papers + blogs + tools; lazy-loads
-    missing feeds; mobile magnifier button reveals the search bar; cross-page handoff kept.
-12. ✅ Mobile polish: compact topbar (<560px), mobile search, 1-col grids, modal full-screen.
-13. ✅ Newsletter (send-digest.js): email restyled to match the light briefing brand
-    (white card, serif headlines, blue accents, footer nav row). Deliverability bits
-    (List-Unsubscribe, plain-text part, batching) untouched.
-
-## Open items
-
-1. **Verify /auth KV binding `USERS`** is configured in Cloudflare Pages — the new
-   account sheet depends on it (falls back to device-only mode if missing).
-2. After deploy: send a test digest (`/send-digest?key=…&to=you@…`) to eyeball the
-   restyled email in Gmail/Outlook.
-3. `emails/*.html` preview files still show the old dark digest design — refresh them
-   to match the new light template if they're still used as references.
-4. Consider surfacing saved/liked actions (data model already supports them).
+## Open items (carried / new)
+1. **Push `deploy-2026-06-11/` to git**, then walk `ACTIONS_REQUIRED.md`
+   (USERS KV binding, cron → Bearer header, Resend DNS, live tests).
+2. emails/*.html preview files still show the old dark digest design.
+3. R21 (rankable URLs: per-guide pages, issue archive) — biggest SEO lever,
+   not started.
+4. R25 full focus *trap* in modal/sheet (open/close focus handled; trap not).
+5. R35 tools.json with lastReviewed dates (directory is hard-coded, aging).
+6. Consider deleting og-image.png + index_classic_backup.html from the repo
+   once the deploy is verified (R4/R23).

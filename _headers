@@ -1,0 +1,18 @@
+# Cloudflare Pages — security headers for promptai.in
+# Note: a Content-Security-Policy is deliberately NOT set yet — the pages use
+# inline event handlers and fetch several third-party feed proxies, so a strict
+# CSP would break them. Refactor inline handlers first, then add CSP.
+
+/*
+  Strict-Transport-Security: max-age=31536000; includeSubDomains
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=()
+
+# Old prototype/backup pages must never be indexed (until removed from the repo)
+/index_classic_backup.html
+  X-Robots-Tag: noindex, nofollow
+
+/promptai_google.html
+  X-Robots-Tag: noindex, nofollow

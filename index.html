@@ -12,18 +12,18 @@
 <meta property="og:site_name" content="PromptAI"/>
 <meta property="og:title" content="PromptAI — AI Research Hub"/>
 <meta property="og:description" content="Curated AI papers, breaking research news, tool reviews and expert analysis — all in one place. Updated daily."/>
-<meta property="og:image" content="https://promptai.in/og-image.png"/>
+<meta property="og:image" content="https://promptai.in/og-image.jpg"/>
 <meta property="og:image:width" content="1200"/>
 <meta property="og:image:height" content="630"/>
 <meta name="twitter:card" content="summary_large_image"/>
 <meta name="twitter:site" content="@promptai_in"/>
 <meta name="twitter:title" content="PromptAI — AI Research Hub"/>
 <meta name="twitter:description" content="Curated AI papers, breaking research news, tool reviews and expert analysis — updated daily."/>
-<meta name="twitter:image" content="https://promptai.in/og-image.png"/>
+<meta name="twitter:image" content="https://promptai.in/og-image.jpg"/>
 <link rel="alternate" type="application/rss+xml" title="PromptAI — AI Research Feed" href="/feed.xml"/>
 <link rel="sitemap" type="application/xml" href="/sitemap.xml"/>
 <script type="application/ld+json">
-{"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://promptai.in/#org","name":"PromptAI","url":"https://promptai.in/","logo":"https://promptai.in/og-image.png","description":"Independent hub for AI research, papers, tools and insights.","sameAs":["https://twitter.com/promptai_in","https://www.linkedin.com/company/promptai-in","https://www.instagram.com/promptai.in"]},{"@type":"WebSite","@id":"https://promptai.in/#website","url":"https://promptai.in/","name":"PromptAI","publisher":{"@id":"https://promptai.in/#org"},"potentialAction":{"@type":"SearchAction","target":"https://promptai.in/archive.html?q={search_term_string}","query-input":"required name=search_term_string"}},{"@type":"WebPage","@id":"https://promptai.in/#webpage","url":"https://promptai.in/","name":"PromptAI — AI Research Hub","description":"Curated AI papers, breaking research news, tool reviews and expert analysis — all in one place. Updated daily.","isPartOf":{"@id":"https://promptai.in/#website"},"about":{"@id":"https://promptai.in/#org"},"primaryImageOfPage":"https://promptai.in/og-image.png","inLanguage":"en"}]}
+{"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://promptai.in/#org","name":"PromptAI","url":"https://promptai.in/","logo":"https://promptai.in/og-image.jpg","description":"Independent hub for AI research, papers, tools and insights.","sameAs":["https://twitter.com/promptai_in","https://www.linkedin.com/company/promptai-in","https://www.instagram.com/promptai.in"]},{"@type":"WebSite","@id":"https://promptai.in/#website","url":"https://promptai.in/","name":"PromptAI","publisher":{"@id":"https://promptai.in/#org"},"potentialAction":{"@type":"SearchAction","target":"https://promptai.in/archive.html?q={search_term_string}","query-input":"required name=search_term_string"}},{"@type":"WebPage","@id":"https://promptai.in/#webpage","url":"https://promptai.in/","name":"PromptAI — AI Research Hub","description":"Curated AI papers, breaking research news, tool reviews and expert analysis — all in one place. Updated daily.","isPartOf":{"@id":"https://promptai.in/#website"},"about":{"@id":"https://promptai.in/#org"},"primaryImageOfPage":"https://promptai.in/og-image.jpg","inLanguage":"en"}]}
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
@@ -199,7 +199,7 @@
   @keyframes fade { from{transform:translateY(6px)} to{transform:none} }
   .sec-title {
     display:flex; align-items:center; gap:10px; font-size:1.35rem; font-weight:500; color:var(--text);
-    margin:6px 0 4px;
+    margin:6px 0 4px; font-family:inherit;
   }
   .sec-title .bar { width:4px; height:22px; border-radius:3px; background:var(--accent); }
   .sec-sub { font-size:0.86rem; color:var(--text-2); margin:0 0 18px 14px; }
@@ -207,7 +207,7 @@
   .sec-divider .sec-kick { display:flex; align-items:center; gap:10px; font-size:0.7rem; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; color:var(--accent); margin-bottom:6px; }
   .sec-divider .sec-kick::before { content:''; width:18px; height:3px; border-radius:2px; background:var(--accent); }
   .sec-divider .sec-row { display:flex; align-items:baseline; gap:14px; }
-  .sec-divider h3 { font-family:var(--serif); font-size:1.5rem; font-weight:600; letter-spacing:-0.3px; color:var(--text); white-space:nowrap; }
+  .sec-divider h2 { font-family:var(--serif); font-size:1.5rem; font-weight:600; letter-spacing:-0.3px; color:var(--text); white-space:nowrap; }
   .sec-divider .line { flex:1; height:1px; background:var(--border-soft); align-self:center; }
   .sec-divider a { font-size:0.84rem; color:var(--accent); font-weight:500; white-space:nowrap; }
 
@@ -250,11 +250,11 @@
   .card-src .topic { font-size:0.72rem; color:var(--accent); font-weight:500; }
   .card-row { display:flex; gap:18px; align-items:flex-start; }
   .card-body { flex:1; min-width:0; }
-  .card h4 {
+  .card h3, .card h4 {
     font-family:var(--serif); font-size:1.06rem; line-height:1.32; font-weight:500; color:var(--text);
     letter-spacing:-0.1px; margin-bottom:8px;
   }
-  .card:hover h4 { text-decoration:underline; text-decoration-color:var(--border); text-underline-offset:2px; }
+  .card:hover h3, .card:hover h4 { text-decoration:underline; text-decoration-color:var(--border); text-underline-offset:2px; }
   .card .excerpt { font-size:0.86rem; color:var(--text-2); line-height:1.5; margin-bottom:10px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
   .card-meta { display:flex; align-items:center; gap:10px; font-size:0.76rem; color:var(--text-3); }
   .card-thumb { width:128px; height:96px; border-radius:10px; object-fit:cover; flex:none; background:var(--bg-subtle); }
@@ -287,7 +287,7 @@
   .access.free { background:#e6f4ea; color:#137333; }
   .access.both { background:var(--accent-subtle); color:var(--accent); }
   .access.paid { background:#fef7e0; color:#b06000; }
-  .tool h4 { font-size:0.98rem; font-weight:500; color:var(--text); }
+  .tool h3, .tool h4 { font-size:0.98rem; font-weight:500; color:var(--text); }
   .tool p { font-size:0.82rem; color:var(--text-2); line-height:1.45; flex:1; }
   .tool-foot { display:flex; align-items:center; justify-content:space-between; margin-top:2px; }
   .tool-tag { font-size:0.72rem; font-weight:500; color:var(--text-2); background:var(--bg-subtle); padding:3px 10px; border-radius:8px; }
@@ -302,8 +302,8 @@
   .vis-card:hover { box-shadow:var(--shadow-hover); }
   .vis-card .vis-img { width:100%; height:158px; object-fit:cover; background:var(--bg-subtle); display:block; }
   .vis-card .vis-body { padding:14px 16px 16px; display:flex; flex-direction:column; gap:8px; flex:1; }
-  .vis-card h4 { font-family:var(--serif); font-size:0.98rem; line-height:1.35; font-weight:500; color:var(--text); flex:1; margin:0; }
-  .vis-card:hover h4 { text-decoration:underline; text-decoration-color:var(--border); text-underline-offset:2px; }
+  .vis-card h3, .vis-card h4 { font-family:var(--serif); font-size:0.98rem; line-height:1.35; font-weight:500; color:var(--text); flex:1; margin:0; }
+  .vis-card:hover h3, .vis-card:hover h4 { text-decoration:underline; text-decoration-color:var(--border); text-underline-offset:2px; }
   .vis-card .card-src { margin-bottom:0; }
 
   /* paper cards reuse .card with category pill */
@@ -340,6 +340,12 @@
   .trend-item h5 { font-size:0.84rem; font-weight:500; line-height:1.35; color:var(--text); }
   .trend-item span { font-size:0.72rem; color:var(--text-3); }
   .about-panel p { font-size:0.84rem; color:var(--text-2); line-height:1.6; margin-bottom:10px; }
+
+  /* footer */
+  .site-footer { border-top:1px solid var(--border); margin-top:46px; padding:26px 24px 34px; }
+  .site-footer .foot-in { max-width:1440px; margin:0 auto; display:flex; flex-wrap:wrap; align-items:center; gap:8px 22px; font-size:0.8rem; color:var(--text-3); }
+  .site-footer a { color:var(--text-2); text-decoration:none; }
+  .site-footer a:hover { color:var(--accent); text-decoration:underline; }
   .about-panel ul { list-style:none; margin:0 0 4px; padding:0; display:flex; flex-direction:column; gap:7px; }
   .about-panel li { display:flex; gap:8px; font-size:0.8rem; color:var(--text-2); line-height:1.5; }
   .about-panel li::before { content:'→'; color:var(--accent); font-weight:700; flex:none; }
@@ -529,7 +535,7 @@
   <button class="tab active" data-nav="home" onclick="go('home')">Home</button>
   <button class="tab" data-nav="news" onclick="go('news')">News</button>
   <button class="tab" data-nav="research" onclick="go('research')">Research</button>
-  <button class="tab" data-nav="learn" onclick="go('learn')">Blogs</button>
+  <button class="tab" data-nav="learn" onclick="go('learn')">Deep dives</button>
   <button class="tab" data-nav="tools" onclick="go('tools')">Tools</button>
   <a class="tab" href="education.html">Learn AI</a>
   <a class="tab" href="archive.html">Archive</a>
@@ -542,18 +548,18 @@
     <main class="main">
       <!-- HOME -->
       <section class="view active" id="view-home">
-        <div class="sec-title"><span class="bar"></span> Your briefing</div>
+        <h1 class="sec-title"><span class="bar"></span> Your briefing</h1>
         <p class="sec-sub">The AI world right now — top story, latest research, and what to read next.</p>
         <div id="home-lead"></div>
-        <div class="sec-divider"><div class="sec-kick">News</div><div class="sec-row"><h3>Top stories</h3><div class="line"></div><a href="#" onclick="go('news');return false;">Full feed →</a></div></div>
+        <div class="sec-divider"><div class="sec-kick">News</div><div class="sec-row"><h2>Top stories</h2><div class="line"></div><a href="#" onclick="go('news');return false;">Full feed →</a></div></div>
         <div class="stack" id="home-top"></div>
-        <div class="sec-divider"><div class="sec-kick">Papers</div><div class="sec-row"><h3>Fresh from research</h3><div class="line"></div><a href="#" onclick="go('research');return false;">All papers →</a></div></div>
+        <div class="sec-divider"><div class="sec-kick">Papers</div><div class="sec-row"><h2>Fresh from research</h2><div class="line"></div><a href="#" onclick="go('research');return false;">All papers →</a></div></div>
         <div class="stack" id="home-research"></div>
-        <div class="sec-divider"><div class="sec-kick">Blogs</div><div class="sec-row"><h3>Worth learning</h3><div class="line"></div><a href="#" onclick="go('learn');return false;">All explainers →</a></div></div>
+        <div class="sec-divider"><div class="sec-kick">Deep dives</div><div class="sec-row"><h2>Worth learning</h2><div class="line"></div><a href="#" onclick="go('learn');return false;">All explainers →</a></div></div>
         <div class="stack" id="home-learn"></div>
-        <div class="sec-divider"><div class="sec-kick">Tools</div><div class="sec-row"><h3>Tools to try</h3><div class="line"></div><a href="#" onclick="go('tools');return false;">All tools →</a></div></div>
+        <div class="sec-divider"><div class="sec-kick">Tools</div><div class="sec-row"><h2>Tools to try</h2><div class="line"></div><a href="#" onclick="go('tools');return false;">All tools →</a></div></div>
         <div class="tools-grid" id="home-tools"></div>
-        <div class="sec-divider"><div class="sec-kick">Learn AI</div><div class="sec-row"><h3>Start learning</h3><div class="line"></div><a href="education.html">Open Learn AI →</a></div></div>
+        <div class="sec-divider"><div class="sec-kick">Learn AI</div><div class="sec-row"><h2>Start learning</h2><div class="line"></div><a href="education.html">Open Learn AI →</a></div></div>
         <div class="stack" id="home-edu">
           <a class="card" href="education.html#courses" style="display:block">
             <div class="card-src"><span class="name">🎓 Free courses</span><span class="dot"></span><span class="topic">12 picks</span></div>
@@ -572,7 +578,7 @@
 
       <!-- NEWS -->
       <section class="view" id="view-news">
-        <div class="sec-title"><span class="bar"></span> Top AI news</div>
+        <h1 class="sec-title"><span class="bar"></span> Top AI news</h1>
         <p class="sec-sub">One continuously-updated feed across Hacker News, TechCrunch, OpenAI, Google, Ars Technica and more.</p>
         <div class="chips" id="news-chips"></div>
         <div id="news-lead"></div>
@@ -581,7 +587,7 @@
 
       <!-- RESEARCH -->
       <section class="view" id="view-research">
-        <div class="sec-title"><span class="bar"></span> Research papers</div>
+        <h1 class="sec-title"><span class="bar"></span> Research papers</h1>
         <p class="sec-sub">The latest from arXiv — cs.AI, cs.LG, cs.CL and cs.CV, refreshed through the day.</p>
         <div class="chips" id="research-chips"></div>
         <div class="stack" id="research-list"></div>
@@ -589,14 +595,14 @@
 
       <!-- LEARN / BLOGS -->
       <section class="view" id="view-learn">
-        <div class="sec-title"><span class="bar"></span> Blogs &amp; explainers</div>
+        <h1 class="sec-title"><span class="bar"></span> Deep dives &amp; explainers</h1>
         <p class="sec-sub">Evergreen deep dives and tutorials — hand-picked from The Gradient, Hugging Face, fast.ai, Distill and more.</p>
         <div class="stack" id="learn-list"></div>
       </section>
 
       <!-- TOOLS -->
       <section class="view" id="view-tools">
-        <div class="sec-title"><span class="bar"></span> AI tools directory</div>
+        <h1 class="sec-title"><span class="bar"></span> AI tools directory</h1>
         <p class="sec-sub">Curated, hands-on picks across every domain of AI. Tags show whether a tool is free, paid, or both.</p>
         <div class="chips" id="tools-filter">
           <button class="chip active" onclick="filterTools('all',this)">All tools</button>
@@ -611,7 +617,7 @@
 
       <!-- SEARCH RESULTS -->
       <section class="view" id="view-search">
-        <div class="sec-title"><span class="bar"></span> Search results</div>
+        <h1 class="sec-title"><span class="bar"></span> Search results</h1>
         <p class="sec-sub">Matches for “<span id="search-q"></span>” across news, research papers, blogs and tools. <a href="#" onclick="clearSearch();return false;" style="color:var(--accent);font-weight:500">Clear search</a></p>
         <div id="search-list"></div>
       </section>
@@ -659,12 +665,25 @@
   </div>
 </div>
 
+<!-- ════ FOOTER ════ -->
+<footer class="site-footer">
+  <div class="foot-in">
+    <span data-no-translate>© 2026 PromptAI · promptai.in</span>
+    <a href="privacy.html">Privacy</a>
+    <a href="terms.html">Terms</a>
+    <a href="education.html">Learn AI</a>
+    <a href="archive.html">Archive</a>
+    <a href="/feed.xml">RSS</a>
+    <a href="/unsubscribe">Unsubscribe</a>
+  </div>
+</footer>
+
 <!-- ════ MODAL ════ -->
 <div class="modal-overlay" id="modal" onclick="if(event.target===this)closeModal()">
-  <div class="modal">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="m-title">
     <div class="modal-top">
       <div class="src" id="m-src"></div>
-      <button class="modal-x" onclick="closeModal()">✕</button>
+      <button class="modal-x" onclick="closeModal()" aria-label="Close">✕</button>
     </div>
     <div class="modal-body">
       <span class="pill" id="m-pill"></span>
@@ -684,12 +703,12 @@
 
 <!-- ════ SIGN-IN SHEET ════ -->
 <div class="sheet-overlay" id="sheet-overlay" onclick="closeSheet()"></div>
-<aside class="sheet" id="sheet">
-  <div class="sheet-h"><h3 id="sheet-title">Sign in to PromptAI</h3><button class="modal-x" onclick="closeSheet()">✕</button></div>
+<aside class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title">
+  <div class="sheet-h"><h3 id="sheet-title">Sign in to PromptAI</h3><button class="modal-x" onclick="closeSheet()" aria-label="Close">✕</button></div>
   <div class="sheet-b" id="sheet-body"></div>
 </aside>
 
-<div id="toast"></div>
+<div id="toast" role="status" aria-live="polite"></div>
 
 <script src="pai-translate.js"></script>
 <script src="pai-feed-engine.js"></script>
