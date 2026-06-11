@@ -1,6 +1,7 @@
 /* ════════════════════════════════════════════════════════════════════
    PromptAI — Google-style UI layer
    Renders the live feeds (window.PAI) into the briefing shell.
+   Account / sign-in sheet lives in pai-account.js (loaded after this).
    ════════════════════════════════════════════════════════════════════ */
 (function () {
   'use strict';
@@ -10,7 +11,7 @@
   let _news = [], _papers = [], _blogs = [], _popular = {};
   let _loaded = { news: false, research: false, learn: false };
   let _newsTopic = 'All', _researchCat = 'all', _toolCat = 'all';
-  let _view = 'home', _query = '';
+  let _view = 'home', _query = '', _prevView = 'home';
   const PAGE = { news:8, research:8, learn:8, tools:6 };
   let _limit = { news:PAGE.news, research:PAGE.research, learn:PAGE.learn, tools:PAGE.tools };
 
@@ -39,9 +40,9 @@
   const $ = s => document.querySelector(s);
   const el = (t, cls) => { const e = document.createElement(t); if (cls) e.className = cls; return e; };
   function favicon(dom) { return `https://www.google.com/s2/favicons?domain=${dom}&sz=64`; }
-  function thumb(url) {
+  function thumb(url, w, h) {
     if (!url) return '';
-    return 'https://images.weserv.nl/?url=' + encodeURIComponent(url.replace(/^https?:\/\//, '')) + '&w=300&h=220&fit=cover&output=webp&q=80';
+    return 'https://images.weserv.nl/?url=' + encodeURIComponent(url.replace(/^https?:\/\//, '')) + `&w=${w || 300}&h=${h || 220}&fit=cover&output=webp&q=80`;
   }
   function esc(s) { const d = document.createElement('div'); d.textContent = s || ''; return d.innerHTML; }
   // Clean excerpt → '' when the source 'description' is really just a URL / junk.
@@ -80,11 +81,30 @@
     return c;
   }
 
-  // ── LEAD CARD ─────────────────────────────────────────
+  // ── VISUAL CARD (image-on-top, used by Blogs) ─────────
+  function visCard(s) {
+    const c = el('article', 'vis-card');
+    const time = P.timeAgo(P.storyMs(s));
+    c.innerHTML =
+      `<img class="vis-img" src="${thumb(s.image, 520, 290)}" alt="" loading="lazy" data-direct="${esc(s.image)}" onerror="paiImgFallback(this)"/>
+       <div class="vis-body">
+         <div class="card-src">
+           <img src="${P.srcFavicon(s.src, s.url)}" alt="" loading="lazy" onerror="this.style.visibility='hidden'"/>
+           <span class="name">${esc(P.srcLabel(s.src))}</span>
+           ${s.topic && s.topic !== 'General' ? `<span class="dot"></span><span class="topic">${esc(s.topic)}</span>` : ''}
+         </div>
+         <h4>${esc(s.title)}</h4>
+         <div class="card-meta">${time ? `<span>${time}</span>` : ''}</div>
+       </div>`;
+    c.onclick = () => openModal(s);
+    return c;
+  }
+
+  // ── LEAD CARD (always shows a proper image) ───────────
   function leadCard(s) {
     const c = el('article', 'lead');
     const media = s.image
-      ? `<img class="lead-img" src="${thumb(s.image).replace('w=300&h=220','w=760&h=360')}" alt="" onerror="this.outerHTML=GRAD()"/>`
+      ? `<img class="lead-img" src="${thumb(s.image, 760, 360)}" alt="" data-direct="${esc(s.image)}" onerror="paiImgFallback(this)"/>`
       : GRAD();
     c.innerHTML =
       media +
@@ -101,6 +121,23 @@
     c.onclick = () => openModal(s);
     return c;
   }
+  // Among the freshest stories, lead with the first one that has an image so
+  // the big card never opens on a bare gradient.
+  function pickLead(list) {
+    const k = list.slice(0, 8).findIndex(s => s.image);
+    return k < 0 ? 0 : k;
+  }
+  // <img> error chain: proxied thumbnail → original URL → branded gradient.
+  window.paiImgFallback = function (img) {
+    const direct = img.getAttribute('data-direct');
+    if (direct) {
+      img.removeAttribute('data-direct');
+      img.src = direct;
+      return;
+    }
+    if (img.classList.contains('lead-img')) img.outerHTML = GRAD();
+    else img.remove();
+  };
   window.GRAD = () => '<div class="lead-grad"><svg viewBox="0 0 24 24"><path d="M19 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2zm-2 8H7V9h10v2zm0 4H7v-2h10v2zm-4 4H7v-2h6v2z"/></svg></div>';
 
   // ── PAPER CARD ────────────────────────────────────────
@@ -159,13 +196,40 @@
     const frag = document.createDocumentFragment();
     items.slice(0, lim).forEach(i => frag.appendChild(make(i)));
     node.appendChild(frag);
-    if (items.length > lim) {
-      const wrap = el('div', 'load-more-wrap');
-      const btn = el('button', 'load-more');
-      btn.innerHTML = 'Load more <svg viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg>';
-      btn.onclick = () => { _limit[key] = lim + (PAGE[key] || 10); rerender(); };
-      wrap.appendChild(btn); node.appendChild(wrap);
+    appendLoadMore(node, items.length > lim, key, rerender);
+  }
+  function appendLoadMore(node, show, key, rerender) {
+    if (!show) return;
+    const wrap = el('div', 'load-more-wrap');
+    const btn = el('button', 'load-more');
+    btn.innerHTML = 'Load more <svg viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg>';
+    btn.onclick = () => { _limit[key] = (_limit[key] || 0) + (PAGE[key] || 10); rerender(); };
+    wrap.appendChild(btn); node.appendChild(wrap);
+    // infinite scroll — auto-load the next page when the button scrolls near
+    if ('IntersectionObserver' in window) {
+      const io = new IntersectionObserver(entries => {
+        entries.forEach(en => { if (en.isIntersecting) { io.disconnect(); btn.click(); } });
+      }, { rootMargin: '500px 0px' });
+      io.observe(btn);
     }
+  }
+
+  // ── ARCHIVE (every story seen on the briefing lands in the local archive) ──
+  function archiveStories(items, type) {
+    if (!items || !items.length) return;
+    try {
+      const KEY = 'pai_archive';
+      const cur = JSON.parse(localStorage.getItem(KEY) || '[]');
+      const seen = new Set(cur.map(a => a.url));
+      const now = Date.now();
+      items.forEach(s => {
+        if (!s.url || seen.has(s.url)) return;
+        cur.unshift({ src: s.src, type, title: s.title, url: s.url,
+          desc: (s.desc || '').slice(0, 300), topic: s.topic || '', savedAt: now, ts: s.ts || 0 });
+        seen.add(s.url);
+      });
+      localStorage.setItem(KEY, JSON.stringify(cur.slice(0, 1000)));
+    } catch (e) {}
   }
 
   // ── NEWS ──────────────────────────────────────────────
@@ -183,7 +247,9 @@
     stories = stories.filter(s => s.url && !seen.has(s.url) && seen.add(s.url));
     _news = P.rankStories(stories, _popular);
     _loaded.news = true;
+    archiveStories(_news, 'news');
     renderNews(); renderHome(); renderTrending();
+    if (_query) renderSearch();
   }
   function newsTopics() {
     const counts = {}; _news.forEach(s => { const t = s.topic || 'General'; if (t !== 'General') counts[t] = (counts[t] || 0) + 1; });
@@ -200,20 +266,26 @@
     });
     let list = _news.slice();
     if (_newsTopic !== 'All') list = list.filter(s => s.topic === _newsTopic);
-    if (_query) list = list.filter(s => match(s.title + ' ' + (s.desc || '')));
     const leadBox = $('#news-lead'); leadBox.innerHTML = '';
-    if (list.length && !_query) { leadBox.appendChild(leadCard(list[0])); fillPaged($('#news-list'), list.slice(1), s => storyCard(s), 'news', renderNews); }
+    if (list.length) {
+      const li = pickLead(list);
+      leadBox.appendChild(leadCard(list[li]));
+      fillPaged($('#news-list'), list.filter((_, i) => i !== li), s => storyCard(s), 'news', renderNews);
+    }
     else { fillPaged($('#news-list'), list, s => storyCard(s), 'news', renderNews); }
   }
 
   // ── HOME ──────────────────────────────────────────────
   function renderHome() {
     if (_news.length) {
-      const lb = $('#home-lead'); lb.innerHTML = ''; lb.appendChild(leadCard(_news[0]));
-      fill($('#home-top'), _news.slice(1, 6), s => storyCard(s));
+      const li = pickLead(_news);
+      const lb = $('#home-lead'); lb.innerHTML = ''; lb.appendChild(leadCard(_news[li]));
+      fill($('#home-top'), _news.filter((_, i) => i !== li).slice(0, 5), s => storyCard(s));
     }
     if (_papers.length) fill($('#home-research'), _papers.slice(0, 3), paperCard);
     if (_blogs.length) fill($('#home-learn'), _blogs.slice(0, 3), s => storyCard(s));
+    const ht = $('#home-tools');
+    if (ht && !ht.children.length) fill(ht, TOOLS.slice(0, 4), toolCard);
   }
 
   // ── RESEARCH ──────────────────────────────────────────
@@ -224,7 +296,9 @@
     skeleton($('#research-list'), 5);
     try { _papers = await P.fetchPapers(_researchCat); } catch (e) { _papers = []; }
     _loaded.research = true;
+    archiveStories(_papers.map(p => ({ src: 'arxiv', title: p.title, url: p.url, desc: p.desc, topic: p.cat })), 'paper');
     renderResearch(); renderHome();
+    if (_query) renderSearch();
   }
   function renderResearchChips() {
     const box = $('#research-chips'); box.innerHTML = '';
@@ -236,29 +310,37 @@
     });
   }
   function renderResearch() {
-    let list = _papers.slice();
-    if (_query) list = list.filter(p => match(p.title + ' ' + (p.desc || '')));
-    fillPaged($('#research-list'), list, paperCard, 'research', renderResearch);
+    fillPaged($('#research-list'), _papers.slice(), paperCard, 'research', renderResearch);
   }
 
-  // ── LEARN ─────────────────────────────────────────────
+  // ── LEARN / BLOGS (stories with images promoted, image-on-top) ──
   async function loadLearn() {
     skeleton($('#learn-list'), 5);
     try { _blogs = await P.fetchBlogs(); } catch (e) { _blogs = []; }
     _loaded.learn = true;
+    archiveStories(_blogs, 'blog');
     renderLearn(); renderHome();
+    if (_query) renderSearch();
   }
   function renderLearn() {
-    let list = _blogs.slice();
-    if (_query) list = list.filter(s => match(s.title + ' ' + (s.desc || '')));
-    fillPaged($('#learn-list'), list, s => storyCard(s), 'learn', renderLearn);
+    const box = $('#learn-list'); box.innerHTML = '';
+    const list = _blogs.slice();
+    if (!list.length) { box.innerHTML = '<div class="empty">Nothing here yet — live feeds are catching up. Refresh in a moment.</div>'; return; }
+    // promote stories that ship an image; they get the visual treatment
+    const ordered = [...list.filter(s => s.image), ...list.filter(s => !s.image)];
+    const lim = _limit.learn;
+    const show = ordered.slice(0, lim);
+    const grid = el('div', 'vis-grid');
+    show.filter(s => s.image).forEach(s => grid.appendChild(visCard(s)));
+    if (grid.children.length) box.appendChild(grid);
+    show.filter(s => !s.image).forEach(s => box.appendChild(storyCard(s, { noThumb: true })));
+    appendLoadMore(box, ordered.length > lim, 'learn', renderLearn);
   }
 
   // ── TOOLS ─────────────────────────────────────────────
   function renderTools() {
     const grid = $('#tools-grid'); grid.innerHTML = '';
-    let list = TOOLS.filter(t => _toolCat === 'all' || t.cat === _toolCat);
-    if (_query) list = list.filter(t => match(t.name + ' ' + t.desc + ' ' + t.tag));
+    const list = TOOLS.filter(t => _toolCat === 'all' || t.cat === _toolCat);
     fillPaged(grid, list, toolCard, 'tools', renderTools);
   }
   window.filterTools = function (cat, btn) {
@@ -281,32 +363,86 @@
     });
   }
 
-  // ── SEARCH ────────────────────────────────────────────
+  // ── SEARCH (dedicated results view across everything) ─
   function match(text) { return (text || '').toLowerCase().includes(_query); }
   window.onSearch = function (q) {
     _query = (q || '').trim().toLowerCase();
-    _limit.news = PAGE.news; _limit.research = PAGE.research; _limit.learn = PAGE.learn; _limit.tools = PAGE.tools;
-    // searching jumps Home → News so results are visible
-    if (_query && _view === 'home') { go('news'); }
-    if (_view === 'news' || _view === 'home') renderNews();
-    else if (_view === 'research') renderResearch();
-    else if (_view === 'learn') renderLearn();
-    else if (_view === 'tools') renderTools();
+    if (_query) {
+      if (_view !== 'search') _prevView = _view;
+      showView('search');
+      // make sure every dataset is loaded so results are complete
+      if (!_loaded.research) loadResearch(_researchCat);
+      if (!_loaded.learn) loadLearn();
+      renderSearch();
+    } else if (_view === 'search') {
+      go(_prevView || 'home');
+    }
+  };
+  function searchGroup(title, items, make, frag) {
+    if (!items.length) return 0;
+    const d = el('div', 'sec-divider');
+    d.innerHTML = `<div class="sec-row"><h3>${title}</h3><div class="line"></div><span style="font-size:0.8rem;color:var(--text-3)">${items.length} result${items.length === 1 ? '' : 's'}</span></div>`;
+    frag.appendChild(d);
+    items.slice(0, 6).forEach(i => frag.appendChild(make(i)));
+    return items.length;
+  }
+  function renderSearch() {
+    const box = $('#search-list'); if (!box) return;
+    const label = $('#search-q'); if (label) label.textContent = _query;
+    box.innerHTML = '';
+    if (!_query) return;
+    const frag = document.createDocumentFragment();
+    let total = 0;
+    total += searchGroup('News', _news.filter(s => match(s.title + ' ' + (s.desc || ''))), s => storyCard(s), frag);
+    total += searchGroup('Research papers', _papers.filter(p => match(p.title + ' ' + (p.desc || ''))), paperCard, frag);
+    total += searchGroup('Blogs & explainers', _blogs.filter(s => match(s.title + ' ' + (s.desc || ''))), s => storyCard(s, { noThumb: true }), frag);
+    const toolHits = TOOLS.filter(t => match(t.name + ' ' + t.desc + ' ' + t.tag));
+    if (toolHits.length) {
+      const d = el('div', 'sec-divider');
+      d.innerHTML = `<div class="sec-row"><h3>Tools</h3><div class="line"></div><span style="font-size:0.8rem;color:var(--text-3)">${toolHits.length} result${toolHits.length === 1 ? '' : 's'}</span></div>`;
+      frag.appendChild(d);
+      const grid = el('div', 'tools-grid');
+      toolHits.slice(0, 6).forEach(t => grid.appendChild(toolCard(t)));
+      frag.appendChild(grid);
+      total += toolHits.length;
+    }
+    box.appendChild(frag);
+    const loading = !_loaded.news || !_loaded.research || !_loaded.learn;
+    if (!total) {
+      box.innerHTML = loading
+        ? '<div class="empty">Searching the live feeds…</div>'
+        : '<div class="empty">No matches for “' + esc(_query) + '”. Try a shorter keyword — search covers news, papers, blogs and tools currently in the feed.</div>';
+    }
+  }
+  window.clearSearch = function () {
+    const si = $('#pai-search'); if (si) si.value = '';
+    onSearch('');
   };
 
   // ── NAV ───────────────────────────────────────────────
-  window.go = function (view) {
+  function showView(view) {
     _view = view;
     document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-    $('#view-' + view).classList.add('active');
+    const target = $('#view-' + view); if (target) target.classList.add('active');
     document.querySelectorAll('.tab[data-nav]').forEach(r => r.classList.toggle('active', r.dataset.nav === view));
+    // keep the active tab visible on narrow screens (no scrollIntoView — it
+    // can scroll ancestors; nudge the tab strip's own scrollLeft instead)
+    const tabsEl = $('#tabs'), at = document.querySelector('.tab.active[data-nav]');
+    if (tabsEl && at) {
+      const want = at.offsetLeft - 60;
+      if (want < tabsEl.scrollLeft || at.offsetLeft + at.offsetWidth > tabsEl.scrollLeft + tabsEl.clientWidth) {
+        tabsEl.scrollLeft = Math.max(0, want);
+      }
+    }
+    window.scrollTo({ top: 0, behavior: 'auto' });
+  }
+  window.go = function (view) {
+    // navigating away from search clears the query
+    if (_query) { _query = ''; const si = $('#pai-search'); if (si) si.value = ''; }
+    showView(view);
     if (view === 'research' && !_loaded.research) loadResearch('all');
     if (view === 'learn' && !_loaded.learn) loadLearn();
     if (view === 'tools') renderTools();
-    // keep the active tab scrolled into view on narrow screens
-    const at = document.querySelector('.tab.active[data-nav]');
-    if (at && at.scrollIntoView) { try { at.scrollIntoView({ inline:'nearest', block:'nearest' }); } catch (e) {} }
-    window.scrollTo({ top: 0, behavior: 'auto' });
   };
   window.toggleRail = function () {};
 
@@ -315,6 +451,7 @@
   window.openModal = function (s) {
     _modalUrl = s.url;
     P.bumpReadCount(s.url);
+    if (window.paiAccount) window.paiAccount.record('history', { url: s.url, title: s.title, src: P.srcLabel(s.src) });
     $('#m-src').innerHTML = `<img src="${P.srcFavicon(s.src, s.url)}" alt="" onerror="this.style.visibility='hidden'"/> ${esc(P.srcLabel(s.src))}`;
     const pill = $('#m-pill');
     if (s.topic && s.topic !== 'General') { pill.style.display = 'inline-block'; pill.className = 'pill cat-ai'; pill.textContent = s.topic; }
@@ -335,51 +472,7 @@
   window.copyLink = function () {
     navigator.clipboard.writeText(_modalUrl).then(() => { $('#m-copy').textContent = '✓ Copied'; setTimeout(() => $('#m-copy').textContent = '🔗 Copy', 1800); }).catch(() => toast('Copy failed'));
   };
-  document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeModal(); closeSheet(); $('#theme-menu').classList.remove('open'); $('#sub-menu').classList.remove('open'); $('#lang-menu').classList.remove('open'); } });
-
-  // ── SIGN-IN SHEET ─────────────────────────────────────
-  function userGet() { try { return JSON.parse(localStorage.getItem('pai_user') || 'null'); } catch (e) { return null; } }
-  function userSet(u) { try { localStorage.setItem('pai_user', JSON.stringify(u)); } catch (e) {} renderUser(); }
-  function renderUser() {
-    const u = userGet();
-    if (u) {
-      $('#signin-btn').style.display = 'none';
-      const av = $('#avatar-btn'); av.style.display = 'flex'; av.textContent = (u.name || u.email || '?').trim().charAt(0).toUpperCase();
-    } else { $('#signin-btn').style.display = 'flex'; $('#avatar-btn').style.display = 'none'; }
-  }
-  window.openSheet = function () {
-    const u = userGet(), body = $('#sheet-body');
-    if (u) {
-      $('#sheet-title').textContent = 'Your account';
-      body.innerHTML =
-        `<div class="signed-card">
-           <div class="big-av">${(u.name || u.email).charAt(0).toUpperCase()}</div>
-           <div style="font-weight:500;font-size:1.05rem">${esc(u.name || 'Reader')}</div>
-           <div style="color:var(--text-2);font-size:0.86rem">${esc(u.email)}</div>
-         </div>
-         <p class="lead-copy">You're signed in on this device. Your reading preferences are saved locally.</p>
-         <button class="sheet-btn" style="background:var(--bg-subtle);color:var(--text)" onclick="signOut()">Sign out</button>`;
-    } else {
-      $('#sheet-title').textContent = 'Sign in to PromptAI';
-      body.innerHTML =
-        `<p class="lead-copy">Sign in to personalise your feed and save articles. We only store this on your device.</p>
-         <form onsubmit="return doSignIn(event)">
-           <div class="field"><label>Name</label><input id="si-name" type="text" placeholder="Your name" autocomplete="name"/></div>
-           <div class="field"><label>Email</label><input id="si-email" type="email" placeholder="you@example.com" required autocomplete="email"/></div>
-           <button class="sheet-btn" type="submit">Continue</button>
-         </form>`;
-    }
-    $('#sheet').classList.add('open'); $('#sheet-overlay').classList.add('open');
-  };
-  window.closeSheet = function () { $('#sheet').classList.remove('open'); $('#sheet-overlay').classList.remove('open'); };
-  window.doSignIn = function (e) {
-    e.preventDefault();
-    const name = $('#si-name').value.trim(), email = $('#si-email').value.trim();
-    if (!email) return false;
-    userSet({ name, email }); closeSheet(); toast('Signed in — welcome' + (name ? ', ' + name : '') + '!');
-    return false;
-  };
-  window.signOut = function () { localStorage.removeItem('pai_user'); renderUser(); closeSheet(); toast('Signed out'); };
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeModal(); window.closeSheet && window.closeSheet(); $('#theme-menu').classList.remove('open'); $('#sub-menu').classList.remove('open'); $('#lang-menu').classList.remove('open'); } });
 
   // ── NEWSLETTER ────────────────────────────────────────
   window.doSubscribe = function (e) {
@@ -395,7 +488,6 @@
     return false;
   };
 
-  // ── THEME ─────────────────────────────────────────────
   // ── LANGUAGE (Google Translate driven by our popover) ─────────
   window.toggleLangMenu = function (e) {
     e.stopPropagation();
@@ -441,13 +533,15 @@
     else document.documentElement.setAttribute('data-theme', t);
     try { localStorage.setItem('pai_theme', t); } catch (e) {}
     document.querySelectorAll('.theme-opt').forEach(o => o.classList.toggle('active', o.dataset.theme === t));
-    renderBrandMark(t);
   };
-  function renderBrandMark() {
-    // Canonical PromptAI mark = accent dot + serif wordmark (matches emails & main site).
-    // The dot uses var(--accent), so it follows the active theme automatically.
-    const d = $('#brand-dot'); if (d) d.style.background = 'var(--accent)';
-  }
+
+  // mobile: magnifier button reveals the search bar under the top bar
+  window.toggleMobileSearch = function (e) {
+    if (e) e.stopPropagation();
+    const tb = document.querySelector('.topbar'); if (!tb) return;
+    tb.classList.toggle('search-open');
+    if (tb.classList.contains('search-open')) { const i = $('#pai-search'); if (i) setTimeout(() => i.focus(), 30); }
+  };
 
   // ── TOAST ─────────────────────────────────────────────
   let _toastT;
@@ -491,7 +585,6 @@
     try { saved = localStorage.getItem('pai_theme') || 'default'; } catch (e) {}
     setTheme(saved);
     markActiveLang();
-    renderUser();
     // rail sources
     const railSrc = $('#rail-sources');
     if (railSrc) [['tc','techcrunch.com'],['openai','openai.com'],['hf','huggingface.co'],['google','research.google'],['arxiv','arxiv.org'],['hn','ycombinator.com']]
@@ -511,9 +604,26 @@
     } catch (e) {}
     loadNews();
     loadStats();
-    // warm research + learn in background so Home previews fill in
-    setTimeout(() => { if (!_loaded.research) loadResearch('all'); }, 1200);
-    setTimeout(() => { if (!_loaded.learn) loadLearn(); }, 2200);
+    // home sections load as you scroll toward them (research → blogs → tools)
+    if ('IntersectionObserver' in window) {
+      const lazy = [
+        ['#home-research', () => { if (!_loaded.research) loadResearch('all'); }],
+        ['#home-learn',    () => { if (!_loaded.learn) loadLearn(); }],
+      ];
+      lazy.forEach(([sel, fn]) => {
+        const elx = $(sel); if (!elx) return;
+        const io = new IntersectionObserver(entries => {
+          entries.forEach(en => { if (en.isIntersecting) { io.disconnect(); fn(); } });
+        }, { rootMargin: '400px 0px' });
+        io.observe(elx);
+      });
+      // fallback warms (also keeps search results complete)
+      setTimeout(() => { if (!_loaded.research) loadResearch('all'); }, 6000);
+      setTimeout(() => { if (!_loaded.learn) loadLearn(); }, 8000);
+    } else {
+      setTimeout(() => { if (!_loaded.research) loadResearch('all'); }, 1200);
+      setTimeout(() => { if (!_loaded.learn) loadLearn(); }, 2200);
+    }
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
 })();

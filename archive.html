@@ -53,106 +53,65 @@
 <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,300;0,400;0,500;0,700;1,400&family=Roboto+Serif:opsz,wght@8..144,400;8..144,500;8..144,600&display=swap" rel="stylesheet"/>
 <link rel="stylesheet" href="pai-chrome.css"/>
 <style>
-  :root {
-    --navy:#0a1628; --accent:#1a73e8; --accent-light:#eff6ff;
-    --text:#0f172a; --muted:#94a3b8; --border:#e2e8f0; --surface:#f8fafc;
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Roboto',system-ui,sans-serif; color:var(--text); background:var(--bg); line-height:1.5; -webkit-font-smoothing:antialiased; }
+  a { color:inherit; text-decoration:none; }
+  button { font-family:inherit; cursor:pointer; }
+  ::selection { background:var(--accent-subtle); }
+  :focus-visible { outline:2px solid var(--accent); outline-offset:2px; border-radius:4px; }
+  @media (prefers-reduced-motion:reduce){ *{animation:none!important;transition:none!important;} }
+
+  /* ── CONTROLS ── */
+  .controls { display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin:0 0 6px; }
+  .arch-search { flex:1 1 240px; position:relative; display:flex; align-items:center; }
+  .arch-search svg { position:absolute; left:14px; width:18px; height:18px; fill:var(--text-3); pointer-events:none; }
+  .arch-search input {
+    width:100%; height:42px; border:1px solid var(--border); border-radius:21px; background:var(--card);
+    padding:0 16px 0 42px; font-size:0.9rem; color:var(--text); font-family:inherit;
   }
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: 'Roboto', sans-serif; color: var(--text); background: var(--surface); }
-  h1,h2,h3 { font-family: 'Roboto Serif', serif; }
-  a { color: inherit; text-decoration: none; }
-
-  /* NAV */
-  .legacy-nav { background: rgba(255,255,255,0.95); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); padding: 0 2rem; position: sticky; top: 0; z-index: 100; }
-  .nav-inner { max-width: 1200px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; height: 64px; }
-  .nav-logo { font-family: 'Roboto Serif', serif; font-size: 1.4rem; color: var(--navy); display: flex; align-items: center; gap: 8px; }
-  .logo-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--accent); display: inline-block; }
-  .nav-links { display: flex; gap: 2rem; list-style: none; }
-  .nav-links a { font-size: 0.9rem; font-weight: 500; color: #475569; transition: color 0.2s; }
-  .nav-links a:hover, .nav-links a.active { color: var(--accent); }
-  .nav-cta { background: var(--accent); color: white !important; padding: 7px 18px; border-radius: 8px; }
-  /* account button — kept identical to the home page so the nav never shifts */
-  .user-btn { display:flex;align-items:center;gap:8px;padding:7px 16px;border-radius:8px;font-size:0.85rem;font-weight:500;cursor:pointer;border:none;font-family:'Roboto',sans-serif;transition:all 0.2s; }
-  .user-btn.login { background:#eff6ff;color:#2563eb;border:1px solid #bfdbfe; }
-  .user-btn.login:hover { background:#dbeafe; }
-  .nav-toggle { display: none; background: none; border: none; cursor: pointer; flex-direction: column; justify-content: center; gap: 5px; width: 42px; height: 42px; padding: 9px; border-radius: 8px; }
-  .nav-toggle:hover { background: var(--surface); }
-  .nav-toggle span { display: block; width: 22px; height: 2px; border-radius: 2px; background: var(--text); transition: transform 0.28s ease, opacity 0.2s ease; }
-  #site-nav.open .nav-toggle span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
-  #site-nav.open .nav-toggle span:nth-child(2) { opacity: 0; }
-  #site-nav.open .nav-toggle span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
-
-  /* HEADER */
-  .archive-header { background: var(--bg); border-bottom: 1px solid var(--border-soft); padding: 30px 2rem 26px; }
-  .archive-header-inner { max-width: 1100px; margin: 0 auto; }
-  .archive-header h1 { display:flex; align-items:center; gap:11px; font-size: 1.7rem; color: var(--text); margin-bottom: 8px; letter-spacing:-0.3px; }
-  .archive-header h1 .bar { width:4px; height:26px; border-radius:3px; background:var(--accent); flex:none; }
-  .archive-header p { color: var(--text-2); font-size: 0.95rem; margin-left:15px; }
-  .archive-stats { display: flex; gap: 1rem; margin-top: 1.25rem; flex-wrap: wrap; }
-  .stat { background: var(--bg-subtle); border: 1px solid var(--border-soft); border-radius: 12px; padding: 0.75rem 1.25rem; min-width:120px; }
-  .stat .n { font-family: 'Roboto Serif', serif; font-size: 1.5rem; color: var(--text); font-weight:600; }
-  .stat .l { font-size: 0.76rem; color: var(--text-2); margin-top: 2px; }
-
-  /* CONTROLS */
-  .controls { max-width: 1100px; margin: 2rem auto; padding: 0 2rem; display: flex; gap: 1rem; flex-wrap: wrap; align-items: center; }
-  .search-box { flex: 1; min-width: 240px; position: relative; }
-  .search-box input { width: 100%; padding: 10px 16px 10px 40px; border: 1px solid var(--border); border-radius: 8px; font-size: 0.9rem; font-family: 'Roboto', sans-serif; background: white; outline: none; }
-  .search-box input:focus { border-color: var(--accent); }
-  .search-box::before { content: '🔍'; position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-size: 0.85rem; }
-  .filter-group { display: flex; gap: 0.5rem; flex-wrap: wrap; }
-  .pill { padding: 6px 14px; border-radius: 20px; font-size: 0.82rem; font-weight: 500; cursor: pointer; border: 1px solid var(--border); background: white; color: #475569; transition: all 0.2s; }
-  .pill.active, .pill:hover { background: var(--accent); color: white; border-color: var(--accent); }
-  .sort-select { padding: 8px 14px; border: 1px solid var(--border); border-radius: 8px; font-size: 0.85rem; font-family: 'Roboto', sans-serif; background: white; outline: none; cursor: pointer; color: #475569; }
-
-  /* TIMELINE */
-  .archive-main { max-width: 1100px; margin: 0 auto; padding: 0 2rem 4rem; }
-  .date-group { margin-bottom: 2.5rem; }
-  .date-label { font-size: 0.78rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--accent); margin-bottom: 1rem; display: flex; align-items: center; gap: 10px; }
-  .date-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
-  .articles-row { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px,1fr)); gap: 1rem; }
-  .archive-card { background: white; border: 1px solid var(--border); border-radius: 12px; padding: 1.1rem; cursor: pointer; transition: all 0.2s; }
-  .archive-card:hover { border-color: #93c5fd; transform: translateY(-2px); box-shadow: 0 4px 16px rgba(0,0,0,0.07); }
-  .card-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.6rem; }
-  .source-badge { font-size: 0.7rem; font-weight: 600; padding: 2px 8px; border-radius: 10px; }
-  .type-news  { background:#fff7ed; color:#c2410c; }
-  .type-paper { background:#f0fdf4; color:#15803d; }
-  .type-blog  { background:#eff6ff; color:#1d4ed8; }
-  .card-time { font-size: 0.75rem; color: var(--muted); }
-  .card-title { font-size: 0.92rem; font-weight: 600; color: var(--text); line-height: 1.4; margin-bottom: 0.4rem; }
-  .card-desc { font-size: 0.8rem; color: #475569; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-  .card-footer { margin-top: 0.75rem; display: flex; justify-content: space-between; align-items: center; }
-  .card-domain { font-size: 0.75rem; color: var(--muted); }
-  .card-read { font-size: 0.78rem; color: var(--accent); font-weight: 500; }
-
-  /* EMPTY */
-  .empty { text-align: center; padding: 4rem 2rem; color: var(--muted); }
-  .empty .icon { font-size: 3rem; margin-bottom: 1rem; }
-  .empty h3 { font-size: 1.2rem; color: #475569; margin-bottom: 0.5rem; }
-
-  /* LOAD MORE */
-  .load-more-wrap { text-align: center; margin-top: 2rem; }
-  .load-more-btn { background: none; border: 1px solid var(--border); padding: 10px 28px; border-radius: 8px; font-size: 0.9rem; font-weight: 500; cursor: pointer; color: var(--accent); font-family: 'Roboto', sans-serif; transition: all 0.2s; }
-  .load-more-btn:hover { background: var(--accent-light); }
-
-  @media (max-width: 900px) {
-    .nav-toggle { display: flex; }
-    .nav-links {
-      position: absolute; top: 64px; left: 0; right: 0;
-      flex-direction: column; align-items: stretch; gap: 0;
-      background: #ffffff; border-top: 1px solid var(--border);
-      box-shadow: 0 18px 44px rgba(10,22,40,0.14);
-      padding: 6px 0; margin: 0;
-      max-height: 0; overflow: hidden; opacity: 0; pointer-events: none;
-      transition: max-height 0.32s ease, opacity 0.22s ease;
-    }
-    #site-nav.open .nav-links { max-height: calc(100vh - 64px); overflow-y: auto; opacity: 1; pointer-events: auto; }
-    .nav-links li { width: 100%; }
-    .nav-links li a { display: block; padding: 14px 26px; font-size: 1rem; border-bottom: 1px solid var(--surface); }
-    .nav-links li a:hover { background: var(--surface); }
-    .nav-cta { display: block; text-align: center; margin: 12px 26px 8px; padding: 13px 20px !important; border-bottom: none !important; }
+  .arch-search input::placeholder { color:var(--text-3); }
+  .arch-search input:focus { outline:none; border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-subtle); }
+  .sort-select {
+    height:42px; padding:0 14px; border:1px solid var(--border); border-radius:12px; font-size:0.85rem;
+    font-family:inherit; background:var(--card); outline:none; cursor:pointer; color:var(--text-2);
   }
-  @media (max-width: 600px) {
-    .archive-header h1 { font-size: 1.8rem; }
+
+  /* ── TYPE BADGES ── */
+  .source-badge { font-size:0.7rem; font-weight:600; padding:3px 9px; border-radius:999px; }
+  .type-news  { background:#fef7e0; color:#b06000; }
+  .type-paper { background:#e6f4ea; color:#137333; }
+  .type-blog  { background:#e8f0fe; color:#1967d2; }
+
+  /* ── DATE GROUPS + CARDS ── */
+  .date-group { margin-bottom:8px; }
+  .articles-row { display:grid; grid-template-columns:repeat(2,1fr); gap:12px; }
+  .archive-card {
+    background:var(--card); border:1px solid var(--border-soft); border-radius:12px; box-shadow:var(--shadow);
+    padding:15px 17px; cursor:pointer; transition:box-shadow .15s; display:flex; flex-direction:column; gap:7px;
+  }
+  .archive-card:hover { box-shadow:var(--shadow-hover); }
+  .archive-card:hover .card-title { text-decoration:underline; text-decoration-color:var(--border); text-underline-offset:2px; }
+  .card-top { display:flex; justify-content:space-between; align-items:center; gap:10px; }
+  .card-time { font-size:0.72rem; color:var(--text-3); }
+  .card-title { font-family:var(--serif); font-size:0.96rem; font-weight:500; color:var(--text); line-height:1.38; }
+  .card-desc { font-size:0.8rem; color:var(--text-2); line-height:1.5; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+  .card-footer { margin-top:auto; padding-top:8px; display:flex; justify-content:space-between; align-items:center; }
+  .card-domain { font-size:0.74rem; color:var(--text-3); }
+  .card-read { font-size:0.76rem; color:var(--accent); font-weight:500; }
+
+  /* empty state */
+  .empty .icon { font-size:2.4rem; margin-bottom:0.75rem; }
+  .empty h3 { font-family:var(--serif); font-size:1.15rem; color:var(--text-2); margin-bottom:0.4rem; font-weight:600; }
+
+  /* rail stats */
+  .stat-row { display:flex; align-items:baseline; justify-content:space-between; padding:8px 0; border-bottom:1px solid var(--border-soft); }
+  .stat-row:last-child { border-bottom:none; }
+  .stat-row .v { font-size:1.25rem; font-weight:500; color:var(--text); font-family:var(--serif); }
+  .stat-row .k { font-size:0.8rem; color:var(--text-2); }
+  .rail-jump { width:100%; }
+
+  @media (max-width:700px){
+    .articles-row { grid-template-columns:1fr; }
   }
 </style>
 </head>
@@ -170,6 +129,7 @@
   </div>
   <div class="topbar-spacer"></div>
   <div class="topbar-actions">
+    <button class="icon-btn" id="search-toggle" onclick="toggleMobileSearch(event)" aria-label="Search" title="Search"><svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 1 0-.7.7l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0A4.5 4.5 0 1 1 14 9.5 4.49 4.49 0 0 1 9.5 14z"/></svg></button>
     <button class="icon-btn" onclick="toggleThemeMenu(event)" aria-label="Theme" title="Appearance"><svg viewBox="0 0 24 24"><path d="M12 22a10 10 0 0 1 0-20c5.51 0 10 4.04 10 9 0 3.31-2.69 6-6 6h-1.77c-.28 0-.5.22-.5.5 0 .12.05.23.13.33.41.47.64 1.06.64 1.67A2.5 2.5 0 0 1 12 22zm0-18a8 8 0 0 0 0 16c.28 0 .5-.22.5-.5a.54.54 0 0 0-.14-.35c-.41-.46-.63-1.05-.63-1.65a2.5 2.5 0 0 1 2.5-2.5H16a4 4 0 0 0 4-4c0-3.86-3.59-7-8-7zm-5.5 6a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3zm3-4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3zm5 0a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3z"/></svg></button>
     <button class="icon-btn" id="lang-btn" onclick="toggleLangMenu(event)" aria-label="Language" title="Language"><svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zm6.93 6h-2.95a15.65 15.65 0 0 0-1.38-3.56A8.03 8.03 0 0 1 18.92 8zM12 4.04c.83 1.2 1.48 2.53 1.91 3.96h-3.82c.43-1.43 1.08-2.76 1.91-3.96zM4.26 14C4.1 13.36 4 12.69 4 12s.1-1.36.26-2h3.38c-.08.66-.14 1.32-.14 2 0 .68.06 1.34.14 2H4.26zm.82 2h2.95c.32 1.25.78 2.45 1.38 3.56A7.99 7.99 0 0 1 5.08 16zm2.95-8H5.08a7.99 7.99 0 0 1 4.33-3.56A15.65 15.65 0 0 0 8.03 8zM12 19.96c-.83-1.2-1.48-2.53-1.91-3.96h3.82c-.43 1.43-1.08 2.76-1.91 3.96zM14.34 14H9.66c-.09-.66-.16-1.32-.16-2 0-.68.07-1.35.16-2h4.68c.09.65.16 1.32.16 2 0 .68-.07 1.34-.16 2zm.25 5.56c.6-1.11 1.06-2.31 1.38-3.56h2.95a8.03 8.03 0 0 1-4.33 3.56zM16.36 14c.08-.66.14-1.32.14-2 0-.68-.06-1.34-.14-2h3.38c.16.64.26 1.31.26 2s-.1 1.36-.26 2h-3.38z"/></svg></button>
     <button class="subscribe-cta" id="subscribe-btn" onclick="toggleSubscribe(event)">Subscribe</button>
@@ -181,9 +141,9 @@
 <!-- theme menu -->
 <div class="theme-menu" id="theme-menu">
   <h5>Appearance</h5>
-  <button class="theme-opt" data-theme="default" onclick="setTheme('default')"><span class="sw"><i style="background:#1a73e8"></i><i style="background:#ea4335"></i><i style="background:#fbbc04"></i><i style="background:#34a853"></i></span> Briefing (Google-style)<span class="chk">✓</span></button>
-  <button class="theme-opt" data-theme="promptai" onclick="setTheme('promptai')"><span class="sw"><i style="background:#2563eb"></i><i style="background:#1d4ed8"></i><i style="background:#0a1628"></i></span> PromptAI blue<span class="chk">✓</span></button>
-  <button class="theme-opt" data-theme="slate" onclick="setTheme('slate')"><span class="sw"><i style="background:#0f766e"></i><i style="background:#0d5d57"></i><i style="background:#1c1917"></i></span> Slate &amp; teal<span class="chk">✓</span></button>
+  <button class="theme-opt" data-theme="default" onclick="setTheme('default')"><span class="sw"><i style="background:#1a73e8"></i><i style="background:#ffffff"></i><i style="background:#202124"></i></span> Briefing (clean white)<span class="chk">✓</span></button>
+  <button class="theme-opt" data-theme="promptai" onclick="setTheme('promptai')"><span class="sw"><i style="background:#2563eb"></i><i style="background:#f3f6fc"></i><i style="background:#0a1628"></i></span> PromptAI blue<span class="chk">✓</span></button>
+  <button class="theme-opt" data-theme="slate" onclick="setTheme('slate')"><span class="sw"><i style="background:#0f766e"></i><i style="background:#f7f5f1"></i><i style="background:#1c1917"></i></span> Slate &amp; teal<span class="chk">✓</span></button>
 </div>
 
 <!-- subscribe popover -->
@@ -223,46 +183,90 @@
   <a class="tab active" href="archive.html">Archive</a>
 </nav>
 
-<div class="archive-header">
-  <div class="archive-header-inner">
-    <h1><span class="bar"></span> Archive</h1>
-    <p>Every article, paper and blog post seen on PromptAI — searchable, filterable, browsable by date.</p>
-    <div class="archive-stats">
-      <div class="stat"><div class="n" id="stat-total">0</div><div class="l">Total articles</div></div>
-      <div class="stat"><div class="n" id="stat-sources">0</div><div class="l">Sources</div></div>
-      <div class="stat"><div class="n" id="stat-days">0</div><div class="l">Days of history</div></div>
-      <div class="stat"><div class="n" id="stat-today">0</div><div class="l">Added today</div></div>
+<!-- ════ SHELL ════ -->
+<div class="canvas" data-screen-label="Archive">
+  <main class="main">
+    <div class="sec-title"><span class="bar"></span> Archive</div>
+    <p class="sec-sub">Every article, paper and blog post seen on PromptAI — searchable, filterable, browsable by date.</p>
+
+    <div class="chips" id="type-filters">
+      <button class="chip active" onclick="setType('all',this)">All types</button>
+      <button class="chip" onclick="setType('news',this)">📰 News</button>
+      <button class="chip" onclick="setType('paper',this)">📄 Papers</button>
+      <button class="chip" onclick="setType('blog',this)">✍️ Blogs</button>
     </div>
-  </div>
+
+    <div class="controls">
+      <div class="arch-search">
+        <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 1 0-.7.7l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0A4.5 4.5 0 1 1 14 9.5 4.49 4.49 0 0 1 9.5 14z"/></svg>
+        <input type="text" id="search-input" placeholder="Search the archive…" oninput="applyFilters()"/>
+      </div>
+      <select class="sort-select" id="sort-select" onchange="applyFilters()">
+        <option value="newest">Newest first</option>
+        <option value="oldest">Oldest first</option>
+        <option value="source">By source</option>
+      </select>
+      <select class="sort-select" id="jump-select" onchange="jumpToDate(this.value)" title="Jump to a date">
+        <option value="">⤓ Jump to date…</option>
+      </select>
+    </div>
+
+    <div class="chips" id="source-filters" style="position:static; border-bottom:none; padding:10px 0 4px; margin:0 0 8px;"></div>
+
+    <div id="archive-content"></div>
+    <div class="load-more-wrap">
+      <button class="load-more" id="load-more-archive" style="display:none" onclick="showMoreArchive()">Load more <svg viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg></button>
+    </div>
+  </main>
+
+  <!-- RIGHT RAIL -->
+  <aside class="rightrail">
+    <div class="panel news-promo">
+      <h4>The Briefing</h4>
+      <p>The one story that matters, 5 headlines and the paper everyone's citing — every Tuesday.</p>
+      <form onsubmit="return doRailSubscribe(event)">
+        <input type="email" id="rail-email" placeholder="you@example.com" required/>
+        <button type="submit">Subscribe free</button>
+        <span class="note">No spam. Unsubscribe anytime.</span>
+      </form>
+    </div>
+    <div class="panel">
+      <div class="panel-h"><svg viewBox="0 0 24 24"><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z"/></svg> Archive stats</div>
+      <div class="panel-b">
+        <div class="stat-row"><span class="k">Total articles</span><span class="v" id="stat-total">0</span></div>
+        <div class="stat-row"><span class="k">Sources</span><span class="v" id="stat-sources">0</span></div>
+        <div class="stat-row"><span class="k">Days of history</span><span class="v" id="stat-days">0</span></div>
+        <div class="stat-row"><span class="k">Added today</span><span class="v" id="stat-today">0</span></div>
+      </div>
+    </div>
+    <div class="panel about-panel">
+      <div class="panel-h"><svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg> About PromptAI</div>
+      <div class="panel-b">
+        <p>An independent hub making AI research accessible, understandable and actionable.</p>
+        <ul>
+          <li>Curated paper summaries — no PhD required</li>
+          <li>Honest, hands-on tool reviews</li>
+          <li>Free and open — no paywalls, ever</li>
+        </ul>
+      </div>
+    </div>
+  </aside>
 </div>
 
-<div class="controls">
-  <div class="search-box">
-    <input type="text" id="search-input" placeholder="Search articles, papers, blogs…" oninput="applyFilters()"/>
+<!-- FOOTER -->
+<footer class="site-foot">
+  <div class="site-foot-inner">
+    <span>© 2026 PromptAI · promptai.in</span>
+    <nav>
+      <a href="index.html#news">News</a>
+      <a href="index.html#research">Research</a>
+      <a href="index.html#tools">Tools</a>
+      <a href="education.html">Learn AI</a>
+      <a href="https://twitter.com/promptai_in" target="_blank" rel="noopener">Twitter / X</a>
+    </nav>
+    <span>Content sourced via RSS · all articles © their publishers</span>
   </div>
-  <div class="filter-group" id="type-filters">
-    <button class="pill active" onclick="setType('all',this)">All Types</button>
-    <button class="pill" onclick="setType('news',this)">📰 News</button>
-    <button class="pill" onclick="setType('paper',this)">📄 Papers</button>
-    <button class="pill" onclick="setType('blog',this)">✍️ Blog</button>
-  </div>
-  <div class="filter-group" id="source-filters"></div>
-  <select class="sort-select" id="sort-select" onchange="applyFilters()">
-    <option value="newest">Newest first</option>
-    <option value="oldest">Oldest first</option>
-    <option value="source">By source</option>
-  </select>
-  <select class="sort-select" id="jump-select" onchange="jumpToDate(this.value)" title="Jump to a date">
-    <option value="">⤓ Jump to date…</option>
-  </select>
-</div>
-
-<div class="archive-main">
-  <div id="archive-content"></div>
-  <div class="load-more-wrap">
-    <button class="load-more-btn" id="load-more-archive" style="display:none" onclick="showMoreArchive()">Load more</button>
-  </div>
-</div>
+</footer>
 
 <script>
 // ── ARCHIVE STORAGE ────────────────────────────────────
@@ -329,7 +333,7 @@ function renderArchive(reset) {
       <div class="empty">
         <div class="icon">📭</div>
         <h3>No articles found</h3>
-        <p>Visit the <a href="/" style="color:#2563eb;">home page</a> to load fresh content — it gets archived automatically.</p>
+        <p>Visit the <a href="index.html" style="color:var(--accent);">home page</a> to load fresh content — it gets archived automatically.</p>
       </div>`;
     document.getElementById('load-more-archive').style.display = 'none';
     return;
@@ -349,7 +353,7 @@ function renderArchive(reset) {
     group.className = 'date-group';
     group.dataset.date = date;
     group.id = 'dg-' + date.replace(/[^a-z0-9]/gi, '');
-    group.innerHTML = `<div class="date-label">${date} <span style="color:#94a3b8;font-weight:400;font-size:0.72rem;">(${items.length} articles)</span></div>
+    group.innerHTML = `<div class="sec-divider"><div class="sec-row"><h3>${date}</h3><div class="line"></div><span style="font-size:0.8rem;color:var(--text-3)">${items.length} articles</span></div></div>
       <div class="articles-row" id="row-${date.replace(/\s/g,'_')}"></div>`;
     container.appendChild(group);
     const row = group.querySelector('.articles-row');
@@ -357,7 +361,7 @@ function renderArchive(reset) {
   });
 
   document.getElementById('load-more-archive').style.display =
-    filtered.length > archivePage * PAGE_SIZE ? 'inline-block' : 'none';
+    filtered.length > archivePage * PAGE_SIZE ? 'inline-flex' : 'none';
 }
 
 function renderCard(item) {
@@ -366,7 +370,7 @@ function renderCard(item) {
   card.innerHTML = `
     <div class="card-top">
       <span class="source-badge ${typeClass(item.type)}">${sourceBadge(item.src)}</span>
-      <span class="card-time">${formatDate(item.savedAt)}</span>
+      <span style="display:flex;align-items:center;gap:8px;">${item.topic && item.topic !== 'General' ? `<span style="font-size:0.7rem;color:var(--accent);font-weight:600;">${item.topic}</span>` : ''}<span class="card-time">${formatDate(item.savedAt)}</span></span>
     </div>
     <div class="card-title">${item.title}</div>
     ${item.desc ? `<div class="card-desc">${item.desc}</div>` : ''}
@@ -400,7 +404,7 @@ function applyFilters() {
 
 function setType(type, btn) {
   currentType = type;
-  document.querySelectorAll('#type-filters .pill').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('#type-filters .chip').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   applyFilters();
 }
@@ -411,7 +415,7 @@ function buildSourceFilters() {
   container.innerHTML = '';
   sources.forEach(src => {
     const btn = document.createElement('button');
-    btn.className = 'pill';
+    btn.className = 'chip';
     btn.textContent = sourceBadge(src);
     btn.onclick = () => {
       if (currentSources.has(src)) { currentSources.delete(src); btn.classList.remove('active'); }
@@ -449,10 +453,10 @@ function jumpToDate(label) {
   }
   const el = document.getElementById(id);
   if (el) {
-    const y = el.getBoundingClientRect().top + window.pageYOffset - 80;
+    const y = el.getBoundingClientRect().top + window.pageYOffset - 130;
     window.scrollTo({ top: y, behavior: 'smooth' });
-    el.querySelector('.date-label')?.animate(
-      [{ color: '#2563eb' }, { color: '#0f172a' }], { duration: 1200 });
+    el.querySelector('.sec-divider h3')?.animate(
+      [{ color: 'var(--accent)' }, { color: 'var(--text)' }], { duration: 1200 });
   }
 }
 
@@ -500,32 +504,8 @@ async function fetchServerArchive() {
   if (typeof applyFilters === 'function') applyFilters();
   else { filtered = [...allArchive].sort((a,b)=>(b.savedAt||0)-(a.savedAt||0)); renderArchive(true); populateJump(); }
   updateStats();
+  buildSourceFilters();
 })();
-
-// ── nav account button (matches home; keeps the header identical) ──
-function goAccount() {
-  let s = null; try { s = JSON.parse(localStorage.getItem('pai_session_db') || 'null'); } catch(e) {}
-  location.href = s ? '/' : '/#account';
-}
-(function initNavUser() {
-  let s = null; try { s = JSON.parse(localStorage.getItem('pai_session_db') || 'null'); } catch(e) {}
-  const btn = document.getElementById('nav-user-btn');
-  const label = document.getElementById('nav-user-label');
-  const icon = document.getElementById('nav-user-icon');
-  if (!btn || !s) return;
-  const _n = (s.name || s.email || '').trim();
-  const _p = _n.split(/\s+/).filter(Boolean);
-  const first = _p[0] || 'Account';
-  const initials = (_p.length >= 2 ? (_p[0][0] + _p[1][0]) : _n.slice(0, 2)).toUpperCase();
-  btn.className = 'user-btn';
-  btn.style.cssText = "background:#fff;border:1.5px solid #e2e8f0;color:#0f172a;display:flex;align-items:center;gap:7px;padding:5px 12px 5px 5px;border-radius:20px;cursor:pointer;font-family:'Roboto',sans-serif;font-size:0.85rem;font-weight:600;";
-  if (icon) icon.outerHTML = '<span style="width:26px;height:26px;border-radius:50%;background:#2563eb;color:#fff;display:flex;align-items:center;justify-content:center;font-size:0.8rem;font-weight:700;">' + initials + '</span>';
-  if (label) label.textContent = first;
-})();
-
-// ── Mobile menu (legacy nav removed; guarded no-ops) ──
-function toggleMobileNav() {}
-function closeMobileNav() {}
 </script>
 
 <!-- ════ SIGN-IN SHEET + TOAST (shared chrome) ════ -->
@@ -537,5 +517,6 @@ function closeMobileNav() {}
 <div id="toast"></div>
 <script src="pai-translate.js"></script>
 <script src="pai-chrome.js"></script>
+<script src="pai-account.js"></script>
 </body>
 </html>
