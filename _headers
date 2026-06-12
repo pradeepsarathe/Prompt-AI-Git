@@ -21,10 +21,3 @@
   Cache-Control: public, max-age=604800
 /manifest.webmanifest
   Cache-Control: public, max-age=86400
-
-# Old prototype/backup pages must never be indexed (until removed from the repo)
-/index_classic_backup.html
-  X-Robots-Tag: noindex, nofollow
-
-/promptai_google.html
-  X-Robots-Tag: noindex, nofollow
