@@ -24,24 +24,9 @@
 //   Variable     FROM_EMAIL         e.g.  PromptAI <briefing@promptai.in>
 //   Secret       CRON_SECRET        any long random string
 
-// ── feed sources ─────────────────────────────────────────────────────
-const NEWS_FEEDS = [
-  'https://techcrunch.com/category/artificial-intelligence/feed/',
-  'https://www.theverge.com/ai-artificial-intelligence/rss/index.xml',
-  'https://venturebeat.com/category/ai/feed/',
-  'https://feeds.arstechnica.com/arstechnica/technology-lab',
-];
-const BLOG_FEEDS = [
-  'https://thegradient.pub/rss/',
-  'https://huggingface.co/blog/feed.xml',
-  'https://blog.research.google/feeds/posts/default',
-  'https://www.deeplearning.ai/the-batch/feed/',
-  'https://www.fast.ai/index.xml',
-];
-const PAPER_FEEDS = [
-  'https://rss.arxiv.org/rss/cs.AI',
-  'https://rss.arxiv.org/rss/cs.LG',
-];
+// ── feed sources — single shared module (R2) ────────────────────────
+import { DIGEST_NEWS_FEEDS as NEWS_FEEDS, DIGEST_BLOG_FEEDS as BLOG_FEEDS, DIGEST_PAPER_FEEDS as PAPER_FEEDS } from './lib/sources.js';
+import { fetchFeedItems as libFetchFeedItems, withTimeout, truncate, domainOf, unsubscribeUrl } from './lib/feedlib.js';
 
 export async function onRequest(context) {
   const { request, env } = context;
@@ -97,6 +82,20 @@ export async function onRequest(context) {
   emails = emails.filter(e => e && !e.startsWith('rl:') && !e.startsWith('pending:') && !e.startsWith('meta:'));
   if (emails.length === 0) return json({ sent: 0, message: 'No subscribers yet' });
 
+  // Snapshot today's issue so it's readable (and rankable) on the web at
+  // /issue/<date> — also the "read on the web" target in the email (R21/R39).
+  const issueDate = new Date().toISOString().slice(0, 10);
+  if (env.STATS) {
+    try {
+      const pickF = (s) => ({ title: s.title, url: s.link, desc: (s.desc || '').slice(0, 240), src: s.src, topic: '' });
+      await env.STATS.put('issue:' + issueDate, JSON.stringify({
+        date: issueDate, generatedAt: new Date().toISOString(), summary: null,
+        news: content.news.map(pickF), blogs: content.blogs.map(pickF),
+        paper: content.paper ? pickF(content.paper) : null,
+      }));
+    } catch (e) { /* non-fatal */ }
+  }
+
   // ── send via Resend BATCH (≤100 personalized emails per request) ──
   // One HTTP request per 100 recipients keeps us under Resend's "2 requests/sec"
   // limit (the per-email loop tripped a 429). A short pause between batches
@@ -106,15 +105,17 @@ export async function onRequest(context) {
   let lastResendError = null;
   for (let i = 0; i < emails.length; i += 100) {
     const chunk = emails.slice(i, i + 100);
-    const batch = chunk.map((email) => {
-      const unsub = 'https://promptai.in/unsubscribe?email=' + encodeURIComponent(email);
+    const batch = await Promise.all(chunk.map(async (email) => {
+      // HMAC-signed unsubscribe link (R17) — anyone WITHOUT the secret can
+      // no longer unsubscribe arbitrary addresses.
+      const unsub = await unsubscribeUrl(env, email);
       return {
         from: env.FROM_EMAIL,
         to: [email],
         subject,
-        html: digestHtml({ ...content, dateStr, email }),
+        html: digestHtml({ ...content, dateStr, email, unsubUrl: unsub, issueDate, sponsorHtml: env.SPONSOR_HTML || '' }),
         // Plain-text alternative — HTML-only mail scores worse with spam filters.
-        text: digestText({ ...content, dateStr, email }),
+        text: digestText({ ...content, dateStr, email, unsubUrl: unsub, issueDate }),
         // One-click unsubscribe — now required by Gmail/Yahoo for bulk senders and
         // a meaningful inbox-placement signal.
         headers: {
@@ -122,7 +123,7 @@ export async function onRequest(context) {
           'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
         },
       };
-    });
+    }));
     try {
       const r = await fetch('https://api.resend.com/emails/batch', {
         method: 'POST',
@@ -154,151 +155,20 @@ export async function onRequest(context) {
   }
 }
 
-// ── feed fetch ───────────────────────────────────────────────────────
-// A Cloudflare Function can fetch RSS DIRECTLY (no browser CORS), so we parse
-// the XML ourselves. rss2json is only a last-resort fallback because its free
-// tier rate-limits datacenter IPs (which made every feed come back empty).
+// ── feed fetch — shared machinery lives in lib/feedlib.js (R2) ──────
 async function fetchFeedItems(feed, take) {
-  const direct = await fetchDirect(feed, take);
-  if (direct.length) return direct;
-  return fetchViaRss2json(feed, take);
+  const items = await libFetchFeedItems(feed, take);
+  // The digest templates expect { title, link, desc, img, src, date }.
+  return items.map(i => ({
+    title: i.title, link: i.link,
+    desc: truncate(i.desc || '', 160),
+    img: i.img || '', date: i.date,
+    src: (i.feedTitle || domainOf(feed)),
+  }));
 }
 
-// 1) Direct fetch + lightweight XML parse (RSS <item> and Atom <entry>).
-async function fetchDirect(feed, take) {
-  const ac = new AbortController();
-  const t = setTimeout(() => ac.abort(), 7000);
-  try {
-    const r = await fetch(feed, {
-      signal: ac.signal,
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (compatible; PromptAI/1.0; +https://promptai.in)',
-        'Accept': 'application/rss+xml, application/atom+xml, application/xml, text/xml, */*',
-      },
-    });
-    if (!r.ok) return [];
-    const xml = await r.text();
-    if (!xml || xml.length < 100) return [];
-    const header = xml.split(/<item[\s>]/i)[0] || xml;
-    const src = (decodeEntities(tagText(header, 'title')) || domainOf(feed)).replace(/\s*[-–|].*$/, '').trim();
-    return parseFeed(xml, take).map(i => ({ ...i, src }));
-  } catch (e) { return []; }
-  finally { clearTimeout(t); }
-}
-
-// 2) Fallback proxy (kept for feeds that block direct datacenter requests).
-async function fetchViaRss2json(feed, take) {
-  const ac = new AbortController();
-  const t = setTimeout(() => ac.abort(), 7000);
-  try {
-    const r = await fetch('https://api.rss2json.com/v1/api.json?rss_url=' + encodeURIComponent(feed),
-      { signal: ac.signal });
-    const data = await r.json();
-    if (data.status === 'ok' && data.items?.length) {
-      const src = (data.feed?.title || domainOf(feed)).replace(/\s*[-–|].*$/, '').trim();
-      return data.items.slice(0, take).map(item => ({
-        title: (item.title || '').trim(),
-        link: item.link || item.guid || '',
-        desc: truncate((item.description || item.content || '').replace(/<[^>]+>/g, '').trim(), 160),
-        img: cleanImg(item.thumbnail || item.enclosure?.link || firstImgIn(item.content || item.description || '')),
-        src,
-        date: item.pubDate ? new Date(item.pubDate) : new Date(0),
-      }));
-    }
-  } catch (e) { /* ignore */ }
-  finally { clearTimeout(t); }
-  return [];
-}
-
-// ── tiny XML helpers (no DOMParser in Workers) ───────────────────────
-function tagText(block, name) {
-  const m = block.match(new RegExp('<' + name + '[^>]*>([\\s\\S]*?)<\\/' + name + '>', 'i'));
-  return m ? m[1] : '';
-}
-function decodeEntities(s) {
-  return (s || '')
-    .replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, '$1')
-    .replace(/<[^>]+>/g, ' ')
-    .replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>')
-    .replace(/&quot;/g, '"').replace(/&#0*39;|&apos;/g, "'")
-    .replace(/&#(\d+);/g, (_, n) => String.fromCharCode(+n))
-    .replace(/&#x([0-9a-f]+);/gi, (_, n) => String.fromCharCode(parseInt(n, 16)))
-    .replace(/\s+/g, ' ').trim();
-}
-
-// ── image extraction ─────────────────────────────────────────────────
-// Pull the best image URL from a raw RSS <item>/<entry> block. RSS feeds
-// stash images in a half-dozen different places, so we try them in order of
-// reliability and fall back to "" (the email then renders a gradient poster).
-function pickImage(block) {
-  if (!block) return '';
-  const cands = [];
-  let m;
-  // media:content / media:thumbnail url="..."
-  const mediaRe = /<media:(?:content|thumbnail)\b[^>]*\burl=["']([^"']+)["']/gi;
-  while ((m = mediaRe.exec(block))) cands.push(m[1]);
-  // <enclosure url="..." type="image/..."> (or url that looks like an image)
-  const encRe = /<enclosure\b[^>]*>/gi;
-  while ((m = encRe.exec(block))) {
-    const tag = m[0];
-    const um = tag.match(/\burl=["']([^"']+)["']/i);
-    if (um && (/type=["']image\//i.test(tag) || isImgUrl(um[1]))) cands.push(um[1]);
-  }
-  // <itunes:image href="..."> and <image><url>...</url></image>
-  m = block.match(/<itunes:image\b[^>]*\bhref=["']([^"']+)["']/i); if (m) cands.push(m[1]);
-  m = block.match(/<image\b[^>]*>[\s\S]*?<url>([\s\S]*?)<\/url>/i);  if (m) cands.push(m[1]);
-  // first <img src="..."> anywhere (content:encoded / description CDATA)
-  const imgRe = /<img\b[^>]*\bsrc=["']([^"']+)["']/gi;
-  while ((m = imgRe.exec(block))) cands.push(m[1]);
-  for (const c of cands) {
-    const u = cleanImg(c);
-    if (u) return u;
-  }
-  return '';
-}
-function cleanImg(u) {
-  if (!u) return '';
-  u = decodeEntities(String(u)).trim();
-  if (u.startsWith('//')) u = 'https:' + u;
-  if (!/^https?:\/\//i.test(u)) return '';
-  // Skip tracking pixels, spacers, avatars and tiny/animated junk.
-  if (/feedburner|doubleclick|googlesyndication|\/pixel|1x1|spacer|gravatar|\.svg(\?|$)/i.test(u)) return '';
-  return u;
-}
-function isImgUrl(u) { return /\.(jpe?g|png|webp|avif|gif)(\?|$)/i.test(u || ''); }
-function firstImgIn(html) {
-  const m = (html || '').match(/<img\b[^>]*\bsrc=["']([^"']+)["']/i);
-  return m ? m[1] : '';
-}
-
-function parseFeed(xml, take) {
-  const isRss = /<item[\s>]/i.test(xml);
-  const chunks = xml.split(isRss ? /<item[\s>]/i : /<entry[\s>]/i).slice(1);
-  const out = [];
-  for (const block of chunks) {
-    const title = decodeEntities(tagText(block, 'title'));
-    let link = decodeEntities(tagText(block, 'link'));
-    if (!link || /^https?:/.test(link) === false) {
-      const lm = block.match(/<link[^>]*href=["']([^"']+)["']/i);
-      if (lm) link = lm[1];
-    }
-    const descRaw = tagText(block, 'description') || tagText(block, 'summary') || tagText(block, 'content');
-    const desc = truncate(decodeEntities(descRaw), 160);
-    const img = pickImage(block);
-    const dt = tagText(block, 'pubDate') || tagText(block, 'published') || tagText(block, 'updated') || tagText(block, 'dc:date');
-    if (title && link) out.push({ title, link, desc, img, date: dt ? new Date(dt) : new Date(0) });
-    if (out.length >= take) break;
-  }
-  return out;
-}
-
-// Resolve a promise but never wait longer than `ms` (returns `fallback`).
-function withTimeout(promise, ms, fallback) {
-  return Promise.race([
-    promise,
-    new Promise(res => setTimeout(() => res(fallback), ms)),
-  ]);
-}
+// (fetchDirect / fetchViaRss2json / XML + image helpers / parseFeed /
+//  withTimeout all moved to functions/lib/feedlib.js — shared with /api/feeds.)
 
 async function mergeFeeds(feeds, perFeed, total) {
   const out = [];
@@ -372,8 +242,9 @@ function sectionHeader(kicker, meta) {
       <div style="height:1px;background:#e8eaed;margin-top:12px;"></div></td></tr>`;
 }
 
-export function digestHtml({ news = [], blogs = [], paper = null, dateStr, email }) {
-  const unsub = 'https://promptai.in/unsubscribe?email=' + encodeURIComponent(email || '');
+export function digestHtml({ news = [], blogs = [], paper = null, dateStr, email, unsubUrl, issueDate, sponsorHtml }) {
+  const unsub = unsubUrl || ('https://promptai.in/unsubscribe?email=' + encodeURIComponent(email || ''));
+  const webUrl = issueDate ? ('https://promptai.in/issue/' + issueDate) : 'https://promptai.in';
 
   // Top story drives the hero; the rest fill the news list.
   const hero = news[0] || blogs[0] || null;
@@ -428,6 +299,7 @@ export function digestHtml({ news = [], blogs = [], paper = null, dateStr, email
       </tr></table></td></tr>
 
     ${heroBlock}
+    ${sponsorHtml ? `<tr><td style="padding:18px 36px 0;">${sponsorHtml}</td></tr>` : ''}
     ${newsRows ? sectionHeader('📰 &nbsp;Top AI News', `${newsList.length} stories`) + newsRows : ''}
     ${blogRows ? sectionHeader('✍️ &nbsp;Blogs &amp; Deep Dives', 'Hand-picked') + blogRows : ''}
     ${paperBlock}
@@ -438,6 +310,10 @@ export function digestHtml({ news = [], blogs = [], paper = null, dateStr, email
       </td></tr></table></td></tr>
     <tr><td align="center" style="padding:12px 36px 4px;font-family:Helvetica,Arial,sans-serif;font-size:12px;color:#80868b;">The site updates daily. This briefing lands every Tuesday.</td></tr>
 
+    <tr><td align="center" style="padding:18px 36px 0;font-family:Helvetica,Arial,sans-serif;font-size:12.5px;line-height:1.7;color:#5f6368;">
+      📨 <strong>Forwarded this email?</strong> <a href="https://promptai.in/#newsletter" style="color:#1a73e8;text-decoration:none;font-weight:bold;">Get your own copy free →</a><br/>
+      Found it useful? <a href="https://twitter.com/intent/tweet?url=${encodeURIComponent(webUrl)}&text=${encodeURIComponent("Today's AI briefing from @promptai_in")}" style="color:#1a73e8;text-decoration:none;font-weight:bold;">Share it on 𝕏</a> &nbsp;·&nbsp; <a href="${esc(webUrl)}" style="color:#1a73e8;text-decoration:none;font-weight:bold;">Read this issue on the web</a></td></tr>
+
     <tr><td align="center" style="padding:18px 36px 0;font-family:Helvetica,Arial,sans-serif;font-size:12px;color:#5f6368;">
       <a href="https://promptai.in/#news" style="color:#1a73e8;text-decoration:none;font-weight:bold;">News</a> &nbsp;·&nbsp;
       <a href="https://promptai.in/#research" style="color:#1a73e8;text-decoration:none;font-weight:bold;">Research</a> &nbsp;·&nbsp;
@@ -447,7 +323,7 @@ export function digestHtml({ news = [], blogs = [], paper = null, dateStr, email
     <tr><td style="padding:26px 36px 30px;border-top:1px solid #e8eaed;font-family:Helvetica,Arial,sans-serif;font-size:12px;line-height:1.7;color:#80868b;text-align:center;">
       <div style="font-family:Georgia,serif;font-size:15px;color:#202124;margin-bottom:6px;">PromptAI</div>
       You're getting this because you subscribed at promptai.in.<br/>
-      <a href="${unsub}" style="color:#1a73e8;text-decoration:underline;">Unsubscribe</a> &nbsp;·&nbsp; <a href="https://promptai.in" style="color:#1a73e8;text-decoration:underline;">Read on the web</a></td></tr>
+      <a href="${unsub}" style="color:#1a73e8;text-decoration:underline;">Unsubscribe</a> &nbsp;·&nbsp; <a href="${esc(webUrl)}" style="color:#1a73e8;text-decoration:underline;">Read on the web</a></td></tr>
 
   </table>
   <div style="font-family:Helvetica,Arial,sans-serif;font-size:11px;color:#9aa0a6;padding:16px 0 0;">© 2026 PromptAI · promptai.in</div>
@@ -458,8 +334,9 @@ export function digestHtml({ news = [], blogs = [], paper = null, dateStr, email
 // A readable text/plain version of the briefing. Sent alongside the HTML so
 // spam filters see a multipart message (HTML-only mail is penalised) and
 // text-only / accessibility clients still get the full content.
-export function digestText({ news = [], blogs = [], paper = null, dateStr, email }) {
-  const unsub = 'https://promptai.in/unsubscribe?email=' + encodeURIComponent(email || '');
+export function digestText({ news = [], blogs = [], paper = null, dateStr, email, unsubUrl, issueDate }) {
+  const unsub = unsubUrl || ('https://promptai.in/unsubscribe?email=' + encodeURIComponent(email || ''));
+  const webUrl = issueDate ? ('https://promptai.in/issue/' + issueDate) : 'https://promptai.in';
   const hero = news[0] || blogs[0] || null;
   const newsList = news[0] ? news.slice(1) : news;
   const lines = [];
@@ -494,6 +371,8 @@ export function digestText({ news = [], blogs = [], paper = null, dateStr, email
     lines.push('');
   }
   lines.push('Open the live feed: https://promptai.in');
+  lines.push('Read this issue on the web: ' + webUrl);
+  lines.push('Forwarded this? Get your own copy: https://promptai.in/#newsletter');
   lines.push('');
   lines.push("You're getting this because you subscribed at promptai.in.");
   lines.push('Unsubscribe: ' + unsub);
@@ -503,8 +382,6 @@ export function digestText({ news = [], blogs = [], paper = null, dateStr, email
 // Back-compat alias for older imports.
 export const blogDigestHtml = ({ blogs, dateStr, email }) => digestHtml({ blogs, dateStr, email });
 
-function truncate(s, n) { s = s || ''; return s.length > n ? s.slice(0, n - 1).trim() + '…' : s; }
-function domainOf(u) { try { return new URL(u).hostname.replace('www.', ''); } catch (e) { return u; } }
 function json(obj, status = 200) {
   return new Response(JSON.stringify(obj, null, 2), {
     status,

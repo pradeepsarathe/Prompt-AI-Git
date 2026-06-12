@@ -2,72 +2,39 @@
 // Cloudflare Pages Function — Live RSS feed for PromptAI
 // Accessible at: /feed and /feed.xml (via _redirects)
 // Subscribe URL for Buffer/Feedly/Zapier: https://promptai.in/feed.xml
+//
+// Now served from the shared KV feed cache (R1) — one KV read instead
+// of re-fetching HN/arXiv/TechCrunch on every hit. Falls back to a
+// minimal live fetch only when the cache is cold.
+
+import { readFeedPayload, fetchHNStories, fetchPapers, withTimeout } from './lib/feedlib.js';
+import { SRC_META } from './lib/sources.js';
 
 export async function onRequest(context) {
-  const items = [];
-  const aiKw = /\b(AI|LLM|GPT|claude|gemini|llama|transformer|machine learning|deep learning|neural|openai|anthropic|mistral|diffusion|RAG|agent|chatbot|copilot|inference|embedding)\b/i;
+  const { env } = context;
+  let items = [];
 
-  // ── 1. Hacker News top AI stories ──────────────────────────────
-  try {
-    const hnRes = await fetch('https://hacker-news.firebaseio.com/v0/topstories.json',
-      { signal: AbortSignal.timeout(6000) });
-    const ids = (await hnRes.json()).slice(0, 40);
-    const stories = await Promise.all(
-      ids.map(id =>
-        fetch(`https://hacker-news.firebaseio.com/v0/item/${id}.json`,
-          { signal: AbortSignal.timeout(4000) })
-          .then(r => r.json()).catch(() => null)
-      )
-    );
-    stories
-      .filter(s => s && s.title && aiKw.test(s.title))
-      .slice(0, 12)
-      .forEach(s => items.push({
-        title: s.title,
-        link:  s.url || `https://news.ycombinator.com/item?id=${s.id}`,
-        desc:  `${s.score || 0} points on Hacker News · ${s.descendants || 0} comments`,
-        date:  new Date((s.time || Date.now() / 1000) * 1000).toUTCString(),
-        cat:   'Hacker News',
-      }));
-  } catch (e) { /* silent */ }
-
-  // ── 2. arXiv cs.AI + cs.LG + cs.CL ────────────────────────────
-  try {
-    const r = await fetch(
-      'https://api.rss2json.com/v1/api.json?rss_url=' +
-      encodeURIComponent('https://rss.arxiv.org/rss/cs.AI+cs.LG+cs.CL'),
-      { signal: AbortSignal.timeout(8000) }
-    );
-    const data = await r.json();
-    if (data.status === 'ok' && data.items?.length) {
-      data.items.slice(0, 8).forEach(item => items.push({
-        title: (item.title || '').replace(/\[.*?\]/g, '').trim(),
-        link:  item.link || item.guid || '',
-        desc:  (item.description || '').replace(/<[^>]+>/g, '').trim().slice(0, 400),
-        date:  item.pubDate ? new Date(item.pubDate).toUTCString() : new Date().toUTCString(),
-        cat:   'arXiv Paper',
-      }));
-    }
-  } catch (e) { /* silent */ }
-
-  // ── 3. TechCrunch AI ───────────────────────────────────────────
-  try {
-    const r = await fetch(
-      'https://api.rss2json.com/v1/api.json?rss_url=' +
-      encodeURIComponent('https://techcrunch.com/category/artificial-intelligence/feed/'),
-      { signal: AbortSignal.timeout(8000) }
-    );
-    const data = await r.json();
-    if (data.status === 'ok' && data.items?.length) {
-      data.items.slice(0, 5).forEach(item => items.push({
-        title: (item.title || '').trim(),
-        link:  item.link || '',
-        desc:  (item.description || '').replace(/<[^>]+>/g, '').trim().slice(0, 400),
-        date:  item.pubDate ? new Date(item.pubDate).toUTCString() : new Date().toUTCString(),
-        cat:   'TechCrunch',
-      }));
-    }
-  } catch (e) { /* silent */ }
+  const payload = env.STATS ? await readFeedPayload(env.STATS) : null;
+  if (payload && (payload.news.length + payload.papers.length) > 0) {
+    payload.news.slice(0, 22).forEach(s => items.push({
+      title: s.title, link: s.url, desc: s.desc || '',
+      date: s.ts ? new Date(s.ts).toUTCString() : new Date().toUTCString(),
+      cat: (SRC_META[s.src] && SRC_META[s.src].label) || s.src || 'News',
+    }));
+    payload.papers.slice(0, 8).forEach(p => items.push({
+      title: p.title, link: p.url, desc: p.desc || '',
+      date: p.date ? new Date(p.date).toUTCString() : new Date().toUTCString(),
+      cat: 'arXiv Paper',
+    }));
+  } else {
+    // Cold-cache fallback: one light live pass.
+    const [hn, papers] = await Promise.all([
+      withTimeout(fetchHNStories(10), 8000, []),
+      withTimeout(fetchPapers('all', 8), 8000, []),
+    ]);
+    hn.forEach(s => items.push({ title: s.title, link: s.url, desc: s.desc || `${s.score || 0} points on Hacker News`, date: new Date(s.ts || Date.now()).toUTCString(), cat: 'Hacker News' }));
+    papers.forEach(p => items.push({ title: p.title, link: p.url, desc: p.desc || '', date: new Date().toUTCString(), cat: 'arXiv Paper' }));
+  }
 
   // Sort newest first, dedupe by link
   const seen = new Set();
