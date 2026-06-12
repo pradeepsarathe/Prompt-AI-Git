@@ -80,7 +80,28 @@ export async function onRequest(context) {
   // Never treat bookkeeping keys as subscribers: rate limits ("rl:"),
   // unconfirmed double-opt-in signups ("pending:"), ops metadata ("meta:").
   emails = emails.filter(e => e && !e.startsWith('rl:') && !e.startsWith('pending:') && !e.startsWith('meta:'));
-  if (emails.length === 0) return json({ sent: 0, message: 'No subscribers yet' });
+
+  // ── Frequency filter (review #3/#8) ──
+  //   ?freq=daily  → only subscribers who chose the daily briefing
+  //   ?freq=weekly → weekly subscribers (the default for everyone who never chose)
+  //   no ?freq=    → everyone (legacy behaviour; existing cron keeps working)
+  // Cron setup: keep the Tuesday schedule and add &freq=weekly to it, then add
+  // a daily schedule with &freq=daily.
+  const wantFreq = (url.searchParams.get('freq') || '').trim().toLowerCase();
+  if (!single && (wantFreq === 'daily' || wantFreq === 'weekly') && env.SUBSCRIBERS) {
+    const keep = [];
+    for (let i = 0; i < emails.length; i += 50) {
+      const chunk = emails.slice(i, i + 50);
+      const recs = await Promise.all(chunk.map(e => env.SUBSCRIBERS.get(e).catch(() => null)));
+      recs.forEach((raw, k) => {
+        let f = 'weekly';
+        try { const d = JSON.parse(raw || '{}'); if (d.frequency === 'daily') f = 'daily'; } catch (e) {}
+        if (f === wantFreq) keep.push(chunk[k]);
+      });
+    }
+    emails = keep;
+  }
+  if (emails.length === 0) return json({ sent: 0, message: 'No subscribers yet' + (wantFreq ? ' for freq=' + wantFreq : '') });
 
   // Snapshot today's issue so it's readable (and rankable) on the web at
   // /issue/<date> — also the "read on the web" target in the email (R21/R39).

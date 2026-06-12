@@ -492,7 +492,7 @@
     try {
       const already = sessionStorage.getItem('pai_visit_sent');
       const r = await fetch('/stats', already ? { method: 'GET' } : {
-        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ visit: true }),
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'visit', visit: true }),
       });
       const data = await r.json();
       if (!already) sessionStorage.setItem('pai_visit_sent', '1');
@@ -501,12 +501,20 @@
   }
   function bumpReadCount(url) {
     try {
-      fetch('/stats', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ read: url || true }) }).catch(() => {});
+      fetch('/stats', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'read', read: url || true }) }).catch(() => {});
     } catch (e) {}
   }
-  async function subscribe(email) {
+  // Funnel events (review #10) — fire-and-forget named counters.
+  // Read back with GET /stats?events=YYYY-MM-DD.
+  function event(name) {
+    try {
+      fetch('/stats', { method: 'POST', keepalive: true, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'event', name }) }).catch(() => {});
+    } catch (e) {}
+  }
+  async function subscribe(email, frequency) {
     const r = await fetch('/subscribe', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email }),
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(frequency ? { email, frequency } : { email }),
     });
     return r.json();
   }
@@ -519,6 +527,6 @@
     loadPayload, getSummary, getMeta,
     srcLabel, srcColor, srcFavicon, classifyTopic,
     storyMs, timeAgo, domainOf, summarizeContent, rankStories,
-    syncStats, bumpReadCount, subscribe,
+    syncStats, bumpReadCount, subscribe, event,
   };
 })();

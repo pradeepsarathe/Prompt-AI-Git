@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Page not found — PromptAI</title>
+<meta name="robots" content="noindex"/>
+<meta name="color-scheme" content="light dark"/>
+<script>/* pre-paint theme — same logic as the rest of the site */
+(function(){try{var t=localStorage.getItem('pai_theme')||'auto';
+if(t==='auto')t=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'default';
+if(t!=='default')document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
+<style>
+  :root {
+    --accent:#1a73e8; --accent-2:#1967d2; --accent-subtle:#e8f0fe;
+    --bg:#ffffff; --bg-subtle:#f1f3f4; --text:#202124; --text-2:#5f6368; --text-3:#80868b;
+    --border:#dadce0; --border-soft:#e8eaed; --card:#ffffff;
+    --serif:'Roboto Serif',Georgia,serif;
+  }
+  :root[data-theme="promptai"] { --accent:#2563eb; --accent-2:#1d4ed8; --accent-subtle:#dbeafe; --bg:#f3f6fc; --bg-subtle:#e7edf8; --card:#ffffff; --text:#0a1628; --text-2:#44546e; --text-3:#8294ad; --border:#ccd8ea; --border-soft:#dde6f3; }
+  :root[data-theme="slate"] { --accent:#0f766e; --accent-2:#0d5d57; --accent-subtle:#d8efe9; --bg:#f7f5f1; --bg-subtle:#edeae3; --card:#fffefb; --text:#1c1917; --text-2:#57534e; --text-3:#a8a29e; --border:#d6d1c7; --border-soft:#e5e1d8; }
+  :root[data-theme="dark"] { --accent:#8ab4f8; --accent-2:#aecbfa; --accent-subtle:#1f3658; --bg:#17181c; --bg-subtle:#222327; --card:#1e1f24; --text:#e8eaed; --text-2:#9aa0a6; --text-3:#7d818a; --border:#3c4043; --border-soft:#2d2f33; color-scheme:dark; }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:Roboto,system-ui,sans-serif; background:var(--bg); color:var(--text); min-height:100vh; display:flex; align-items:center; justify-content:center; padding:24px; line-height:1.5; }
+  .wrap { max-width:480px; width:100%; text-align:center; }
+  .brand { display:inline-flex; align-items:center; gap:9px; margin-bottom:34px; text-decoration:none; color:var(--text); }
+  .brand svg { width:30px; height:30px; display:block; }
+  .brand b { font-family:var(--serif); font-size:1.45rem; font-weight:600; letter-spacing:-0.3px; }
+  .brand b i { color:var(--accent); font-style:normal; }
+  .code { font-family:var(--serif); font-size:5rem; font-weight:600; letter-spacing:-2px; color:var(--accent); line-height:1; }
+  h1 { font-family:var(--serif); font-size:1.5rem; font-weight:600; margin:12px 0 8px; }
+  p { color:var(--text-2); font-size:0.95rem; margin-bottom:26px; }
+  form { position:relative; margin-bottom:22px; }
+  form svg { position:absolute; left:16px; top:13px; width:20px; height:20px; fill:var(--text-3); pointer-events:none; }
+  input { width:100%; height:46px; border:1px solid var(--border); background:var(--card); border-radius:23px; padding:0 18px 0 46px; font-size:0.95rem; color:var(--text); }
+  input:focus { outline:none; border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-subtle); }
+  .links { display:flex; flex-wrap:wrap; justify-content:center; gap:8px; }
+  .links a { display:inline-flex; align-items:center; height:36px; padding:0 16px; border:1px solid var(--border); border-radius:18px; background:var(--card); color:var(--accent); font-size:0.86rem; font-weight:500; text-decoration:none; }
+  .links a:hover { background:var(--accent-subtle); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="brand" href="/" aria-label="PromptAI home">
+    <svg viewBox="0 0 32 32"><rect x="1.5" y="1.5" width="29" height="29" rx="8" fill="var(--accent)"></rect><path d="M9.5 10.5 14.5 16l-5 5.5" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"></path><line x1="16.5" y1="21.5" x2="23" y2="21.5" stroke="#fff" stroke-width="2.4" stroke-linecap="round"></line></svg>
+    <b>Prompt<i>AI</i></b>
+  </a>
+  <div class="code">404</div>
+  <h1>This page wandered off</h1>
+  <p>The link may be old, or the page moved. Search the archive, or jump back into the briefing.</p>
+  <form action="/archive.html" method="get">
+    <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 1 0-.7.7l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0A4.5 4.5 0 1 1 14 9.5 4.49 4.49 0 0 1 9.5 14z"></path></svg>
+    <input type="search" name="q" placeholder="Search AI news, papers, prompts…" aria-label="Search the archive"/>
+  </form>
+  <div class="links">
+    <a href="/">Today's briefing</a>
+    <a href="/issues">Past issues</a>
+    <a href="/prompts.html">Prompts</a>
+    <a href="/education.html">Learn AI</a>
+    <a href="/archive.html">Archive</a>
+  </div>
+</div>
+</body>
+</html>

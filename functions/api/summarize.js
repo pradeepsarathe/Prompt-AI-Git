@@ -34,19 +34,47 @@ async function urlHash(u) {
   return [...new Uint8Array(buf)].slice(0, 12).map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
+// ── SSRF guard (review #6) — only public http(s) hostnames may be fetched.
+// Rejects IP-literal hosts (v4 + v6), localhost / internal-looking names and
+// userinfo URLs; every redirect hop is re-validated (capped at 3 redirects).
+function safeRemoteUrl(raw) {
+  let u;
+  try { u = new URL(raw); } catch (e) { return null; }
+  if (u.protocol !== 'http:' && u.protocol !== 'https:') return null;
+  if (u.username || u.password) return null;
+  const h = (u.hostname || '').toLowerCase().replace(/\.$/, '');
+  if (!h || !h.includes('.')) return null;                    // bare names: localhost, kv, metadata…
+  if (h.startsWith('[') || h.includes(':')) return null;      // any IPv6 literal
+  if (/^\d{1,3}(\.\d{1,3}){3}$/.test(h)) return null;         // any IPv4 literal — articles live on hostnames
+  if (/(^|\.)(localhost|local|internal|home\.arpa|in-addr\.arpa)$/.test(h)) return null;
+  return u;
+}
+
 // Fetch the article and pull readable paragraph text out of the HTML.
 async function fetchArticleText(url) {
   try {
-    const ctrl = new AbortController();
-    const t = setTimeout(() => ctrl.abort(), 6000);
-    const r = await fetch(url, {
-      signal: ctrl.signal,
-      redirect: 'follow',
-      headers: { 'User-Agent': 'Mozilla/5.0 (compatible; PromptAI-Summarizer/1.0; +https://promptai.in)' },
-      cf: { cacheTtl: 3600, cacheEverything: true },
-    });
-    clearTimeout(t);
-    if (!r.ok) return '';
+    let target = safeRemoteUrl(url);
+    if (!target) return '';
+    let r = null;
+    for (let hop = 0; hop < 4; hop++) {
+      const ctrl = new AbortController();
+      const t = setTimeout(() => ctrl.abort(), 6000);
+      r = await fetch(target.toString(), {
+        signal: ctrl.signal,
+        redirect: 'manual',
+        headers: { 'User-Agent': 'Mozilla/5.0 (compatible; PromptAI-Summarizer/1.0; +https://promptai.in)' },
+        cf: { cacheTtl: 3600, cacheEverything: true },
+      });
+      clearTimeout(t);
+      if (r.status >= 301 && r.status <= 308) {
+        const loc = r.headers.get('location') || '';
+        target = safeRemoteUrl(new URL(loc, target).toString());
+        if (!target) return '';
+        continue;
+      }
+      break;
+    }
+    if (!r || !r.ok) return '';
     const ct = r.headers.get('content-type') || '';
     if (!ct.includes('text/html') && !ct.includes('application/xhtml')) return '';
     let html = (await r.text()).slice(0, 600000);
@@ -81,6 +109,7 @@ export async function onRequest(context) {
   const title = String(body.title || '').slice(0, 300);
   const desc = String(body.desc || '').slice(0, 2000);
   if (!url || !title || !/^https?:\/\//.test(url)) return json({ error: 'url and title required' }, 400);
+  if (!safeRemoteUrl(url)) return json({ error: 'URL not allowed' }, 400);
 
   const key = 'sum:' + await urlHash(url);
 

@@ -1,19 +1,29 @@
 # NEXT SESSION
 
-## State (2026-06-12)
-`deploy-2026-06-11-v2/` is the complete package — push its CONTENTS to the
-repo root of `pradeepsarathe/Prompt-AI-Git`, then walk ACTIONS_REQUIRED.md
-(AI binding, UNSUB_SECRET, 30-min cron for /api/refresh-feeds, uptime monitor,
-analytics token, delete dead artifacts).
+## State (2026-06-12, evening)
+The "Fix Pack" from *PromptAI Platform Review v2* is implemented in this
+project's root + `functions/` — push these files to the repo root of
+`pradeepsarathe/Prompt-AI-Git`:
 
-The entire R1–R44 punch list is implemented except items deliberately skipped:
-- D1 migration (kept KV; races fixed via single-writer aggregator)
-- Monetization/Pro tier (skipped per decision)
-- Affiliate IDs (structure ready: `?ref=promptai` + `aff` field in tools.json)
+  index.html, 404.html, pai-google-ui.js, pai-feed-engine.js, pai-account.js,
+  functions/subscribe.js, functions/confirm.js, functions/send-digest.js,
+  functions/stats.js, functions/api/summarize.js, functions/api/refresh-feeds.js
+
+See `PromptAI Fix Pack — June 12.html` for the full change list.
+
+## Manual actions after deploy
+1. **Cron**: edit the weekly send-digest schedule → append `&freq=weekly`;
+   add a NEW daily schedule (e.g. 07:00 IST) with `&freq=daily`.
+   (Without `freq`, a run emails everyone — legacy behaviour.)
+2. Funnel numbers: `GET /stats?events=YYYY-MM-DD` (modal_open,
+   subscribe_submit/success, sample_issue_click, explain_click, search_used).
+3. Still manual & still the top priority (review #1/#2): GSC + Bing
+   submission, DISCOVERABILITY.md checklist, content cadence.
 
 ## Ideas for next time
-- Backfill a few /issue pages by hand-running refresh-feeds daily
-- Email previews in `emails/` are stale vs the new digest template — regenerate
-- Refactor inline event handlers → enable a strict CSP in `_headers`
-- Topic pages: add pagination from cold archive segments
-- Consider D1 if KV list costs grow (subscriber counting is O(n) listing)
+- Refactor inline event handlers → enable a strict CSP in `_headers`,
+  then move sessions to HttpOnly cookies (review #6 second half).
+- Web push for the daily summary (SW already shipped; needs VAPID keys).
+- D1 migration → full-text archive search (review P2).
+- Welcome sequence (3 emails) + dormant win-back.
+- Email previews in `emails/` are stale vs the digest template — regenerate.

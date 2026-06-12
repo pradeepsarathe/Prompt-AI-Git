@@ -471,6 +471,22 @@ if(t!=='default')document.documentElement.setAttribute('data-theme',t);}catch(e)
   @keyframes sweep { to { transform:translateX(100%); } }
   .empty { text-align:center; color:var(--text-3); padding:60px 20px; font-size:0.9rem; }
 
+  /* ════ FIX PACK (June 12) ════ */
+  .skip-link { position:absolute; left:-9999px; top:0; z-index:100; background:var(--accent); color:#fff; padding:10px 18px; border-radius:0 0 10px 0; font-weight:600; font-size:0.9rem; }
+  .skip-link:focus { left:0; }
+  .new-since { display:inline-block; margin-left:10px; padding:2px 10px; border-radius:12px; background:var(--accent-subtle); color:var(--accent); font-size:0.74rem; font-weight:600; vertical-align:1px; white-space:nowrap; }
+  .freq-row { display:flex; gap:6px; }
+  .freq-row label { flex:1; display:flex; align-items:center; justify-content:center; gap:6px; height:36px; border:1px solid var(--border); border-radius:10px; font-size:0.78rem; color:var(--text-2); cursor:pointer; }
+  .freq-row label:has(input:checked) { border-color:var(--accent); color:var(--accent); background:var(--accent-subtle); font-weight:600; }
+  .freq-row input { accent-color:var(--accent); margin:0; }
+  .search-suggest { display:none; position:absolute; top:50px; left:0; right:0; background:var(--card); border:1px solid var(--border-soft); border-radius:14px; box-shadow:var(--shadow-hover); padding:6px; z-index:70; }
+  .search-suggest.open { display:flex; flex-direction:column; }
+  .search-suggest button { display:flex; align-items:center; gap:9px; width:100%; padding:9px 12px; border:none; background:none; border-radius:9px; text-align:left; font-size:0.88rem; color:var(--text); cursor:pointer; }
+  .search-suggest button:hover { background:var(--bg-subtle); }
+  .search-suggest .sg-op { color:var(--accent); font-weight:500; }
+  .search-suggest .sg-item span { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .foryou-note { font-size:0.74rem; color:var(--text-3); margin:0 0 4px; }
+
   /* ════ RESPONSIVE ════ */
   @media (max-width:1120px){ .canvas{ grid-template-columns:minmax(0,1fr); } .rightrail{ display:none; } }
   @media (max-width:900px){
@@ -513,6 +529,8 @@ if(t!=='default')document.documentElement.setAttribute('data-theme',t);}catch(e)
 </head>
 <body>
 
+<a class="skip-link" href="#main">Skip to content</a>
+
 <!-- ════ TOP BAR ════ -->
 <header class="topbar">
   <a class="brand" href="#" onclick="go('home');return false;" aria-label="PromptAI home" data-no-translate>
@@ -524,6 +542,7 @@ if(t!=='default')document.documentElement.setAttribute('data-theme',t);}catch(e)
   <div class="search-wrap">
     <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 1 0-.7.7l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0A4.5 4.5 0 1 1 14 9.5 4.49 4.49 0 0 1 9.5 14z"/></svg>
     <input id="pai-search" type="search" placeholder="Search AI news, papers, tools…" autocomplete="off" oninput="onSearch(this.value)" onkeydown="if(event.key==='Enter')this.blur()"/>
+    <div class="search-suggest" id="search-suggest"></div>
   </div>
   <div class="topbar-spacer"></div>
   <div class="topbar-actions">
@@ -573,12 +592,16 @@ if(t!=='default')document.documentElement.setAttribute('data-theme',t);}catch(e)
 <!-- subscribe popover -->
 <div class="sub-menu" id="sub-menu">
   <h5>Get the briefing</h5>
-  <p class="sub-lead">The one story that matters, 5 headlines and the paper everyone's citing — every Tuesday.</p>
+  <p class="sub-lead">The day's AI, distilled: an AI-written summary, the stories and paper that matter, and a prompt worth stealing.</p>
   <form onsubmit="return doTopSubscribe(event)">
     <input id="top-email" type="email" placeholder="you@example.com" required aria-label="Email"/>
+    <div class="freq-row" role="radiogroup" aria-label="How often">
+      <label><input type="radio" name="sub-freq" value="weekly" checked="checked"/> Weekly · Tue</label>
+      <label><input type="radio" name="sub-freq" value="daily"/> Daily</label>
+    </div>
     <button type="submit">Subscribe free</button>
   </form>
-  <p class="sub-note">No spam. Unsubscribe anytime.</p>
+  <p class="sub-note">No spam. Unsubscribe anytime. · <a href="/issues" style="color:var(--accent)" onclick="window.PAI&&PAI.event&&PAI.event('sample_issue_click')">Read a sample briefing →</a></p>
 </div>
 
 <!-- language popover -->
@@ -614,11 +637,11 @@ if(t!=='default')document.documentElement.setAttribute('data-theme',t);}catch(e)
 <div class="shell">
   <!-- MAIN + RIGHT RAIL -->
   <div class="canvas">
-    <main class="main">
+    <main class="main" id="main">
       <!-- HOME -->
       <section class="view active" id="view-home">
         <h1 class="sec-title"><span class="bar"></span> Your briefing</h1>
-        <p class="sec-sub">The AI world right now — top story, latest research, and what to read next.</p>
+        <p class="sec-sub">Live AI news, research explained in plain English, and prompts that actually work — free, no paywall.</p>
         <div id="home-summary"></div>
         <!--SSR:HOME-->
         <div id="home-lead"></div>
@@ -689,7 +712,7 @@ if(t!=='default')document.documentElement.setAttribute('data-theme',t);}catch(e)
       <!-- SEARCH RESULTS -->
       <section class="view" id="view-search">
         <h1 class="sec-title"><span class="bar"></span> Search results</h1>
-        <p class="sec-sub">Matches for “<span id="search-q"></span>” across news, research papers, blogs and tools. <a href="#" onclick="clearSearch();return false;" style="color:var(--accent);font-weight:500">Clear search</a></p>
+        <p class="sec-sub">Matches for “<span id="search-q"></span>” across news, research papers, blogs and tools. Refine with <code>topic:agents</code> or <code>source:techcrunch</code>. <a href="#" onclick="clearSearch();return false;" style="color:var(--accent);font-weight:500">Clear search</a></p>
         <div id="search-list"></div>
       </section>
     </main>
@@ -703,7 +726,7 @@ if(t!=='default')document.documentElement.setAttribute('data-theme',t);}catch(e)
           <input type="email" id="promo-email" placeholder="you@example.com" required/>
           <button type="submit">Subscribe free</button>
           <span class="note" data-social-proof>No spam. Unsubscribe anytime.</span>
-          <span class="note"><a href="/issues" style="color:var(--accent)">Read a sample issue →</a></span>
+          <span class="note"><a href="/issues" style="color:var(--accent)" onclick="window.PAI&&PAI.event&&PAI.event('sample_issue_click')">Read a sample issue →</a></span>
         </form>
       </div>
       <!-- Sponsorship slot (R42) — stays hidden until a sponsor exists.
@@ -718,6 +741,10 @@ if(t!=='default')document.documentElement.setAttribute('data-theme',t);}catch(e)
       <div class="panel">
         <div class="panel-h"><svg viewBox="0 0 24 24"><path d="m16 6 2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z"/></svg> Trending now</div>
         <div class="panel-b" id="trend-panel"><div class="empty" style="padding:20px">Loading…</div></div>
+      </div>
+      <div class="panel" id="foryou-panel" hidden>
+        <div class="panel-h"><svg viewBox="0 0 24 24"><path d="M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg> For you</div>
+        <div class="panel-b"><p class="foryou-note" id="foryou-topics"></p><div id="foryou-list"></div></div>
       </div>
       <div class="panel">
         <div class="panel-h"><svg viewBox="0 0 24 24"><path d="M12 2 4 5v6c0 5 3.4 9.7 8 11 4.6-1.3 8-6 8-11V5l-8-3z"/></svg> Top sources</div>

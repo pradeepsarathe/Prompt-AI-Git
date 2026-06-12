@@ -167,6 +167,12 @@
     if (u) {
       $('#sheet-title').textContent = 'Your account';
       const d = getData();
+      const rows = {
+        saved:    x => itemRows(x.saved, 'at', 'Tap the bookmark on any story to keep it here.'),
+        liked:    x => itemRows(x.liked, 'at', 'Tap the heart on stories you love — likes shape your “For you” picks.'),
+        learning: x => itemRows(x.learning, 'learnedAt', 'Courses and guides you open on <a href="education.html" style="color:var(--accent)">Learn AI</a> appear here.'),
+        history:  x => itemRows(x.history, 'at', 'Stories you open are saved here so you can find them again.'),
+      };
       body.innerHTML =
         '<div class="signed-card">' +
           '<div class="big-av">' + esc((u.name || u.email).charAt(0).toUpperCase()) + '</div>' +
@@ -174,16 +180,23 @@
           '<div style="color:var(--text-2);font-size:0.86rem">' + esc(u.email) + '</div>' +
           (u.local ? '<div class="acct-offline">Device-only — account backend unreachable</div>' : '') +
         '</div>' +
+        '<h4 class="acct-h">🔖 Saved stories</h4>' +
+        '<div id="acct-saved">' + rows.saved(d) + '</div>' +
+        '<h4 class="acct-h">❤️ Liked</h4>' +
+        '<div id="acct-liked">' + rows.liked(d) + '</div>' +
         '<h4 class="acct-h">🎓 Continue learning</h4>' +
-        '<div id="acct-learning">' + itemRows(d.learning, 'learnedAt', 'Courses and guides you open on <a href="education.html" style="color:var(--accent)">Learn AI</a> appear here.') + '</div>' +
+        '<div id="acct-learning">' + rows.learning(d) + '</div>' +
         '<h4 class="acct-h">🕐 Recently read</h4>' +
-        '<div id="acct-history">' + itemRows(d.history, 'at', 'Stories you open are saved here so you can find them again.') + '</div>' +
-        '<button class="sheet-btn" style="background:var(--bg-subtle);color:var(--text);margin-top:22px" onclick="signOut()">Sign out</button>';
-      // refresh from the backend, then re-render the two lists in place
+        '<div id="acct-history">' + rows.history(d) + '</div>' +
+        '<h4 class="acct-h">⚙️ Your data</h4>' +
+        '<p class="acct-empty">Saves, likes and history sync to every device you sign in on. Your saves also power the “For you” picks on the homepage.</p>' +
+        '<button class="sheet-btn" style="background:var(--bg-subtle);color:var(--text);margin-top:14px" onclick="paiExportData()">Download my data (JSON)</button>' +
+        '<button class="sheet-btn" style="background:var(--bg-subtle);color:var(--text);margin-top:10px" onclick="signOut()">Sign out</button>';
+      // refresh from the backend, then re-render the lists in place
       pullData().then(fresh => {
-        const l = $('#acct-learning'), h = $('#acct-history');
-        if (l) l.innerHTML = itemRows(fresh.learning, 'learnedAt', 'Courses and guides you open on <a href="education.html" style="color:var(--accent)">Learn AI</a> appear here.');
-        if (h) h.innerHTML = itemRows(fresh.history, 'at', 'Stories you open are saved here so you can find them again.');
+        [['#acct-saved', 'saved'], ['#acct-liked', 'liked'], ['#acct-learning', 'learning'], ['#acct-history', 'history']].forEach(([sel, k]) => {
+          const n = $(sel); if (n) n.innerHTML = rows[k](fresh);
+        });
       });
     } else {
       $('#sheet-title').textContent = 'Sign in to PromptAI';
@@ -265,6 +278,25 @@
     if (token) api({ action: 'logout', token }).catch(() => {});
     setSession(null, '');
     closeSheet(); say('Signed out');
+  };
+
+  // ── export my data (review #9) — saves/likes/history/learning as JSON ──
+  window.paiExportData = function () {
+    try {
+      const d = getData();
+      const s = getSession();
+      const blob = new Blob([JSON.stringify({
+        exportedAt: new Date().toISOString(),
+        account: s ? s.email : 'guest',
+        data: d,
+      }, null, 2)], { type: 'application/json' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'promptai-data.json';
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+      say('Exported your PromptAI data');
+    } catch (e) { say('Export failed — try again'); }
   };
 
   // ── password reset ──────────────────────────────

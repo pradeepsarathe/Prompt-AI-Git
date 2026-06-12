@@ -25,20 +25,31 @@ import { unsubscribeUrl } from './lib/feedlib.js';
 
 const PENDING_TTL = 60 * 60 * 24 * 7; // unconfirmed signups expire after 7 days
 
-const json = (obj, status = 200) =>
+// ── CORS: only our own origins may call this endpoint (review #6 — was '*';
+// now consistent with auth.js). Same allow-list as functions/auth.js. ──
+function corsOrigin(request) {
+  const o = request.headers.get('Origin') || '';
+  if (/^https:\/\/(www\.)?promptai\.in$/.test(o)) return o;
+  if (/^https:\/\/[\w-]+\.pages\.dev$/.test(o)) return o;       // CF preview deploys
+  if (/^http:\/\/localhost(:\d+)?$/.test(o)) return o;          // local dev
+  return 'https://promptai.in';
+}
+
+const mkJson = (origin) => (obj, status = 200, extra = {}) =>
   new Response(JSON.stringify(obj), {
     status,
-    headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
+    headers: Object.assign({ 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': origin }, extra),
   });
 
 export async function onRequest(context) {
   const { request, env } = context;
+  const json = mkJson(corsOrigin(request));
 
   // CORS preflight
   if (request.method === 'OPTIONS') {
     return new Response(null, {
       headers: {
-        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Origin': corsOrigin(request),
         'Access-Control-Allow-Methods': 'POST, OPTIONS',
         'Access-Control-Allow-Headers': 'Content-Type',
       },
@@ -50,18 +61,23 @@ export async function onRequest(context) {
   try {
     let email = '';
     let honeypot = '';
+    let frequency = '';
     const contentType = request.headers.get('content-type') || '';
 
     if (contentType.includes('application/json')) {
       const body = await request.json();
       email = body.email || '';
       honeypot = body.website || '';
+      frequency = body.frequency || '';
     } else {
       const body = await request.text();
       const params = new URLSearchParams(body);
       email = params.get('email') || '';
       honeypot = params.get('website') || '';
+      frequency = params.get('frequency') || '';
     }
+    // Frequency choice (review #3/#8): 'daily' or 'weekly'; anything else → weekly.
+    frequency = frequency === 'daily' ? 'daily' : 'weekly';
 
     // ── Honeypot: real users never fill the hidden "website" field. If it's
     // populated, silently pretend success so the bot gets no signal. ──
@@ -82,10 +98,7 @@ export async function onRequest(context) {
       try {
         const count = parseInt(await env.SUBSCRIBERS.get(rlKey) || '0', 10);
         if (count >= 5) {
-          return new Response(JSON.stringify({ error: 'Too many requests — please try again later.' }), {
-            status: 429,
-            headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*', 'Retry-After': '3600' },
-          });
+          return json({ error: 'Too many requests — please try again later.' }, 429, { 'Retry-After': '3600' });
         }
         await env.SUBSCRIBERS.put(rlKey, String(count + 1), { expirationTtl: 3600 });
       } catch (e) { /* fail open */ }
@@ -103,11 +116,24 @@ export async function onRequest(context) {
       return json({ success: true, message: 'Subscribed!', emailSent, emailError });
     }
 
-    // ── Already an ACTIVE subscriber → nothing to do ──
+    // ── Already an ACTIVE subscriber → update frequency if they chose a new one ──
     const active = await env.SUBSCRIBERS.get(email);
     if (active) {
+      let rec = {};
+      try { rec = JSON.parse(active) || {}; } catch (e) {}
+      const cur = rec.frequency === 'daily' ? 'daily' : 'weekly';
+      if (frequency !== cur) {
+        rec.frequency = frequency;
+        rec.frequencyUpdatedAt = new Date().toISOString();
+        if (!rec.email) rec.email = email;
+        await env.SUBSCRIBERS.put(email, JSON.stringify(rec));
+        return json({ success: true, alreadySubscribed: true, frequency,
+          message: frequency === 'daily'
+            ? 'Switched you to the daily briefing — starting tomorrow.'
+            : 'Switched you to the weekly digest — see you Tuesday!' });
+      }
       return json({ success: true, alreadySubscribed: true,
-        message: 'You’re already subscribed — see you Tuesday!' });
+        message: 'You’re already subscribed — see you in your inbox!' });
     }
 
     // ── Pending or new → (re)issue the confirmation link ──
@@ -118,7 +144,7 @@ export async function onRequest(context) {
     } catch (e) {}
     if (!token) token = crypto.randomUUID().replace(/-/g, '');
     await env.SUBSCRIBERS.put('pending:' + email,
-      JSON.stringify({ token, at: new Date().toISOString() }),
+      JSON.stringify({ token, at: new Date().toISOString(), frequency }),
       { expirationTtl: PENDING_TTL });
 
     let emailSent = false;

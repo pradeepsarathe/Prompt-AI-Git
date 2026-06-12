@@ -35,7 +35,7 @@ export async function onRequest(context) {
     // Already active? (clicked the link twice)
     const active = await env.SUBSCRIBERS.get(email);
     if (active) {
-      return htmlPage("You're all set", `<b>${escapeHtml(email)}</b> is already confirmed. Your briefing arrives every Tuesday.`, true);
+      return htmlPage("You're all set", `<b>${escapeHtml(email)}</b> is already confirmed. Your briefing is on its way.`, true);
     }
 
     const rawPending = await env.SUBSCRIBERS.get('pending:' + email);
@@ -48,12 +48,14 @@ export async function onRequest(context) {
       return htmlPage('Invalid link', 'This confirmation link doesn’t match our records. Subscribe again on the site and use the newest email.', false);
     }
 
-    // ── Activate ──
+    // ── Activate ── (frequency chosen at signup carries over — review #3/#8)
+    const frequency = pending.frequency === 'daily' ? 'daily' : 'weekly';
     await env.SUBSCRIBERS.put(email, JSON.stringify({
       email,
       subscribedAt: pending.at || new Date().toISOString(),
       confirmedAt: new Date().toISOString(),
       source: 'promptai.in (double opt-in)',
+      frequency,
     }));
     await env.SUBSCRIBERS.delete('pending:' + email);
 
@@ -93,8 +95,8 @@ export async function onRequest(context) {
       "You're subscribed 🎉",
       `<b>${escapeHtml(email)}</b> is confirmed.` +
       (firstSent
-        ? ' Your first briefing is on its way to your inbox right now — then every Tuesday.'
-        : ' Your first briefing arrives on Tuesday.'),
+        ? ' Your first briefing is on its way to your inbox right now.'
+        : ' Your first briefing arrives with the next send.'),
       true
     );
   } catch (err) {

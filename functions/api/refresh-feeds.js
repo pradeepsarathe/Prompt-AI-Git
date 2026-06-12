@@ -17,7 +17,13 @@
 //   5. Snapshots today's briefing → /issue/<YYYY-MM-DD> pages (R21/R39)
 // ═══════════════════════════════════════════════════════════════════
 
-import { buildFeedPayload, mergeIntoArchive, readFeedPayload, FEEDS_KEY } from '../lib/feedlib.js';
+import { buildFeedPayload, mergeIntoArchive, readFeedPayload, FEEDS_KEY, aiStorySummary } from '../lib/feedlib.js';
+
+// Same cache key derivation as /api/summarize — pre-warmed entries are hits there.
+async function urlHash(u) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(u));
+  return [...new Uint8Array(buf)].slice(0, 12).map(b => b.toString(16).padStart(2, '0')).join('');
+}
 
 const json = (obj, status = 200) =>
   new Response(JSON.stringify(obj, null, 2), {
@@ -79,13 +85,31 @@ export async function onRequest(context) {
     };
     await env.STATS.put('issue:' + day, JSON.stringify(issue));
 
+    // Pre-generate per-story AI summaries for the top stories (review quick
+    // win): the first reader of a top story gets an instant summary instead
+    // of a 2–5s wait. Cache key matches /api/summarize; capped per run so a
+    // cron tick never burns the AI quota.
+    let preSummaries = 0;
+    if (env.AI) {
+      try {
+        const candidates = payload.news.slice(0, 12).filter(s => s.url && (s.desc || '').length >= 200);
+        for (const s of candidates) {
+          if (preSummaries >= 6) break;
+          const key = 'sum:' + await urlHash(s.url);
+          if (await env.STATS.get(key)) continue;
+          const sum = await aiStorySummary(env, s.title, s.desc);
+          if (sum) { await env.STATS.put(key, sum, { expirationTtl: 60 * 60 * 24 * 30 }); preSummaries++; }
+        }
+      } catch (e) { /* non-fatal — readers fall back to on-demand generation */ }
+    }
+
     // Health breadcrumb for /health (R9/R41).
     await env.STATS.put('meta:feedsLastRun', JSON.stringify({
       at: new Date().toISOString(), ms: Date.now() - startedAt, counts,
-      summary: !!payload.summary, archive: arch,
+      summary: !!payload.summary, archive: arch, preSummaries,
     }));
 
-    return json({ success: true, ms: Date.now() - startedAt, counts, summary: !!payload.summary, archive: arch, issue: day });
+    return json({ success: true, ms: Date.now() - startedAt, counts, summary: !!payload.summary, archive: arch, issue: day, preSummaries });
   } catch (err) {
     return json({ error: 'refresh-feeds crashed', detail: String(err && err.message || err) }, 200);
   }

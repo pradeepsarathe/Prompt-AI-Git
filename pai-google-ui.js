@@ -115,6 +115,7 @@
       }
     }
     if (btn) syncActBtns(s.url);
+    renderForYou();
   };
   const SAVE_SVG = '<svg viewBox="0 0 24 24"><path d="M17 3H7a2 2 0 0 0-2 2v16l7-3 7 3V5a2 2 0 0 0-2-2z"/></svg>';
   const LIKE_SVG = '<svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>';
@@ -338,7 +339,7 @@
     _news = P.rankStories(stories, _popular);
     _loaded.news = true;
     archiveStories(_news, 'news');
-    renderNews(); renderHome(); renderTrending();
+    renderNews(); renderHome(); renderTrending(); renderForYou();
     if (_query) renderSearch();
   }
   function newsTopics() {
@@ -387,11 +388,72 @@
       const li = pickLead(_news);
       const lb = $('#home-lead'); lb.innerHTML = ''; lb.appendChild(leadCard(_news[li]));
       fill($('#home-top'), _news.filter((_, i) => i !== li).slice(0, 5), s => storyCard(s));
+      renderNewSince();
     }
     if (_papers.length) fill($('#home-research'), _papers.slice(0, 3), paperCard);
     if (_blogs.length) fill($('#home-learn'), _blogs.slice(0, 3), s => storyCard(s));
     const ht = $('#home-tools');
     if (ht && !ht.children.length) fill(ht, TOOLS.slice(0, 4), toolCard);
+  }
+
+  // ── "N new since your last visit" (review #3) — a small return-visit cue.
+  //    The stamp updates once per browser session, so reloads keep the count.
+  let _newSinceShown = false;
+  function renderNewSince() {
+    if (_newSinceShown || !_news.length) return;
+    let last = 0;
+    try { last = parseInt(localStorage.getItem('pai_last_visit') || '0', 10) || 0; } catch (e) {}
+    try {
+      if (!sessionStorage.getItem('pai_visit_stamped')) {
+        sessionStorage.setItem('pai_visit_stamped', '1');
+        localStorage.setItem('pai_last_visit', String(Date.now()));
+      }
+    } catch (e) {}
+    if (!last || Date.now() - last < 30 * 60 * 1000) return;   // same sitting — skip
+    const n = _news.filter(s => P.storyMs(s) > last).length;
+    if (n < 3) return;
+    const sub = document.querySelector('#view-home .sec-sub');
+    if (!sub || sub.querySelector('.new-since')) return;
+    const chip = el('span', 'new-since');
+    chip.textContent = n + ' new since your last visit';
+    sub.appendChild(chip);
+    _newSinceShown = true;
+  }
+
+  // ── "FOR YOU" (review #5) — visible personalization from data we already
+  //    have: topics inferred from saved (×3), liked (×2) and read (×1) titles.
+  function topInterests() {
+    try {
+      const d = window.paiAccount ? window.paiAccount.getData() : null;
+      if (!d) return [];
+      const counts = {};
+      [['saved', 3], ['liked', 2], ['history', 1]].forEach(([k, w]) =>
+        (d[k] || []).slice(0, 60).forEach(x => {
+          const t = P.classifyTopic(x.title || '', '');
+          if (t !== 'General') counts[t] = (counts[t] || 0) + w;
+        }));
+      return Object.entries(counts).filter(([, n]) => n >= 3)
+        .sort((a, b) => b[1] - a[1]).slice(0, 2).map(([t]) => t);
+    } catch (e) { return []; }
+  }
+  function renderForYou() {
+    const panel = $('#foryou-panel'); if (!panel) return;
+    const topics = topInterests();
+    if (!topics.length) { panel.hidden = true; return; }
+    const read = new Set((((window.paiAccount && window.paiAccount.getData()) || {}).history || []).map(x => x.url));
+    const pool = _news.concat(_blogs).filter(s => topics.includes(s.topic) && !read.has(s.url)).slice(0, 5);
+    if (pool.length < 2) { panel.hidden = true; return; }
+    panel.hidden = false;
+    const note = $('#foryou-topics');
+    if (note) note.textContent = 'Because you read ' + topics.join(' & ') + ' stories';
+    const box = $('#foryou-list'); if (!box) return;
+    box.innerHTML = '';
+    pool.forEach(s => {
+      const d = el('div', 'trend-item');
+      d.innerHTML = '<div><h5>' + esc(s.title) + '</h5><span>' + esc(P.srcLabel(s.src)) + ' · ' + esc(s.topic || '') + '</span></div>';
+      actionable(d, () => openModal(s), s.title);
+      box.appendChild(d);
+    });
   }
 
   // ── RESEARCH ──────────────────────────────────────────
@@ -425,7 +487,7 @@
     try { _blogs = await P.fetchBlogs(); } catch (e) { _blogs = []; }
     _loaded.deepdives = true;
     archiveStories(_blogs, 'blog');
-    renderDeepdives(); renderHome();
+    renderDeepdives(); renderHome(); renderForYou();
     if (_query) renderSearch();
   }
   function renderDeepdives() {
@@ -469,11 +531,78 @@
     });
   }
 
-  // ── SEARCH (dedicated results view across everything) ─
-  function match(text) { return (text || '').toLowerCase().includes(_query); }
+  // ── SEARCH v2 (review #4) — source:/topic: operators, ranked results
+  //    (title > excerpt, boosted by recency and what readers actually open),
+  //    plus lightweight suggestions under the search box. ─
+  function parseQuery(raw) {
+    const f = { words: [], source: '', topic: '' };
+    (raw || '').toLowerCase().split(/\s+/).forEach(t => {
+      if (t.startsWith('source:')) f.source = t.slice(7);
+      else if (t.startsWith('topic:')) f.topic = t.slice(6);
+      else if (t) f.words.push(t);
+    });
+    return f;
+  }
+  function scoreItem(s, f) {
+    if (f.source) {
+      const label = (P.srcLabel(s.src) || '').toLowerCase();
+      if ((s.src || '').toLowerCase() !== f.source && !label.replace(/\s+/g, '').includes(f.source.replace(/\s+/g, ''))) return 0;
+    }
+    if (f.topic) {
+      const t = (s.topic || s.cat || '').toLowerCase();
+      if (!t.startsWith(f.topic)) return 0;
+    }
+    let score = 1;
+    const title = (s.title || '').toLowerCase(), desc = (s.desc || '').toLowerCase();
+    for (const w of f.words) {
+      if (title.includes(w)) score += 3;
+      else if (desc.includes(w)) score += 1;
+      else return 0;                        // AND semantics across words
+    }
+    const age = Date.now() - P.storyMs(s);
+    if (age > 0 && age < 24 * 3600e3) score *= 1.5;          // today
+    else if (age > 0 && age < 7 * 24 * 3600e3) score *= 1.2; // this week
+    score += Math.min(2, (_popular[s.url] || 0) * 0.2);      // reader signal
+    return score;
+  }
+  function rankHits(list, f) {
+    return list.map(s => [scoreItem(s, f), s]).filter(x => x[0] > 0)
+      .sort((a, b) => b[0] - a[0]).map(x => x[1]);
+  }
+  // suggestions: operator shortcuts + matching headlines, under the box
+  function renderSuggest(q) {
+    const box = $('#search-suggest'); if (!box) return;
+    if (!q || q.length < 2 || q.includes(':')) { box.classList.remove('open'); box.innerHTML = ''; return; }
+    const sugg = [];
+    newsTopics().slice(1).filter(t => t.toLowerCase().startsWith(q)).slice(0, 2)
+      .forEach(t => sugg.push({ label: 'topic: ' + t, q: 'topic:' + t.toLowerCase() }));
+    const srcs = {};
+    _news.concat(_blogs).forEach(s => { if (s.src) srcs[s.src] = P.srcLabel(s.src); });
+    Object.entries(srcs).filter(([, v]) => (v || '').toLowerCase().includes(q)).slice(0, 2)
+      .forEach(([k, v]) => sugg.push({ label: 'source: ' + v, q: 'source:' + k }));
+    const f = parseQuery(q);
+    const titles = rankHits(_news.concat(_papers, _blogs), f).slice(0, 4);
+    box.innerHTML = '';
+    sugg.forEach(g => {
+      const b = el('button', 'sg-op'); b.type = 'button'; b.textContent = g.label;
+      b.onmousedown = (ev) => { ev.preventDefault(); const si = $('#pai-search'); if (si) si.value = g.q; onSearch(g.q); };
+      box.appendChild(b);
+    });
+    titles.forEach(s => {
+      const b = el('button', 'sg-item'); b.type = 'button';
+      b.innerHTML = '<svg viewBox="0 0 24 24" width="15" height="15" style="fill:var(--text-3);flex:none"><path d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 1 0-.7.7l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0A4.5 4.5 0 1 1 14 9.5 4.49 4.49 0 0 1 9.5 14z"/></svg><span>' + esc(s.title) + '</span>';
+      b.onmousedown = (ev) => { ev.preventDefault(); box.classList.remove('open'); openModal(s); };
+      box.appendChild(b);
+    });
+    box.classList.toggle('open', !!(sugg.length || titles.length));
+  }
   window.onSearch = function (q) {
     _query = (q || '').trim().toLowerCase();
+    renderSuggest(_query);
     if (_query) {
+      try {
+        if (!sessionStorage.getItem('pai_ev_search')) { sessionStorage.setItem('pai_ev_search', '1'); P.event && P.event('search_used'); }
+      } catch (e) {}
       if (_view !== 'search') _prevView = _view;
       showView('search');
       // make sure every dataset is loaded so results are complete
@@ -499,10 +628,14 @@
     if (!_query) return;
     const frag = document.createDocumentFragment();
     let total = 0;
-    total += searchGroup('News', _news.filter(s => match(s.title + ' ' + (s.desc || ''))), s => storyCard(s), frag);
-    total += searchGroup('Research papers', _papers.filter(p => match(p.title + ' ' + (p.desc || ''))), paperCard, frag);
-    total += searchGroup('Deep dives & explainers', _blogs.filter(s => match(s.title + ' ' + (s.desc || ''))), s => storyCard(s, { noThumb: true }), frag);
-    const toolHits = TOOLS.filter(t => match(t.name + ' ' + t.desc + ' ' + t.tag));
+    const f = parseQuery(_query);
+    total += searchGroup('News', rankHits(_news, f), s => storyCard(s), frag);
+    total += searchGroup('Research papers', rankHits(_papers, f), paperCard, frag);
+    total += searchGroup('Deep dives & explainers', rankHits(_blogs, f), s => storyCard(s, { noThumb: true }), frag);
+    const toolHits = (f.source || f.topic || !f.words.length) ? [] : TOOLS.filter(t => {
+      const txt = (t.name + ' ' + t.desc + ' ' + t.tag).toLowerCase();
+      return f.words.every(w => txt.includes(w));
+    });
     if (toolHits.length) {
       const d = el('div', 'sec-divider');
       d.innerHTML = `<div class="sec-row"><h2>Tools</h2><div class="line"></div><span style="font-size:0.8rem;color:var(--text-3)">${toolHits.length} result${toolHits.length === 1 ? '' : 's'}</span></div>`;
@@ -517,7 +650,7 @@
     if (!total) {
       box.innerHTML = loading
         ? '<div class="empty">Searching the live feeds…</div>'
-        : '<div class="empty">No matches for “' + esc(_query) + '”. Try a shorter keyword — search covers news, papers, blogs and tools currently in the feed.</div>';
+        : '<div class="empty">No matches for “' + esc(_query) + '”. Try a shorter keyword, or narrow with <code>topic:agents</code> / <code>source:techcrunch</code> — search covers news, papers, blogs and tools currently in the feed.</div>';
     }
   }
   window.clearSearch = function () {
@@ -588,6 +721,7 @@
     _modalUrl = s.url;
     _modalStory = s;
     P.bumpReadCount(s.url);
+    P.event && P.event('modal_open');
     if (window.paiAccount) window.paiAccount.record('history', { url: s.url, title: s.title, src: P.srcLabel(s.src) });
     $('#m-src').innerHTML = `<img src="${P.srcFavicon(s.src, s.url)}" alt="" onerror="this.style.visibility='hidden'"/> ${esc(P.srcLabel(s.src))}`;
     const pill = $('#m-pill');
@@ -649,6 +783,7 @@
     }
   }
   async function explainPaper(s, box) {
+    P.event && P.event('explain_click');
     box.innerHTML = '<div class="explain-loading">Reading the abstract…</div>';
     try {
       const r = await fetch('/api/explain', {
@@ -676,7 +811,7 @@
   window.copyLink = function () {
     navigator.clipboard.writeText(_modalUrl).then(() => { $('#m-copy').textContent = '✓ Copied'; setTimeout(() => $('#m-copy').textContent = '🔗 Copy', 1800); }).catch(() => toast('Copy failed'));
   };
-  document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeModal(); window.closeSheet && window.closeSheet(); $('#theme-menu').classList.remove('open'); $('#sub-menu').classList.remove('open'); $('#lang-menu').classList.remove('open'); } });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeModal(); window.closeSheet && window.closeSheet(); $('#theme-menu').classList.remove('open'); $('#sub-menu').classList.remove('open'); $('#lang-menu').classList.remove('open'); const sg = $('#search-suggest'); if (sg) sg.classList.remove('open'); } });
 
   // ── NEWSLETTER ────────────────────────────────────────
   // ── FOCUS TRAP (R25) — Tab cycles inside open modal / sheet ──
@@ -704,8 +839,12 @@
     const email = $('#promo-email').value.trim();
     if (!email) return false;
     toast('Subscribing…');
+    P.event && P.event('subscribe_submit');
     P.subscribe(email).then(r => {
-      if (r && (r.ok || r.success || r.status === 'ok' || r.subscribed)) toast('✓ Subscribed! Check your inbox.');
+      if (r && (r.ok || r.success || r.status === 'ok' || r.subscribed)) {
+        P.event && P.event('subscribe_success');
+        toast(r.message || '✓ Subscribed! Check your inbox.');
+      }
       else toast('✓ Thanks — you’re on the list.');
       $('#promo-email').value = '';
     }).catch(() => toast('Saved — we’ll be in touch.'));
@@ -744,8 +883,14 @@
     e.preventDefault();
     const input = $('#top-email'), email = (input && input.value || '').trim();
     if (!email) return false;
-    P.subscribe(email).then(r => {
-      if (r && (r.ok || r.success || r.status === 'ok' || r.subscribed)) toast('✓ Subscribed! Check your inbox.');
+    const fr = document.querySelector('input[name="sub-freq"]:checked');
+    const freq = fr ? fr.value : 'weekly';
+    P.event && P.event('subscribe_submit');
+    P.subscribe(email, freq).then(r => {
+      if (r && (r.ok || r.success || r.status === 'ok' || r.subscribed)) {
+        P.event && P.event('subscribe_success');
+        toast(r.message || '✓ Subscribed! Check your inbox.');
+      }
       else toast('✓ Thanks — you’re on the list.');
       if (input) input.value = '';
     }).catch(() => toast('Saved — we’ll be in touch.'));
@@ -834,8 +979,12 @@
     const input = $('#rail-email');
     const email = (input && input.value || '').trim();
     if (!email) return false;
+    P.event && P.event('subscribe_submit');
     P.subscribe(email).then(r => {
-      if (r && (r.ok || r.success || r.status === 'ok' || r.subscribed)) toast('✓ Subscribed! Check your inbox.');
+      if (r && (r.ok || r.success || r.status === 'ok' || r.subscribed)) {
+        P.event && P.event('subscribe_success');
+        toast(r.message || '✓ Subscribed! Check your inbox.');
+      }
       else toast('✓ Thanks — you’re on the list.');
       if (input) input.value = '';
     }).catch(() => toast('Saved — we’ll be in touch.'));
@@ -848,6 +997,9 @@
     try { saved = localStorage.getItem('pai_theme') || 'auto'; } catch (e) {}
     applyPaiTheme(saved);
     markActiveLang();
+    // hide search suggestions when the box loses focus
+    const si0 = $('#pai-search');
+    if (si0) si0.addEventListener('blur', () => setTimeout(() => { const b = $('#search-suggest'); if (b) b.classList.remove('open'); }, 150));
     // rail sources
     const railSrc = $('#rail-sources');
     if (railSrc) [['tc','techcrunch.com'],['openai','openai.com'],['hf','huggingface.co'],['google','research.google'],['arxiv','arxiv.org'],['hn','ycombinator.com']]
