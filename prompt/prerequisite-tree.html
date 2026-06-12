@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<script>/* pre-paint theme */(function(){try{var t=localStorage.getItem('pai_theme')||'auto';if(t==='auto')t=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'default';if(t!=='default')document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Prerequisite tree — AI prompt | PromptAI</title>
+<meta name="description" content="Learning fails when you skip a prerequisite. Map them before you start."/>
+<link rel="canonical" href="https://promptai.in/prompt/prerequisite-tree"/>
+<meta property="og:type" content="article"/>
+<meta property="og:url" content="https://promptai.in/prompt/prerequisite-tree"/>
+<meta property="og:site_name" content="PromptAI"/>
+<meta property="og:title" content="Prerequisite tree — a tested AI prompt"/>
+<meta property="og:description" content="Learning fails when you skip a prerequisite. Map them before you start."/>
+<meta property="og:image" content="https://promptai.in/og-image.jpg"/>
+<meta name="twitter:card" content="summary_large_image"/>
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"HowTo","name":"Prerequisite tree — AI prompt","description":"Learning fails when you skip a prerequisite. Map them before you start.","step":[{"@type":"HowToStep","name":"Copy the prompt","text":"Copy the tested prompt template on this page."},{"@type":"HowToStep","name":"Customize it","text":"Replace the [bracketed] placeholders with your own details."},{"@type":"HowToStep","name":"Run it","text":"Paste into Claude, ChatGPT or Gemini and iterate on the result."}],"isPartOf":{"@type":"CollectionPage","name":"PromptAI Prompt Library","url":"https://promptai.in/prompts.html"}},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Prompt library","item":"https://promptai.in/prompts.html"},{"@type":"ListItem","position":2,"name":"Learning","item":"https://promptai.in/prompts.html"},{"@type":"ListItem","position":3,"name":"Prerequisite tree","item":"https://promptai.in/prompt/prerequisite-tree"}]}]}</script>
+<meta name="color-scheme" content="light dark"/>
+<link rel="manifest" href="../manifest.webmanifest"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Roboto+Serif:opsz,wght@8..144,400;8..144,500;8..144,600&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="../pai-chrome.css"/>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Roboto',system-ui,sans-serif; color:var(--text); background:var(--bg); line-height:1.5; -webkit-font-smoothing:antialiased; }
+  a { color:inherit; text-decoration:none; }
+  button { font-family:inherit; cursor:pointer; }
+  ::selection { background:var(--accent-subtle); }
+  :focus-visible { outline:2px solid var(--accent); outline-offset:2px; border-radius:4px; }
+  @media (prefers-reduced-motion:reduce){ *{animation:none!important;transition:none!important;} }
+  code { font-family:'Roboto Mono',monospace; font-size:0.85em; background:var(--bg-subtle); padding:1px 5px; border-radius:5px; }
+  .crumbs { font-size:0.8rem; color:var(--text-3); margin:8px 0 18px; display:flex; gap:7px; align-items:center; flex-wrap:wrap; }
+  .crumbs a { color:var(--accent); font-weight:500; }
+  .cat-pill { font-size:0.68rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:var(--accent); background:var(--accent-subtle); border-radius:12px; padding:3px 10px; }
+  .p-head h1 { font-family:var(--serif); font-size:1.85rem; font-weight:600; letter-spacing:-0.3px; line-height:1.25; margin:10px 0 10px; }
+  .p-why { font-size:0.98rem; color:var(--text-2); line-height:1.65; max-width:640px; margin-bottom:20px; }
+  .p-box { background:var(--card); border:1px solid var(--border-soft); border-radius:14px; box-shadow:var(--shadow); padding:20px 22px 18px; margin-bottom:18px; }
+  .p-box pre { font-family:'Roboto Mono',ui-monospace,monospace; font-size:0.84rem; line-height:1.7; background:var(--bg-subtle); border:1px solid var(--border-soft); border-radius:10px; padding:16px 18px; white-space:pre-wrap; color:var(--text); }
+  .p-actions { display:flex; align-items:center; gap:12px; margin-top:14px; flex-wrap:wrap; }
+  .copy-btn { display:inline-flex; align-items:center; gap:7px; padding:10px 20px; border-radius:20px; border:none; background:var(--accent); color:#fff; font-weight:600; font-size:0.88rem; }
+  :root[data-theme="dark"] .copy-btn { color:#17181c; }
+  .copy-btn:hover { background:var(--accent-2); }
+  .hint { font-size:0.78rem; color:var(--text-3); }
+  .works { font-size:0.8rem; color:var(--text-2); margin:4px 0 26px; }
+  .works b { color:var(--text); font-weight:600; }
+  .rel-h { font-family:var(--serif); font-size:1.05rem; font-weight:600; margin:26px 0 10px; }
+  .rel-grid { display:grid; gap:10px; margin-bottom:26px; }
+  .rel-card { display:block; background:var(--card); border:1px solid var(--border-soft); border-radius:12px; padding:13px 16px; box-shadow:var(--shadow); transition:box-shadow .15s; }
+  .rel-card:hover { box-shadow:var(--shadow-hover); }
+  .rel-card .rc-cat { font-size:0.64rem; font-weight:700; letter-spacing:0.07em; text-transform:uppercase; color:var(--accent); }
+  .rel-card h3 { font-family:var(--serif); font-size:0.98rem; font-weight:600; margin-top:2px; color:var(--text); }
+  .cta { background:var(--accent-subtle); border-radius:14px; padding:18px 20px; font-size:0.9rem; line-height:1.6; margin-bottom:10px; }
+  .cta b { color:var(--accent); }
+  .cta a { color:var(--accent); font-weight:600; }
+  @media (min-width:760px){ .rel-grid { grid-template-columns:repeat(3,1fr); } }
+</style>
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="../index.html" aria-label="PromptAI home" data-no-translate>
+    <span class="brand-mark"><svg viewBox="0 0 32 32"><rect x="1.5" y="1.5" width="29" height="29" rx="8" fill="var(--accent)"/><path d="M9.5 10.5 14.5 16l-5 5.5" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/><line x1="16.5" y1="21.5" x2="23" y2="21.5" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/></svg></span>
+    <span class="brand-text">Prompt<b>AI</b></span>
+  </a>
+  <div class="topbar-spacer"></div>
+  <div class="topbar-actions">
+    <button class="icon-btn" onclick="toggleThemeMenu(event)" aria-label="Theme" title="Appearance"><svg viewBox="0 0 24 24"><path d="M12 22a10 10 0 0 1 0-20c5.51 0 10 4.04 10 9 0 3.31-2.69 6-6 6h-1.77c-.28 0-.5.22-.5.5 0 .12.05.23.13.33.41.47.64 1.06.64 1.67A2.5 2.5 0 0 1 12 22zm0-18a8 8 0 0 0 0 16c.28 0 .5-.22.5-.5a.54.54 0 0 0-.14-.35c-.41-.46-.63-1.05-.63-1.65a2.5 2.5 0 0 1 2.5-2.5H16a4 4 0 0 0 4-4c0-3.86-3.59-7-8-7zm-5.5 6a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3zm3-4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3zm5 0a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3z"/></svg></button>
+    <button class="subscribe-cta" id="subscribe-btn" onclick="toggleSubscribe(event)">Subscribe</button>
+  </div>
+</header>
+<div class="theme-menu" id="theme-menu">
+  <h5>Appearance</h5>
+  <button class="theme-opt" data-theme="default" onclick="setTheme('default')"><span class="sw"><i style="background:#1a73e8"></i><i style="background:#ffffff"></i><i style="background:#202124"></i></span>Briefing (clean white)<span class="chk">✓</span></button>
+  <button class="theme-opt" data-theme="promptai" onclick="setTheme('promptai')"><span class="sw"><i style="background:#2563eb"></i><i style="background:#f3f6fc"></i><i style="background:#0a1628"></i></span>PromptAI blue<span class="chk">✓</span></button>
+  <button class="theme-opt" data-theme="slate" onclick="setTheme('slate')"><span class="sw"><i style="background:#0f766e"></i><i style="background:#f7f5f1"></i><i style="background:#1c1917"></i></span>Slate &amp; teal<span class="chk">✓</span></button>
+</div>
+<div class="sub-menu" id="sub-menu">
+  <h5>Get the briefing</h5>
+  <p class="sub-lead">The one story that matters, 5 headlines and the paper everyone's citing — every Tuesday.</p>
+  <form onsubmit="return doTopSubscribe(event)">
+    <input id="top-email" type="email" placeholder="you@example.com" required aria-label="Email"/>
+    <button type="submit">Subscribe free</button>
+  </form>
+  <p class="sub-note">No spam. Unsubscribe anytime.</p>
+</div>
+<nav class="tabs" aria-label="Sections">
+  <a class="tab" href="../index.html#home">Home</a>
+  <a class="tab" href="../index.html#news">News</a>
+  <a class="tab" href="../index.html#deepdives">Deep dives</a>
+  <a class="tab" href="../index.html#research">Research</a>
+  <a class="tab" href="../education.html">Learn AI</a>
+  <a class="tab" href="../index.html#tools">Tools</a>
+  <a class="tab active" href="../prompts.html">Prompts</a>
+  <a class="tab" href="../archive.html">Archive</a>
+</nav>
+<div class="canvas" data-screen-label="Prompt: Prerequisite tree">
+  <main class="main">
+    <nav class="crumbs" aria-label="Breadcrumb"><a href="../prompts.html">Prompt library</a> <span>›</span> <span>Learning</span></nav>
+    <div class="p-head">
+      <span class="cat-pill">Learning</span>
+      <h1>Prerequisite tree</h1>
+    </div>
+    <p class="p-why">Learning fails when you skip a prerequisite. Map them before you start.</p>
+    <div class="p-box">
+      <pre id="prompt-text">I want to understand [TARGET CONCEPT].
+
+1. Draw the prerequisite tree: what concepts do I need first, and what do THOSE need? (max 3 levels deep, as an indented list)
+2. Mark each node: ⚡ essential / 👍 helpful / 💤 skippable-for-now
+3. Quiz me with one quick question per essential node to find where my actual frontier is
+4. Based on my answers, tell me where to start.</pre>
+      <div class="p-actions">
+        <button class="copy-btn" id="copy-btn">📋 Copy prompt</button>
+        
+      </div>
+    </div>
+    <p class="works">Works with <b>Claude</b> · <b>ChatGPT</b> · <b>Gemini</b> — replace the <code>[bracketed]</code> parts with your own details, keep the structure.</p>
+    <div class="cta"><b>Want a new tested prompt every week?</b> The PromptAI briefing delivers the AI story that matters, the paper everyone's citing and a prompt worth stealing — <a href="../index.html">subscribe free →</a></div>
+    <h2 class="rel-h">More prompts like this</h2>
+    <div class="rel-grid">
+      <a class="rel-card" href="feynman-technique-automated.html"><span class="rc-cat">Learning</span><h3>Feynman technique, automated</h3></a>
+      <a class="rel-card" href="socratic-tutor-mode.html"><span class="rc-cat">Learning</span><h3>Socratic tutor mode</h3></a>
+      <a class="rel-card" href="spaced-repetition-card-writer.html"><span class="rc-cat">Learning</span><h3>Spaced-repetition card writer</h3></a>
+    </div>
+  </main>
+</div>
+<footer class="site-footer">
+  <div class="foot-in">
+    <span data-no-translate>© 2026 PromptAI · promptai.in</span>
+    <a href="../privacy.html">Privacy</a>
+    <a href="../terms.html">Terms</a>
+    <a href="../index.html">Briefing</a>
+    <a href="../prompts.html">Prompt library</a>
+    <a href="../archive.html">Archive</a>
+  </div>
+</footer>
+<div id="toast" role="status" aria-live="polite"></div>
+<script src="../pai-chrome.js"></script>
+<script>
+document.getElementById('copy-btn').addEventListener('click', function () {
+  var btn = this, text = document.getElementById('prompt-text').textContent;
+  navigator.clipboard.writeText(text).then(function () {
+    btn.textContent = '✓ Copied';
+    if (window.toast) toast('Prompt copied — paste it into your AI of choice');
+    setTimeout(function () { btn.textContent = '📋 Copy prompt'; }, 1800);
+  }, function () { if (window.toast) toast('Copy failed — select the text manually'); });
+});
+</script>
+</body>
+</html>

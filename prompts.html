@@ -15,7 +15,7 @@
 <meta property="og:image" content="https://promptai.in/og-image.jpg"/>
 <meta name="twitter:card" content="summary_large_image"/>
 <script type="application/ld+json">
-{"@context":"https://schema.org","@type":"CollectionPage","name":"PromptAI Prompt Library","url":"https://promptai.in/prompts.html","description":"25 battle-tested AI prompts for writing, coding, research, marketing and learning.","isPartOf":{"@type":"WebSite","url":"https://promptai.in/","name":"PromptAI"}}
+{"@context":"https://schema.org","@type":"CollectionPage","name":"PromptAI Prompt Library","url":"https://promptai.in/prompts.html","description":"25 battle-tested AI prompts for writing, coding, research, marketing and learning.","isPartOf":{"@type":"WebSite","url":"https://promptai.in/","name":"PromptAI"},"mainEntity":{"@type":"ItemList","itemListElement":[{"@type":"ListItem","position":1,"name":"Ruthless editor","url":"https://promptai.in/prompt/ruthless-editor"},{"@type":"ListItem","position":2,"name":"First draft from bullet points","url":"https://promptai.in/prompt/first-draft-from-bullet-points"},{"@type":"ListItem","position":3,"name":"Subject line generator with a twist","url":"https://promptai.in/prompt/subject-line-generator-with-a-twist"},{"@type":"ListItem","position":4,"name":"Explain it three ways","url":"https://promptai.in/prompt/explain-it-three-ways"},{"@type":"ListItem","position":5,"name":"Code review like a senior engineer","url":"https://promptai.in/prompt/code-review-like-a-senior-engineer"},{"@type":"ListItem","position":6,"name":"Rubber-duck a bug","url":"https://promptai.in/prompt/rubber-duck-a-bug"},{"@type":"ListItem","position":7,"name":"Write tests first","url":"https://promptai.in/prompt/write-tests-first"},{"@type":"ListItem","position":8,"name":"Explain unfamiliar code","url":"https://promptai.in/prompt/explain-unfamiliar-code"},{"@type":"ListItem","position":9,"name":"Regex with receipts","url":"https://promptai.in/prompt/regex-with-receipts"},{"@type":"ListItem","position":10,"name":"Steelman both sides","url":"https://promptai.in/prompt/steelman-both-sides"},{"@type":"ListItem","position":11,"name":"Paper deconstruction","url":"https://promptai.in/prompt/paper-deconstruction"},{"@type":"ListItem","position":12,"name":"Learning roadmap for any topic","url":"https://promptai.in/prompt/learning-roadmap-for-any-topic"},{"@type":"ListItem","position":13,"name":"Assumption auditor","url":"https://promptai.in/prompt/assumption-auditor"},{"@type":"ListItem","position":14,"name":"Compare anything, honestly","url":"https://promptai.in/prompt/compare-anything-honestly"},{"@type":"ListItem","position":15,"name":"Landing page copy from features","url":"https://promptai.in/prompt/landing-page-copy-from-features"},{"@type":"ListItem","position":16,"name":"One idea, five channels","url":"https://promptai.in/prompt/one-idea-five-channels"},{"@type":"ListItem","position":17,"name":"Objection mining","url":"https://promptai.in/prompt/objection-mining"},{"@type":"ListItem","position":18,"name":"Name generator with filters","url":"https://promptai.in/prompt/name-generator-with-filters"},{"@type":"ListItem","position":19,"name":"Feynman technique, automated","url":"https://promptai.in/prompt/feynman-technique-automated"},{"@type":"ListItem","position":20,"name":"Socratic tutor mode","url":"https://promptai.in/prompt/socratic-tutor-mode"},{"@type":"ListItem","position":21,"name":"Spaced-repetition card writer","url":"https://promptai.in/prompt/spaced-repetition-card-writer"},{"@type":"ListItem","position":22,"name":"Prerequisite tree","url":"https://promptai.in/prompt/prerequisite-tree"},{"@type":"ListItem","position":23,"name":"Meeting notes → decisions & actions","url":"https://promptai.in/prompt/meeting-notes-decisions-actions"},{"@type":"ListItem","position":24,"name":"Inbox triage assistant","url":"https://promptai.in/prompt/inbox-triage-assistant"},{"@type":"ListItem","position":25,"name":"Weekly review interrogator","url":"https://promptai.in/prompt/weekly-review-interrogator"}]}}
 </script>
 <link rel="alternate" type="application/rss+xml" title="PromptAI — AI Research Feed" href="/feed.xml"/>
 <meta name="color-scheme" content="light dark"/>
@@ -63,6 +63,8 @@
   .pf .hint { font-size:0.74rem; color:var(--text-3); }
   .lib-tip { background:var(--accent-subtle); border-radius:14px; padding:16px 18px; font-size:0.88rem; line-height:1.6; margin:0 0 20px; color:var(--text); }
   .lib-tip b { color:var(--accent); }
+  .prompt-card h3 a { color:inherit; }
+  .prompt-card h3 a:hover { color:var(--accent); }
   .empty-lib { color:var(--text-3); padding:30px 0; text-align:center; }
   @media (min-width:980px){ .prompt-grid { grid-template-columns:1fr 1fr; } .prompt-card.wide { grid-column:1 / -1; } }
 </style>
@@ -162,6 +164,7 @@
 <script>
 (function () {
   const $ = (s) => document.querySelector(s);
+  const slugOf = (t) => t.toLowerCase().replace(/['\u2019]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
   const grid = $('#prompt-grid');
   const PROMPTS = window.PAI_PROMPTS || [];
   const CATS = ['All', ...new Set(PROMPTS.map(p => p.cat))];
@@ -188,7 +191,8 @@
       card.className = 'prompt-card';
       const h = document.createElement('div'); h.className = 'ph';
       const pill = document.createElement('span'); pill.className = 'cat-pill'; pill.textContent = p.cat;
-      const t = document.createElement('h3'); t.textContent = p.title;
+      const t = document.createElement('h3');
+      const ta = document.createElement('a'); ta.href = 'prompt/' + slugOf(p.title) + '.html'; ta.textContent = p.title; t.appendChild(ta);
       h.appendChild(pill); h.appendChild(t);
       const why = document.createElement('p'); why.className = 'why'; why.textContent = p.why;
       const pre = document.createElement('pre'); pre.textContent = p.prompt;

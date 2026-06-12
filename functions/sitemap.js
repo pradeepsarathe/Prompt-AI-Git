@@ -5,9 +5,11 @@
 // Now enumerates the rankable URLs too (R21): /issues, every
 // /issue/<date> snapshot in KV, the /topic/* hubs and /prompts.html.
 
+import { PROMPT_PAGES } from './lib/promptslugs.js';
+
 const EDU_LASTMOD = '2026-06-07';   // ← update when education.html changes
 const LEGAL_LASTMOD = '2026-06-11'; // privacy.html / terms.html
-const PROMPTS_LASTMOD = '2026-06-11'; // ← update when prompts.html changes
+const PROMPTS_LASTMOD = '2026-06-12'; // ← update when prompts.html changes
 
 const TOPICS = ['llms', 'agents', 'vision', 'robotics', 'policy', 'research', 'tools'];
 
@@ -27,6 +29,11 @@ export async function onRequest(context) {
 
   TOPICS.forEach(t => urls.push({
     loc: 'https://promptai.in/topic/' + t, lastmod: today, changefreq: 'daily', priority: '0.7',
+  }));
+
+  // Per-prompt pages (R21/issue #1) — generated from prompts-data.js
+  PROMPT_PAGES.forEach(p => urls.push({
+    loc: 'https://promptai.in/prompt/' + p.slug, lastmod: PROMPTS_LASTMOD, changefreq: 'monthly', priority: '0.7',
   }));
 
   // Issue pages from KV (cap at the 180 newest to keep the sitemap lean).
