@@ -10,6 +10,18 @@
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=()
 
+# Service worker: must revalidate on every load so deploys roll out fast
+/sw.js
+  Cache-Control: no-cache
+
+# Static assets that change rarely
+/icon-192.png
+  Cache-Control: public, max-age=604800
+/icon-512.png
+  Cache-Control: public, max-age=604800
+/manifest.webmanifest
+  Cache-Control: public, max-age=86400
+
 # Old prototype/backup pages must never be indexed (until removed from the repo)
 /index_classic_backup.html
   X-Robots-Tag: noindex, nofollow

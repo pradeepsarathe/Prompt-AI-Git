@@ -7,3 +7,8 @@
 
 # www → apex redirect
 https://www.promptai.in/* https://promptai.in/:splat 301
+
+# Friendly aliases
+/prompts /prompts.html 200
+/learn /education.html 200
+/issue /issues 301

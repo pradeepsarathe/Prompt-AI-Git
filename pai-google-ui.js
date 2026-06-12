@@ -9,14 +9,16 @@
 
   // ── STATE ─────────────────────────────────────────────
   let _news = [], _papers = [], _blogs = [], _popular = {};
-  let _loaded = { news: false, research: false, learn: false };
+  let _loaded = { news: false, research: false, deepdives: false };
   let _newsTopic = 'All', _researchCat = 'all', _toolCat = 'all';
   let _view = 'home', _query = '', _prevView = 'home';
-  const PAGE = { news:8, research:8, learn:8, tools:6 };
-  let _limit = { news:PAGE.news, research:PAGE.research, learn:PAGE.learn, tools:PAGE.tools };
+  const PAGE = { news:8, research:8, deepdives:8, tools:6 };
+  let _limit = { news:PAGE.news, research:PAGE.research, deepdives:PAGE.deepdives, tools:PAGE.tools };
 
-  // ── TOOLS DATA (carried over; clearer access labels) ──
-  const TOOLS = [
+  // ── TOOLS DATA — loaded from tools.json (R35); this list is the
+  //    embedded fallback for previews / cache misses. Each tool may carry
+  //    `aff` (a ready affiliate URL) — otherwise links get ?ref=promptai (R43).
+  let TOOLS = [
     { url:'https://claude.ai', dom:'claude.ai', name:'Claude (Anthropic)', desc:'Advanced reasoning, coding, analysis and long-context understanding.', cat:'llm', tag:'LLM', access:'both' },
     { url:'https://chatgpt.com', dom:'openai.com', name:'ChatGPT (OpenAI)', desc:'Multimodal assistant for text, images, voice and real-time tasks.', cat:'llm', tag:'LLM', access:'both' },
     { url:'https://gemini.google.com', dom:'gemini.google.com', name:'Gemini (Google)', desc:"Google's multimodal model with deep Workspace and search integration.", cat:'llm', tag:'LLM', access:'both' },
@@ -35,6 +37,28 @@
     { url:'https://elevenlabs.io', dom:'elevenlabs.io', name:'ElevenLabs', desc:'Lifelike AI voice generation, dubbing and text-to-speech.', cat:'productivity', tag:'Productivity', access:'both' },
   ];
   const ACCESS = { free:{c:'free',t:'Free'}, both:{c:'both',t:'Free + Paid'}, paid:{c:'paid',t:'Paid'} };
+  let TOOLS_REVIEWED = '';
+  async function loadToolsJson() {
+    try {
+      const r = await fetch('tools.json');
+      if (!r.ok) return;
+      const data = await r.json();
+      if (data && Array.isArray(data.tools) && data.tools.length) {
+        TOOLS = data.tools;
+        TOOLS_REVIEWED = data.lastReviewed || '';
+        renderTools();
+        const ht = $('#home-tools'); if (ht) { ht.innerHTML = ''; fill(ht, TOOLS.slice(0, 4), toolCard); }
+      }
+    } catch (e) { /* embedded fallback stays */ }
+  }
+  function toolHref(t) {
+    if (t.aff) return t.aff;
+    try {
+      const u = new URL(t.url);
+      if (!u.searchParams.has('ref')) u.searchParams.set('ref', 'promptai');
+      return u.toString();
+    } catch (e) { return t.url; }
+  }
 
   // ── HELPERS ───────────────────────────────────────────
   const $ = s => document.querySelector(s);
@@ -66,6 +90,59 @@
     return t;
   }
 
+  // ── SAVE / LIKE (R28 — backend lives in pai-account.js + /auth) ──
+  function inList(kind, url) {
+    try { return !!(window.paiAccount && window.paiAccount.getData()[kind] || []).some(x => x.url === url); }
+    catch (e) { return false; }
+  }
+  window.paiToggle = function (kind, btn, s) {
+    if (!window.paiAccount) { toast('Saving needs the account layer — try again in a second.'); return; }
+    const on = inList(kind, s.url);
+    if (on && window.paiAccount.unrecord) {
+      window.paiAccount.unrecord(kind, s.url);
+      toast(kind === 'saved' ? 'Removed from saved' : 'Unliked');
+    } else {
+      window.paiAccount.record(kind, { url: s.url, title: s.title, src: P.srcLabel(s.src) });
+      toast(kind === 'saved' ? '🔖 Saved — find it in your account' : '❤️ Liked');
+      if (!window.paiAccount.getSession || !window.paiAccount.getSession()) {
+        // gentle nudge, once per session
+        try {
+          if (!sessionStorage.getItem('pai_save_nudge')) {
+            sessionStorage.setItem('pai_save_nudge', '1');
+            setTimeout(() => toast('Sign in to sync saves across devices'), 2800);
+          }
+        } catch (e) {}
+      }
+    }
+    if (btn) syncActBtns(s.url);
+  };
+  const SAVE_SVG = '<svg viewBox="0 0 24 24"><path d="M17 3H7a2 2 0 0 0-2 2v16l7-3 7 3V5a2 2 0 0 0-2-2z"/></svg>';
+  const LIKE_SVG = '<svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>';
+  function actBtns(s) {
+    const wrap = el('span', 'card-act');
+    wrap.dataset.actUrl = s.url;
+    [['saved', SAVE_SVG, 'Save'], ['liked', LIKE_SVG, 'Like']].forEach(([kind, svg, label]) => {
+      const b = el('button', 'act-btn' + (inList(kind, s.url) ? ' on' : ''));
+      b.dataset.kind = kind;
+      b.setAttribute('aria-label', label + (inList(kind, s.url) ? 'd' : '') + ': ' + s.title);
+      b.title = label;
+      b.innerHTML = svg;
+      b.onclick = (e) => { e.stopPropagation(); e.preventDefault(); window.paiToggle(kind, b, s); };
+      b.onkeydown = (e) => { e.stopPropagation(); };
+      wrap.appendChild(b);
+    });
+    return wrap;
+  }
+  function syncActBtns(url) {
+    document.querySelectorAll('[data-act-url]').forEach(w => {
+      if (w.dataset.actUrl !== url) return;
+      w.querySelectorAll('.act-btn').forEach(b => b.classList.toggle('on', inList(b.dataset.kind, url)));
+    });
+    const ms = $('#m-save'), ml = $('#m-like');
+    if (ms && _modalStory && _modalStory.url === url) ms.classList.toggle('on', inList('saved', url));
+    if (ml && _modalStory && _modalStory.url === url) ml.classList.toggle('on', inList('liked', url));
+  }
+
   // ── STORY CARD (Google-news list row) ─────────────────
   function storyCard(s, opts) {
     opts = opts || {};
@@ -89,6 +166,8 @@
          ${img}
        </div>`;
     actionable(c, () => openModal(s), s.title);
+    const meta = c.querySelector('.card-meta');
+    if (meta) meta.appendChild(actBtns(s));
     return c;
   }
 
@@ -172,7 +251,7 @@
   // ── TOOL CARD ─────────────────────────────────────────
   function toolCard(t) {
     const a = el('a', 'tool');
-    a.href = t.url; a.target = '_blank'; a.rel = 'noopener'; a.dataset.cat = t.cat;
+    a.href = toolHref(t); a.target = '_blank'; a.rel = 'noopener'; a.dataset.cat = t.cat;
     const ac = ACCESS[t.access];
     a.innerHTML =
       `<div class="tool-head">
@@ -287,8 +366,24 @@
   }
 
   // ── HOME ──────────────────────────────────────────────
+  // "Today in 60 seconds" — the AI summary from the aggregator (R30).
+  async function renderSummary() {
+    const box = $('#home-summary'); if (!box) return;
+    try {
+      const sum = await P.getSummary();
+      if (!sum || !sum.bullets || !sum.bullets.length) { box.innerHTML = ''; return; }
+      box.innerHTML =
+        '<div class="summary-card">' +
+          '<div class="summary-k"><svg viewBox="0 0 24 24"><path d="M12 2 9.5 9.5 2 12l7.5 2.5L12 22l2.5-7.5L22 12l-7.5-2.5z"/></svg> Today in 60 seconds</div>' +
+          '<ul>' + sum.bullets.map(b => '<li>' + esc(b) + '</li>').join('') + '</ul>' +
+          '<div class="summary-note">AI-generated from today\u2019s headlines · updated ' + (P.timeAgo(Date.parse(sum.at)) || 'recently') + '</div>' +
+        '</div>';
+    } catch (e) { box.innerHTML = ''; }
+  }
   function renderHome() {
     if (_news.length) {
+      // live feed is up — drop the server-rendered SEO block (R19)
+      const ssr = document.getElementById('ssr-home'); if (ssr) ssr.remove();
       const li = pickLead(_news);
       const lb = $('#home-lead'); lb.innerHTML = ''; lb.appendChild(leadCard(_news[li]));
       fill($('#home-top'), _news.filter((_, i) => i !== li).slice(0, 5), s => storyCard(s));
@@ -324,28 +419,28 @@
     fillPaged($('#research-list'), _papers.slice(), paperCard, 'research', renderResearch);
   }
 
-  // ── LEARN / BLOGS (stories with images promoted, image-on-top) ──
-  async function loadLearn() {
-    skeleton($('#learn-list'), 5);
+  // ── DEEP DIVES (key was "learn" pre-R34; "#learn" links still work) ──
+  async function loadDeepdives() {
+    skeleton($('#deepdives-list'), 5);
     try { _blogs = await P.fetchBlogs(); } catch (e) { _blogs = []; }
-    _loaded.learn = true;
+    _loaded.deepdives = true;
     archiveStories(_blogs, 'blog');
-    renderLearn(); renderHome();
+    renderDeepdives(); renderHome();
     if (_query) renderSearch();
   }
-  function renderLearn() {
-    const box = $('#learn-list'); box.innerHTML = '';
+  function renderDeepdives() {
+    const box = $('#deepdives-list'); box.innerHTML = '';
     const list = _blogs.slice();
     if (!list.length) { box.innerHTML = '<div class="empty">Nothing here yet — live feeds are catching up. Refresh in a moment.</div>'; return; }
     // promote stories that ship an image; they get the visual treatment
     const ordered = [...list.filter(s => s.image), ...list.filter(s => !s.image)];
-    const lim = _limit.learn;
+    const lim = _limit.deepdives;
     const show = ordered.slice(0, lim);
     const grid = el('div', 'vis-grid');
     show.filter(s => s.image).forEach(s => grid.appendChild(visCard(s)));
     if (grid.children.length) box.appendChild(grid);
     show.filter(s => !s.image).forEach(s => box.appendChild(storyCard(s, { noThumb: true })));
-    appendLoadMore(box, ordered.length > lim, 'learn', renderLearn);
+    appendLoadMore(box, ordered.length > lim, 'deepdives', renderDeepdives);
   }
 
   // ── TOOLS ─────────────────────────────────────────────
@@ -383,7 +478,7 @@
       showView('search');
       // make sure every dataset is loaded so results are complete
       if (!_loaded.research) loadResearch(_researchCat);
-      if (!_loaded.learn) loadLearn();
+      if (!_loaded.deepdives) loadDeepdives();
       renderSearch();
     } else if (_view === 'search') {
       go(_prevView || 'home');
@@ -418,7 +513,7 @@
       total += toolHits.length;
     }
     box.appendChild(frag);
-    const loading = !_loaded.news || !_loaded.research || !_loaded.learn;
+    const loading = !_loaded.news || !_loaded.research || !_loaded.deepdives;
     if (!total) {
       box.innerHTML = loading
         ? '<div class="empty">Searching the live feeds…</div>'
@@ -431,7 +526,8 @@
   };
 
   // ── NAV ───────────────────────────────────────────────
-  const VIEWS = ['home', 'news', 'research', 'learn', 'tools'];
+  const VIEWS = ['home', 'news', 'research', 'deepdives', 'tools'];
+  const VIEW_ALIASES = { learn: 'deepdives' }; // old links keep working
   function showView(view) {
     _view = view;
     document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
@@ -461,7 +557,7 @@
     if (_query) { _query = ''; const si = $('#pai-search'); if (si) si.value = ''; }
     showView(view);
     if (view === 'research' && !_loaded.research) loadResearch('all');
-    if (view === 'learn' && !_loaded.learn) loadLearn();
+    if (view === 'deepdives' && !_loaded.deepdives) loadDeepdives();
     if (view === 'tools') renderTools();
     if (!_navFromUrl && VIEWS.includes(view)) {
       const target = view === 'home'
@@ -474,7 +570,8 @@
     }
   };
   function applyLocation() {
-    const h = (location.hash || '').replace('#', '');
+    let h = (location.hash || '').replace('#', '');
+    h = VIEW_ALIASES[h] || h;
     const v = VIEWS.includes(h) ? h : 'home';
     if (v !== _view) { _navFromUrl = true; go(v); _navFromUrl = false; }
   }
@@ -484,10 +581,12 @@
 
   // ── MODAL ─────────────────────────────────────────────
   let _modalUrl = '';
+  let _modalStory = null;
   let _modalOpener = null; // focus returns here on close (a11y)
   window.openModal = function (s) {
     _modalOpener = document.activeElement;
     _modalUrl = s.url;
+    _modalStory = s;
     P.bumpReadCount(s.url);
     if (window.paiAccount) window.paiAccount.record('history', { url: s.url, title: s.title, src: P.srcLabel(s.src) });
     $('#m-src').innerHTML = `<img src="${P.srcFavicon(s.src, s.url)}" alt="" onerror="this.style.visibility='hidden'"/> ${esc(P.srcLabel(s.src))}`;
@@ -504,9 +603,46 @@
     $('#m-x').href = `https://twitter.com/intent/tweet?url=${su}&text=${st}`;
     $('#m-li').href = `https://www.linkedin.com/sharing/share-offsite/?url=${su}`;
     $('#m-copy').textContent = '🔗 Copy';
+    // save / like state (R28)
+    const ms = $('#m-save'), ml = $('#m-like');
+    if (ms) { ms.classList.toggle('on', inList('saved', s.url)); ms.onclick = () => window.paiToggle('saved', ms, s); }
+    if (ml) { ml.classList.toggle('on', inList('liked', s.url)); ml.onclick = () => window.paiToggle('liked', ml, s); }
+    // "Explain this paper" — AI explainer for arXiv items (R30)
+    const ex = $('#m-explain');
+    if (ex) {
+      ex.innerHTML = '';
+      ex.style.display = 'none';
+      if (s.src === 'arxiv') {
+        ex.style.display = 'block';
+        const b = el('button', 'explain-btn');
+        b.innerHTML = '✨ Explain this paper';
+        b.onclick = () => explainPaper(s, ex);
+        ex.appendChild(b);
+      }
+    }
     $('#modal').classList.add('open'); document.body.style.overflow = 'hidden';
     const x = document.querySelector('#modal .modal-x'); if (x) x.focus();
   };
+  async function explainPaper(s, box) {
+    box.innerHTML = '<div class="explain-loading">Reading the abstract…</div>';
+    try {
+      const r = await fetch('/api/explain', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: s.url, title: s.title, desc: s.desc || '' }),
+      });
+      const d = await r.json();
+      if (d && d.explanation) {
+        const html = esc(d.explanation)
+          .replace(/(What it does:|Why it matters:|In plain English:)/g, '<strong>$1</strong>')
+          .replace(/\n+/g, '<br/>');
+        box.innerHTML = '<div class="explain-out">' + html + '<div class="explain-note">AI-generated from the abstract — check the paper for details.</div></div>';
+      } else {
+        box.innerHTML = '<div class="explain-loading">Explainer isn\u2019t available right now — open the paper below.</div>';
+      }
+    } catch (e) {
+      box.innerHTML = '<div class="explain-loading">Explainer isn\u2019t available right now — open the paper below.</div>';
+    }
+  }
   window.closeModal = function () {
     $('#modal').classList.remove('open'); document.body.style.overflow = '';
     if (_modalOpener && _modalOpener.focus) { try { _modalOpener.focus(); } catch (e) {} }
@@ -518,6 +654,26 @@
   document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeModal(); window.closeSheet && window.closeSheet(); $('#theme-menu').classList.remove('open'); $('#sub-menu').classList.remove('open'); $('#lang-menu').classList.remove('open'); } });
 
   // ── NEWSLETTER ────────────────────────────────────────
+  // ── FOCUS TRAP (R25) — Tab cycles inside open modal / sheet ──
+  function trapFocus(e) {
+    if (e.key !== 'Tab') return;
+    const containers = [];
+    const m = $('#modal'); if (m && m.classList.contains('open')) containers.push(m.querySelector('.modal'));
+    const sh = $('#sheet'); if (sh && sh.classList.contains('open')) containers.push(sh);
+    const box = containers[containers.length - 1];
+    if (!box) return;
+    const focusables = [...box.querySelectorAll('a[href], button:not([disabled]), input, select, textarea, [tabindex]:not([tabindex="-1"])')]
+      .filter(n => n.offsetParent !== null);
+    if (!focusables.length) return;
+    const first = focusables[0], last = focusables[focusables.length - 1];
+    if (e.shiftKey && (document.activeElement === first || !box.contains(document.activeElement))) {
+      e.preventDefault(); last.focus();
+    } else if (!e.shiftKey && (document.activeElement === last || !box.contains(document.activeElement))) {
+      e.preventDefault(); first.focus();
+    }
+  }
+  document.addEventListener('keydown', trapFocus, true);
+
   window.doSubscribe = function (e) {
     e.preventDefault();
     const email = $('#promo-email').value.trim();
@@ -571,12 +727,25 @@
     $('#sub-menu').classList.remove('open');
     return false;
   };
+  // R29: light themes + dark + follow-system (default = follow system)
+  function systemDark() { try { return matchMedia('(prefers-color-scheme: dark)').matches; } catch (e) { return false; } }
+  function applyTheme(t) {
+    const eff = (!t || t === 'auto') ? (systemDark() ? 'dark' : 'default') : t;
+    if (eff === 'default') document.documentElement.removeAttribute('data-theme');
+    else document.documentElement.setAttribute('data-theme', eff);
+    document.querySelectorAll('.theme-opt').forEach(o => o.classList.toggle('active', (o.dataset.theme || '') === t));
+  }
+  window.applyPaiTheme = applyTheme;
   window.setTheme = function (t) {
-    if (t === 'default') document.documentElement.removeAttribute('data-theme');
-    else document.documentElement.setAttribute('data-theme', t);
     try { localStorage.setItem('pai_theme', t); } catch (e) {}
-    document.querySelectorAll('.theme-opt').forEach(o => o.classList.toggle('active', o.dataset.theme === t));
+    applyTheme(t);
   };
+  try {
+    matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+      let s = 'auto'; try { s = localStorage.getItem('pai_theme') || 'auto'; } catch (e) {}
+      if (s === 'auto') applyTheme('auto');
+    });
+  } catch (e) {}
 
   // mobile: magnifier button reveals the search bar under the top bar
   window.toggleMobileSearch = function (e) {
@@ -593,19 +762,45 @@
 
   // ── COUNTERS ──────────────────────────────────────────
   function fmt(n) { return n >= 1e6 ? (n / 1e6).toFixed(1) + 'M' : n >= 1e3 ? (n / 1e3).toFixed(1) + 'k' : String(n); }
+  // Content stats, not vanity visitor counters (R33).
   async function loadStats() {
-    const d = await P.syncStats();
-    if (!d) return;
-    if (d.totalVisitors != null) {
-      const v = fmt(d.totalVisitors);
-      const a = $('#stat-visitors'); if (a) a.textContent = v;
-      const b = $('#rail-stat-visitors'); if (b) b.textContent = v;
+    // still record the visit (ops data) — we just don't display it anymore
+    try { P.syncStats(); } catch (e) {}
+    const weekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+    let stories = 0, papers = 0;
+    try {
+      const r = await fetch('/archive-data?limit=4000');
+      const d = await r.json();
+      if (d && !d.offline && Array.isArray(d.items)) {
+        d.items.forEach(i => {
+          if ((i.savedAt || 0) >= weekAgo) {
+            if (i.type === 'paper') papers++; else stories++;
+          }
+        });
+      }
+    } catch (e) {}
+    if (!stories && !papers) {
+      // preview / cold KV — fall back to what's loaded in this session
+      stories = _news.length + _blogs.length; papers = _papers.length;
     }
-    if (d.articlesReadTotal != null) {
-      const v = fmt(d.articlesReadTotal);
-      const a = $('#stat-reads'); if (a) a.textContent = v;
-      const b = $('#rail-stat-reads'); if (b) b.textContent = v;
-    }
+    let sources = 20;
+    try {
+      const p = await P.loadPayload();
+      if (p && p.sources) sources = Object.keys(p.sources).length;
+    } catch (e) {}
+    const set = (id, v) => { const n = $(id); if (n) n.textContent = v; };
+    if (stories) set('#stat-stories', fmt(stories));
+    if (papers) set('#stat-papers', fmt(papers));
+    set('#stat-sources', sources + '+');
+    // honest social proof on subscribe forms (R32) — only when real
+    try {
+      const meta = await P.getMeta();
+      if (meta && meta.subscribers >= 100) {
+        document.querySelectorAll('[data-social-proof]').forEach(n => {
+          n.textContent = `Join ${fmt(meta.subscribers)}+ readers · No spam. Unsubscribe anytime.`;
+        });
+      }
+    } catch (e) {}
   }
 
   // ── RAIL SUBSCRIBE (mirrors the right-rail promo; always visible) ──
@@ -624,9 +819,9 @@
 
   // ── BOOT ──────────────────────────────────────────────
   function boot() {
-    let saved = 'default';
-    try { saved = localStorage.getItem('pai_theme') || 'default'; } catch (e) {}
-    setTheme(saved);
+    let saved = 'auto';
+    try { saved = localStorage.getItem('pai_theme') || 'auto'; } catch (e) {}
+    applyPaiTheme(saved);
     markActiveLang();
     // rail sources
     const railSrc = $('#rail-sources');
@@ -637,9 +832,12 @@
         railSrc.appendChild(d);
       });
     renderTools();
+    loadToolsJson(); // R35 — tools.json with lastReviewed dates
+    renderSummary(); // R30 — "Today in 60 seconds"
     // honor a #view hash (links from education.html / archive.html land on the right tab)
-    const h = (location.hash || '').replace('#', '');
-    if (['home','news','research','learn','tools'].includes(h)) go(h);
+    let h = (location.hash || '').replace('#', '');
+    h = VIEW_ALIASES[h] || h;
+    if (VIEWS.includes(h)) go(h);
     // apply a search handed off from another page's top-bar search
     try {
       const pq = sessionStorage.getItem('pai_pending_search');
@@ -651,7 +849,7 @@
     if ('IntersectionObserver' in window) {
       const lazy = [
         ['#home-research', () => { if (!_loaded.research) loadResearch('all'); }],
-        ['#home-learn',    () => { if (!_loaded.learn) loadLearn(); }],
+        ['#home-learn',    () => { if (!_loaded.deepdives) loadDeepdives(); }],
       ];
       lazy.forEach(([sel, fn]) => {
         const elx = $(sel); if (!elx) return;
@@ -662,10 +860,10 @@
       });
       // fallback warms (also keeps search results complete)
       setTimeout(() => { if (!_loaded.research) loadResearch('all'); }, 6000);
-      setTimeout(() => { if (!_loaded.learn) loadLearn(); }, 8000);
+      setTimeout(() => { if (!_loaded.deepdives) loadDeepdives(); }, 8000);
     } else {
       setTimeout(() => { if (!_loaded.research) loadResearch('all'); }, 1200);
-      setTimeout(() => { if (!_loaded.learn) loadLearn(); }, 2200);
+      setTimeout(() => { if (!_loaded.deepdives) loadDeepdives(); }, 2200);
     }
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();

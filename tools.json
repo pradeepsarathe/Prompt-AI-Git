@@ -1,0 +1,22 @@
+{
+  "lastReviewed": "2026-06-11",
+  "note": "Single source of truth for the AI tools directory (R35). Each tool: url, dom (favicon domain), name, desc, cat (llm|code|image|data|productivity), tag, access (free|both|paid), added, optional aff (full affiliate URL — when set, links use it instead of url + ?ref=promptai).",
+  "tools": [
+    { "url": "https://claude.ai", "dom": "claude.ai", "name": "Claude (Anthropic)", "desc": "Advanced reasoning, coding, analysis and long-context understanding.", "cat": "llm", "tag": "LLM", "access": "both", "added": "2025-11-01" },
+    { "url": "https://chatgpt.com", "dom": "openai.com", "name": "ChatGPT (OpenAI)", "desc": "Multimodal assistant for text, images, voice and real-time tasks.", "cat": "llm", "tag": "LLM", "access": "both", "added": "2025-11-01" },
+    { "url": "https://gemini.google.com", "dom": "gemini.google.com", "name": "Gemini (Google)", "desc": "Google's multimodal model with deep Workspace and search integration.", "cat": "llm", "tag": "LLM", "access": "both", "added": "2025-11-01" },
+    { "url": "https://www.perplexity.ai", "dom": "perplexity.ai", "name": "Perplexity", "desc": "Answer engine that cites live sources for grounded research.", "cat": "llm", "tag": "LLM", "access": "both", "added": "2025-11-01" },
+    { "url": "https://github.com/features/copilot", "dom": "github.com", "name": "GitHub Copilot", "desc": "AI pair programmer integrated into VS Code, JetBrains and more.", "cat": "code", "tag": "Coding", "access": "paid", "added": "2025-11-01" },
+    { "url": "https://www.cursor.com", "dom": "cursor.com", "name": "Cursor IDE", "desc": "AI-native code editor built on VS Code with deep Claude/GPT integration.", "cat": "code", "tag": "Coding", "access": "both", "added": "2025-11-01" },
+    { "url": "https://replit.com", "dom": "replit.com", "name": "Replit Agent", "desc": "Cloud IDE that builds and deploys full apps from a prompt.", "cat": "code", "tag": "Coding", "access": "both", "added": "2025-11-01" },
+    { "url": "https://www.midjourney.com", "dom": "midjourney.com", "name": "Midjourney", "desc": "State-of-the-art text-to-image generation with photorealistic quality.", "cat": "image", "tag": "Image AI", "access": "paid", "added": "2025-11-01" },
+    { "url": "https://openai.com/dall-e-3", "dom": "openai.com", "name": "DALL·E 3", "desc": "OpenAI's image model with precise text rendering inside images.", "cat": "image", "tag": "Image AI", "access": "paid", "added": "2025-11-01" },
+    { "url": "https://stability.ai", "dom": "stability.ai", "name": "Stable Diffusion", "desc": "Open-weights image generation you can run and fine-tune locally.", "cat": "image", "tag": "Image AI", "access": "free", "added": "2025-11-01" },
+    { "url": "https://huggingface.co", "dom": "huggingface.co", "name": "Hugging Face", "desc": "The hub for open models, datasets and ML demos.", "cat": "data", "tag": "Models & data", "access": "free", "added": "2025-11-01" },
+    { "url": "https://www.databricks.com/product/machine-learning", "dom": "databricks.com", "name": "Databricks + DBRX", "desc": "Enterprise AI/ML platform with integrated LLM and data pipelines.", "cat": "data", "tag": "Data platform", "access": "paid", "added": "2025-11-01" },
+    { "url": "https://www.notion.so/product/ai", "dom": "notion.so", "name": "Notion AI", "desc": "AI-enhanced workspace for notes, docs, wikis and project management.", "cat": "productivity", "tag": "Productivity", "access": "both", "added": "2025-11-01" },
+    { "url": "https://gamma.app", "dom": "gamma.app", "name": "Gamma", "desc": "Generate polished decks, docs and sites from a single prompt.", "cat": "productivity", "tag": "Productivity", "access": "both", "added": "2025-11-01" },
+    { "url": "https://otter.ai", "dom": "otter.ai", "name": "Otter.ai", "desc": "Live meeting transcription, summaries and action items.", "cat": "productivity", "tag": "Productivity", "access": "both", "added": "2025-11-01" },
+    { "url": "https://elevenlabs.io", "dom": "elevenlabs.io", "name": "ElevenLabs", "desc": "Lifelike AI voice generation, dubbing and text-to-speech.", "cat": "productivity", "tag": "Productivity", "access": "both", "added": "2025-11-01" }
+  ]
+}

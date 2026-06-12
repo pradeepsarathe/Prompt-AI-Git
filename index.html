@@ -22,6 +22,14 @@
 <meta name="twitter:image" content="https://promptai.in/og-image.jpg"/>
 <link rel="alternate" type="application/rss+xml" title="PromptAI — AI Research Feed" href="/feed.xml"/>
 <link rel="sitemap" type="application/xml" href="/sitemap.xml"/>
+<meta name="color-scheme" content="light dark"/>
+<meta name="theme-color" content="#1a73e8"/>
+<link rel="manifest" href="manifest.webmanifest"/>
+<link rel="apple-touch-icon" href="icon-192.png"/>
+<script>/* pre-paint theme (R29): saved theme or system preference, before first paint */
+(function(){try{var t=localStorage.getItem('pai_theme')||'auto';
+if(t==='auto')t=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'default';
+if(t!=='default')document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
 <script type="application/ld+json">
 {"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://promptai.in/#org","name":"PromptAI","url":"https://promptai.in/","logo":"https://promptai.in/og-image.jpg","description":"Independent hub for AI research, papers, tools and insights.","sameAs":["https://twitter.com/promptai_in","https://www.linkedin.com/company/promptai-in","https://www.instagram.com/promptai.in"]},{"@type":"WebSite","@id":"https://promptai.in/#website","url":"https://promptai.in/","name":"PromptAI","publisher":{"@id":"https://promptai.in/#org"},"potentialAction":{"@type":"SearchAction","target":"https://promptai.in/archive.html?q={search_term_string}","query-input":"required name=search_term_string"}},{"@type":"WebPage","@id":"https://promptai.in/#webpage","url":"https://promptai.in/","name":"PromptAI — AI Research Hub","description":"Curated AI papers, breaking research news, tool reviews and expert analysis — all in one place. Updated daily.","isPartOf":{"@id":"https://promptai.in/#website"},"about":{"@id":"https://promptai.in/#org"},"primaryImageOfPage":"https://promptai.in/og-image.jpg","inLanguage":"en"}]}
 </script>
@@ -60,6 +68,18 @@
     --shadow:0 1px 2px rgba(28,25,23,0.08),0 2px 6px rgba(28,25,23,0.05);
     --shadow-hover:0 2px 6px rgba(28,25,23,0.13),0 8px 20px rgba(28,25,23,0.09);
   }
+
+  /* Dark — manual pick or "follow system" (R29) */
+  :root[data-theme="dark"] {
+    --accent:#8ab4f8; --accent-2:#aecbfa; --accent-subtle:#1f3658;
+    --bg:#17181c; --bg-subtle:#222327; --bg-rail:#1e1f24; --card:#1e1f24;
+    --text:#e8eaed; --text-2:#9aa0a6; --text-3:#7d818a;
+    --border:#3c4043; --border-soft:#2d2f33;
+    --shadow:0 1px 2px rgba(0,0,0,0.5),0 1px 3px rgba(0,0,0,0.4);
+    --shadow-hover:0 1px 3px rgba(0,0,0,0.6),0 4px 12px rgba(0,0,0,0.5);
+    color-scheme:dark;
+  }
+  :root[data-theme="dark"] .modal-read, :root[data-theme="dark"] .subscribe-cta { color:#17181c; }
 
   * { margin:0; padding:0; box-sizing:border-box; }
   html { scroll-behavior:smooth; }
@@ -350,6 +370,46 @@
   .about-panel li { display:flex; gap:8px; font-size:0.8rem; color:var(--text-2); line-height:1.5; }
   .about-panel li::before { content:'→'; color:var(--accent); font-weight:700; flex:none; }
 
+  /* ════ "TODAY IN 60 SECONDS" (R30) ════ */
+  .summary-card { background:var(--accent-subtle); border-radius:14px; padding:18px 20px; margin:2px 0 22px; }
+  .summary-k { display:flex; align-items:center; gap:7px; font-size:0.72rem; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; color:var(--accent); margin-bottom:8px; }
+  .summary-k svg { width:14px; height:14px; fill:currentColor; }
+  .summary-card ul { list-style:none; margin:0; padding:0; }
+  .summary-card li { font-size:0.92rem; line-height:1.55; padding:4px 0 4px 18px; position:relative; color:var(--text); }
+  .summary-card li::before { content:'•'; position:absolute; left:2px; color:var(--accent); font-weight:700; }
+  .summary-note { font-size:0.7rem; color:var(--text-3); margin-top:8px; }
+
+  /* ════ SAVE / LIKE buttons on cards (R28) ════ */
+  .card-act { display:flex; gap:2px; margin-left:auto; flex:none; }
+  .act-btn { width:30px; height:30px; border-radius:50%; border:none; background:none; color:var(--text-3); display:flex; align-items:center; justify-content:center; padding:0; }
+  .act-btn svg { width:16px; height:16px; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linejoin:round; }
+  .act-btn:hover { background:var(--bg-subtle); color:var(--text); }
+  .act-btn.on { color:var(--accent); }
+  .act-btn.on svg { fill:currentColor; }
+  .modal-share button.on { border-color:var(--accent); color:var(--accent); }
+
+  /* ════ "EXPLAIN THIS PAPER" (R30) ════ */
+  #m-explain { margin:0 0 16px; }
+  .explain-btn { width:100%; padding:11px; border-radius:10px; border:1px dashed var(--accent); background:var(--accent-subtle); color:var(--accent); font-weight:600; font-size:0.88rem; }
+  .explain-btn:hover { background:var(--card); }
+  .explain-loading { font-size:0.85rem; color:var(--text-3); padding:10px 2px; }
+  .explain-out { font-size:0.9rem; line-height:1.7; background:var(--bg-subtle); border-radius:12px; padding:14px 16px; color:var(--text); }
+  .explain-out strong { color:var(--accent); }
+  .explain-note { font-size:0.7rem; color:var(--text-3); margin-top:8px; }
+
+  /* ════ SERVER-RENDERED HEADLINES (R19) — visible until the app boots ════ */
+  #ssr-home { padding:4px 0 10px; }
+  #ssr-home h2 { font-family:var(--serif); font-size:1.15rem; font-weight:600; margin:18px 0 8px; }
+  #ssr-home ul { list-style:none; margin:0; padding:0; }
+  #ssr-home li { padding:6px 0; border-bottom:1px solid var(--border-soft); font-size:0.93rem; line-height:1.5; }
+  #ssr-home li a { color:var(--text); }
+  #ssr-home li a:hover { color:var(--accent); }
+  #ssr-home li span { color:var(--text-3); font-size:0.78rem; }
+  #ssr-home .ssr-summary { background:var(--accent-subtle); border-radius:14px; padding:16px 18px; }
+  #ssr-home .ssr-summary h2 { margin:0 0 6px; color:var(--accent); font-size:0.9rem; text-transform:uppercase; letter-spacing:0.08em; font-family:'Roboto',sans-serif; }
+  #ssr-home .ssr-more { font-size:0.85rem; margin-top:12px; }
+  #ssr-home .ssr-more a { color:var(--accent); font-weight:500; }
+
   /* ════ MODAL ════ */
   .modal-overlay { display:none; position:fixed; inset:0; z-index:200; background:rgba(32,33,36,0.6); backdrop-filter:blur(3px); overflow-y:auto; }
   .modal-overlay.open { display:block; }
@@ -500,6 +560,14 @@
     <span class="sw"><i style="background:#0f766e"></i><i style="background:#f7f5f1"></i><i style="background:#1c1917"></i></span>
     Slate &amp; teal<span class="chk">✓</span>
   </button>
+  <button class="theme-opt" data-theme="dark" onclick="setTheme('dark')">
+    <span class="sw"><i style="background:#8ab4f8"></i><i style="background:#17181c"></i><i style="background:#2d2f33"></i></span>
+    Dark<span class="chk">✓</span>
+  </button>
+  <button class="theme-opt" data-theme="auto" onclick="setTheme('auto')">
+    <span class="sw"><i style="background:#ffffff"></i><i style="background:#9aa0a6"></i><i style="background:#17181c"></i></span>
+    Follow system<span class="chk">✓</span>
+  </button>
 </div>
 
 <!-- subscribe popover -->
@@ -535,8 +603,9 @@
   <button class="tab active" data-nav="home" onclick="go('home')">Home</button>
   <button class="tab" data-nav="news" onclick="go('news')">News</button>
   <button class="tab" data-nav="research" onclick="go('research')">Research</button>
-  <button class="tab" data-nav="learn" onclick="go('learn')">Deep dives</button>
+  <button class="tab" data-nav="deepdives" onclick="go('deepdives')">Deep dives</button>
   <button class="tab" data-nav="tools" onclick="go('tools')">Tools</button>
+  <a class="tab" href="prompts.html">Prompts</a>
   <a class="tab" href="education.html">Learn AI</a>
   <a class="tab" href="archive.html">Archive</a>
 </nav>
@@ -550,12 +619,14 @@
       <section class="view active" id="view-home">
         <h1 class="sec-title"><span class="bar"></span> Your briefing</h1>
         <p class="sec-sub">The AI world right now — top story, latest research, and what to read next.</p>
+        <div id="home-summary"></div>
+        <!--SSR:HOME-->
         <div id="home-lead"></div>
         <div class="sec-divider"><div class="sec-kick">News</div><div class="sec-row"><h2>Top stories</h2><div class="line"></div><a href="#" onclick="go('news');return false;">Full feed →</a></div></div>
         <div class="stack" id="home-top"></div>
         <div class="sec-divider"><div class="sec-kick">Papers</div><div class="sec-row"><h2>Fresh from research</h2><div class="line"></div><a href="#" onclick="go('research');return false;">All papers →</a></div></div>
         <div class="stack" id="home-research"></div>
-        <div class="sec-divider"><div class="sec-kick">Deep dives</div><div class="sec-row"><h2>Worth learning</h2><div class="line"></div><a href="#" onclick="go('learn');return false;">All explainers →</a></div></div>
+        <div class="sec-divider"><div class="sec-kick">Deep dives</div><div class="sec-row"><h2>Worth learning</h2><div class="line"></div><a href="#" onclick="go('deepdives');return false;">All explainers →</a></div></div>
         <div class="stack" id="home-learn"></div>
         <div class="sec-divider"><div class="sec-kick">Tools</div><div class="sec-row"><h2>Tools to try</h2><div class="line"></div><a href="#" onclick="go('tools');return false;">All tools →</a></div></div>
         <div class="tools-grid" id="home-tools"></div>
@@ -593,11 +664,11 @@
         <div class="stack" id="research-list"></div>
       </section>
 
-      <!-- LEARN / BLOGS -->
-      <section class="view" id="view-learn">
+      <!-- DEEP DIVES (view key renamed from "learn", R34) -->
+      <section class="view" id="view-deepdives">
         <h1 class="sec-title"><span class="bar"></span> Deep dives &amp; explainers</h1>
         <p class="sec-sub">Evergreen deep dives and tutorials — hand-picked from The Gradient, Hugging Face, fast.ai, Distill and more.</p>
-        <div class="stack" id="learn-list"></div>
+        <div class="stack" id="deepdives-list"></div>
       </section>
 
       <!-- TOOLS -->
@@ -631,8 +702,18 @@
         <form onsubmit="return doSubscribe(event)">
           <input type="email" id="promo-email" placeholder="you@example.com" required/>
           <button type="submit">Subscribe free</button>
-          <span class="note">No spam. Unsubscribe anytime.</span>
+          <span class="note" data-social-proof>No spam. Unsubscribe anytime.</span>
+          <span class="note"><a href="/issues" style="color:var(--accent)">Read a sample issue →</a></span>
         </form>
+      </div>
+      <!-- Sponsorship slot (R42) — stays hidden until a sponsor exists.
+           To activate: remove `hidden`, drop the sponsor's <a> + copy into #sponsor-slot. -->
+      <div class="panel" id="sponsor-panel" hidden>
+        <div class="panel-h"><svg viewBox="0 0 24 24"><path d="M20 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zm0 14H4V6h16v12z"/></svg> Sponsor</div>
+        <div class="panel-b" id="sponsor-slot">
+          <!-- sponsor creative goes here -->
+          <p style="font-size:0.78rem;color:var(--text-3);margin-top:8px;">Sponsored · <a href="mailto:hello@promptai.in?subject=Sponsoring%20PromptAI" style="color:var(--accent)">Sponsor PromptAI</a></p>
+        </div>
       </div>
       <div class="panel">
         <div class="panel-h"><svg viewBox="0 0 24 24"><path d="m16 6 2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z"/></svg> Trending now</div>
@@ -643,11 +724,11 @@
         <div class="panel-b" id="rail-sources"></div>
       </div>
       <div class="panel">
-        <div class="panel-h"><svg viewBox="0 0 24 24"><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z"/></svg> Live stats</div>
+        <div class="panel-h"><svg viewBox="0 0 24 24"><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z"/></svg> This week on PromptAI</div>
         <div class="panel-b" id="stats-panel">
-          <div class="stat-row"><span class="k">Total visitors</span><span class="v" id="stat-visitors">—</span></div>
-          <div class="stat-row"><span class="k">Articles read</span><span class="v" id="stat-reads">—</span></div>
-          <div class="stat-row"><span class="k">Sources tracked</span><span class="v">20+</span></div>
+          <div class="stat-row"><span class="k">Stories curated</span><span class="v" id="stat-stories">—</span></div>
+          <div class="stat-row"><span class="k">Papers tracked</span><span class="v" id="stat-papers">—</span></div>
+          <div class="stat-row"><span class="k">Sources</span><span class="v" id="stat-sources">20+</span></div>
         </div>
       </div>
       <div class="panel about-panel">
@@ -671,8 +752,10 @@
     <span data-no-translate>© 2026 PromptAI · promptai.in</span>
     <a href="privacy.html">Privacy</a>
     <a href="terms.html">Terms</a>
+    <a href="prompts.html">Prompts</a>
     <a href="education.html">Learn AI</a>
     <a href="archive.html">Archive</a>
+    <a href="/issues">Issues</a>
     <a href="/feed.xml">RSS</a>
     <a href="/unsubscribe">Unsubscribe</a>
   </div>
@@ -691,8 +774,11 @@
       <div class="modal-meta" id="m-meta"></div>
       <div class="modal-text" id="m-text"></div>
       <div class="modal-note" id="m-note"></div>
+      <div id="m-explain" style="display:none"></div>
       <a class="modal-read" id="m-read" href="#" target="_blank" rel="noopener" onclick="closeModal()">Read full article →</a>
       <div class="modal-share">
+        <button id="m-save">🔖 Save</button>
+        <button id="m-like">❤️ Like</button>
         <a id="m-x" target="_blank" rel="noopener">𝕏 Post</a>
         <a id="m-li" target="_blank" rel="noopener">in Share</a>
         <button onclick="copyLink()" id="m-copy">🔗 Copy</button>
@@ -714,5 +800,16 @@
 <script src="pai-feed-engine.js"></script>
 <script src="pai-google-ui.js"></script>
 <script src="pai-account.js"></script>
+<script>
+// PWA (R10): offline shell + faster repeat visits
+if ('serviceWorker' in navigator) {
+  addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+}
+</script>
+<!-- Cloudflare Web Analytics (R40) — privacy-friendly, no cookies.
+     Activate: Cloudflare dash → Analytics & Logs → Web Analytics → add site →
+     paste your token below and remove this comment wrapper.
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "PASTE_TOKEN_HERE"}'></script>
+-->
 </body>
 </html>

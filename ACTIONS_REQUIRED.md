@@ -1,64 +1,72 @@
-# ACTIONS REQUIRED — deploy & manual steps (11 Jun 2026)
+# ACTIONS REQUIRED — manual steps to finish this deploy
 
-Everything in this package is code-complete. The items below are the things
-**only you** can do (dashboard settings, pushing, testing with real email).
+Everything in this folder is code-complete, but a few things only YOU can do
+(dashboard settings, secrets, cron). Work top-to-bottom; ~20 minutes total.
 
-## 1. Push this package to git → auto-deploys
-Copy the contents of `deploy-2026-06-11/` over the repo root of
-`pradeepsarathe/Prompt-AI-Git` and push to `main`. Changed/new files:
+## 1. Cloudflare Pages — bindings (Settings → Functions)
 
-| File | What changed |
-|---|---|
-| `functions/auth.js` | Rate limiting + lockout, PBKDF2 600k (auto-upgrades old hashes), password reset, CORS locked to promptai.in, delete-account |
-| `functions/subscribe.js` | **Double opt-in** — stores `pending:<email>` + sends confirmation link instead of subscribing immediately |
-| `functions/confirm.js` | **NEW** — `/confirm` endpoint: activates the address, sends the first briefing |
-| `functions/send-digest.js` | `Authorization: Bearer` auth, skips `pending:`/`meta:` keys, writes `meta:lastRun` health report |
-| `_headers` | **NEW** — HSTS, nosniff, X-Frame-Options, Referrer-Policy, Permissions-Policy + noindex on backup pages |
-| `_redirects` | feed.xml / sitemap.xml routing + www→apex |
-| `privacy.html`, `terms.html` | **NEW** — linked from the new homepage footer |
-| `index.html` | h1/h2/h3 hierarchy, "Blogs"→"Deep dives" tab, footer with Privacy/Terms, dialog ARIA, og-image.jpg |
-| `education.html`, `archive.html` | og-image.jpg reference only |
-| `pai-google-ui.js` | Keyboard-accessible cards (Tab + Enter/Space), URL per section (#news…, Back works), aria-current tabs, modal focus return |
-| `pai-account.js` | "Forgot password?" flow + `/?reset=<token>` landing, password minimum now 8 chars (matches backend) |
-| `og-image.jpg` | **NEW** — 48 KB (was 552 KB PNG). Keep og-image.png in the repo or delete it; nothing references it anymore |
+| Binding | Type | Notes |
+|---|---|---|
+| `STATS` | KV namespace | already exists — feed cache, archive, issues, AI explainer cache all live here |
+| `SUBSCRIBERS` | KV namespace | already exists (newsletter) |
+| `USERS` | KV namespace | already exists (accounts) |
+| `AI` | **Workers AI** | **NEW — required for R30.** Settings → Functions → Workers AI bindings → add, name it exactly `AI`. Free tier (~10k neurons/day) is plenty: one summary per refresh + cached paper explainers. Without it the site still works — summary/explainers just don't render. |
 
-## 2. Cloudflare Pages settings (one-time)
-- **KV binding `USERS`** — required for sign-in, rate limiting and password
-  reset. Pages → Settings → Functions → KV namespace bindings.
-- Confirm existing bindings/secrets are still set: `SUBSCRIBERS` (KV),
-  `RESEND_API_KEY`, `FROM_EMAIL`, `CRON_SECRET`.
+## 2. Environment variables (Settings → Environment variables, Production)
 
-## 3. Migrate the cron call to header auth
-`/send-digest?key=…` still works, but query strings leak into logs. In
-cron-job.org, change the job to:
-- URL: `https://promptai.in/send-digest` (no `?key=`)
-- Header: `Authorization: Bearer <CRON_SECRET>`
+| Var | Value | Why |
+|---|---|---|
+| `CRON_SECRET` | (already set) | also authorizes `/api/refresh-feeds` + `/health` detail view |
+| `UNSUB_SECRET` | any long random string (`openssl rand -hex 32`) | signs unsubscribe links (R17). Optional — falls back to `CRON_SECRET` if unset. |
+| `SPONSOR_HTML` | leave **unset** | when you land a sponsor, set it to their HTML snippet and it appears in the email digest (R42). The website slot is in `index.html` → `#sponsor-panel` (remove `hidden`). |
 
-Health check any time: KV key `meta:lastRun` in the SUBSCRIBERS namespace
-shows last send time, recipient count, and any Resend error.
+## 3. Cron — add ONE new job (cron-job.org)
 
-## 4. Test with a real inbox (10 minutes)
-1. **Double opt-in:** subscribe with a test address → confirmation email →
-   click link → `/confirm` page + first briefing arrives.
-2. **Password reset:** create an account → sign out → "Forgot password?" →
-   email link → lands on `/?reset=…` → set new password → signed in.
-3. **Digest:** `curl -H "Authorization: Bearer $CRON_SECRET" "https://promptai.in/send-digest?to=you@example.com"`.
+Keep the existing Tuesday send-digest job. Add:
 
-## 5. Resend dashboard
-SPF + DKIM + DMARC for `promptai.in` must all show **Verified** — double
-opt-in protects sender reputation but can't fix missing DNS records.
+- **URL:** `https://promptai.in/api/refresh-feeds`
+- **Schedule:** every 30 minutes
+- **Header:** `Authorization: Bearer <CRON_SECRET>`
 
-## 6. After deploy — verify
-- `https://promptai.in/og-image.jpg` loads; share preview works
-  ([opengraph.xyz](https://www.opengraph.xyz)).
-- Response headers include `Strict-Transport-Security` (the `_headers` file).
-- `#news` / `#research` URLs open on the right tab; browser Back walks tabs.
-- Tab through the homepage: cards focus and open with Enter.
+This builds the feed cache, the AI "Today in 60 seconds", the daily
+`/issue/<date>` pages and the archive. The site self-heals if a run is
+missed, but fresh content depends on this job.
+
+## 4. Uptime monitoring (R41) — 2 minutes
+
+Point UptimeRobot (free) at `https://promptai.in/health` (keyword: `"ok":true`).
+Returns 503 when the feed cache is >3h stale — i.e. your cron died.
+For a full ops report: `https://promptai.in/health?key=<CRON_SECRET>`.
+
+## 5. Web analytics (R40) — 2 minutes
+
+Cloudflare dash → Analytics & Logs → Web Analytics → add `promptai.in` →
+copy the token → in `index.html`, find the commented beacon `<script>` near
+the bottom, paste the token, remove the comment wrapper.
+
+## 6. Delete dead artifacts from the REPO (R4/R23)
+
+These confuse crawlers and future sessions. In the repo root, delete:
+
+- `index_classic_backup.html`, `promptai_google.html` (old prototypes — currently only noindexed)
+- any local drift folders if they were ever committed: `promptai-deploy/`, `promptai-latest/`, `promptai-site/`, `promptai-update/`
+- after confirming deploy: remove the `X-Robots-Tag` blocks for the deleted files from `_headers`
+
+## 7. After first deploy — smoke test
+
+1. `https://promptai.in/api/feeds` → JSON with `news[]`, `papers[]`
+2. Trigger the cron once manually → `https://promptai.in/issue/<today>` renders
+3. `https://promptai.in/issues`, `/topic/llms`, `/prompts.html` render
+4. View-source on `/` → server-rendered headlines inside `<!--SSR:HOME-->` block (R19)
+5. `/health` → `"ok":true`
+6. Subscribe with a test email → confirm → check unsubscribe link has `&sig=`
 
 ## Notes
-- Existing subscribers are grandfathered as active — double opt-in only
-  affects new signups. Unconfirmed signups expire from KV after 7 days.
-- Existing user passwords keep working; hashes upgrade to 600k iterations
-  silently on next successful login.
-- A strict Content-Security-Policy is deliberately **not** set yet (inline
-  handlers + third-party feed proxies would break). Future work.
+
+- **PPTX/PWA:** first visit after deploy installs a service worker (`sw.js`).
+  If you ever see stale content during testing: DevTools → Application →
+  Service workers → Unregister, then hard reload.
+- **Affiliates (R43):** tool links now carry `?ref=promptai`. To use a real
+  affiliate URL for a tool, add `"aff": "https://…"` to that tool in `tools.json`.
+- **Issue pages backfill:** issues exist from the first cron run onward; there's
+  no historical backfill.
