@@ -13,6 +13,7 @@
 // Uses the same SUBSCRIBERS KV binding + Resend config as subscribe.js.
 
 import { fetchDigestContent, digestHtml, digestText } from './send-digest.js';
+import { unsubscribeUrl } from './lib/feedlib.js';
 
 export async function onRequest(context) {
   const { request, env } = context;
@@ -66,7 +67,8 @@ export async function onRequest(context) {
           const dateStr = new Date().toLocaleString('en-US', {
             month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit',
           });
-          const unsub = 'https://promptai.in/unsubscribe?email=' + encodeURIComponent(email);
+          const unsub = await unsubscribeUrl(env, email);
+          const issueDate = new Date().toISOString().slice(0, 10);
           const resp = await fetch('https://api.resend.com/emails', {
             method: 'POST',
             headers: { 'Authorization': 'Bearer ' + env.RESEND_API_KEY, 'Content-Type': 'application/json' },
@@ -74,8 +76,8 @@ export async function onRequest(context) {
               from: env.FROM_EMAIL,
               to: [email],
               subject: `✅ You're in — your first PromptAI briefing`,
-              html: digestHtml({ ...content, dateStr, email }),
-              text: digestText({ ...content, dateStr, email }),
+              html: digestHtml({ ...content, dateStr, email, unsubUrl: unsub, issueDate }),
+              text: digestText({ ...content, dateStr, email, unsubUrl: unsub, issueDate }),
               headers: {
                 'List-Unsubscribe': '<' + unsub + '>',
                 'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',

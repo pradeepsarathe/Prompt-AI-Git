@@ -1,85 +1,76 @@
-# PromptAI — Quality Pass (June 9, 2026)
+# CHANGES — deploy-2026-06-11-v2
 
-Reviewed against the live git repo `pradeepsarathe/Prompt-AI-Git@main` (the source of
-truth). The codebase is already mature and well-built, so this pass is **surgical**: it
-targets concrete deliverability wins, real content inconsistencies, and project hygiene.
-Older punch-list items (broken news sources, HN deprioritization, login persistence /
-guest→account migration, the global visitor/read counter) were already resolved in the
-live code and needed no further work.
+One package, the whole punch list. Push the CONTENTS of this folder to the
+repo root (it includes everything from the earlier deploy-2026-06-11 package
+plus all of the R-items below). Then do ACTIONS_REQUIRED.md.
 
----
+## Architecture
+- **R1 — server-side feed aggregation.** New `/api/refresh-feeds` (cron, every
+  30 min) fetches all sources server-side, classifies topics, generates the AI
+  summary, snapshots the daily issue, merges the archive, writes one KV payload.
+- **R2 — single sources module.** `functions/lib/sources.js` is now the ONLY
+  feed list. send-digest, /feed, rss-proxy allow-list and the aggregator all
+  derive from it. `functions/lib/feedlib.js` holds the shared fetch/parse code
+  (one copy, was three).
+- **R3 — archive races fixed.** The archive has a single writer (the
+  aggregator). Browser POSTs to /archive-data are acknowledged but ignored.
+- **R36 — 5,000-item cap removed.** Hot window (~4,000) + monthly cold
+  segments `arch:seg:YYYY-MM` (`/archive-data?month=…`, `?months=1` to list).
+- **R6 — first-visit request storm gone.** The browser makes ONE call to
+  `/api/feeds` (was ~80 requests: 61 HN items + 17 feeds × proxy races).
+  Legacy client-side path kept as automatic fallback.
+- **R5 — CI.** `.github/workflows/ci.yml` syntax-checks functions + client JS,
+  validates JSON, verifies relative imports resolve.
 
-## Files to commit to the repo (auto-deploys via Cloudflare Pages)
+## SEO
+- **R19 — server-rendered headlines.** `functions/_middleware.js` injects the
+  AI summary + top headlines + latest papers as real HTML into `/` (replaced
+  when the live app boots). Crawlers finally see content.
+- **R21/R39 — rankable pages.** `/issue/<YYYY-MM-DD>` (daily briefing snapshot,
+  Article JSON-LD), `/issues` (index), `/topic/{llms,agents,vision,robotics,policy,research,tools}`
+  hubs. All server-rendered, no JS needed. Sitemap enumerates them.
+- Digest email now links "Read this issue on the web" → its `/issue/…` page.
 
-| File | Change |
-|---|---|
-| `functions/send-digest.js` | Plain-text email alternative + one-click List-Unsubscribe headers |
-| `functions/subscribe.js` | Same for the on-signup send; accurate welcome copy + plain-text |
-| `emails/welcome.html` | Synced preview copy to match what's actually sent (removed drift) |
-| `index.html` | Cadence + "what's inside" + meta-description accuracy; reduced-motion a11y |
+## Product
+- **R29 — dark theme.** Follows system by default, manual override remembered
+  (Dark + "Follow system" added to every page's theme menu; pre-paint script
+  prevents flash; `color-scheme` set).
+- **R30 — Workers AI.** "Today in 60 seconds" on the homepage (from the
+  aggregator, cached in KV) + "✨ Explain this paper" in the arXiv modal
+  (`/api/explain`, cached per-paper forever, rate-limited 20/h/IP).
+  Both degrade silently without the AI binding.
+- **R28 — save/like wired up.** Bookmark/heart on every card + in the modal,
+  backed by the existing pai-account layer (localStorage + KV sync when
+  signed in). Added `unrecord` (un-save/un-like).
+- **R31 — prompt library.** `prompts.html` + `prompts-data.js` — 25 seeded
+  prompts across Writing/Coding/Research/Marketing/Learning/Productivity,
+  category filters, copy buttons. In the tab bar + footer of every page.
+- **R34 — view key renamed** learn → deepdives (`#learn` links still work).
+- **R25 — focus trap** in modal + sign-in sheet (Tab cycles inside).
+- **R35 — tools.json** with `lastReviewed` + per-tool `added` dates; UI loads
+  it at runtime (embedded list = fallback).
 
-Local-only (not committed): deleted the drifting folder copies — see "Cleanup" below.
+## Newsletter
+- **R17 — HMAC-signed unsubscribe** links (`&sig=`); legacy unsigned links now
+  require one confirm click instead of instantly unsubscribing strangers.
+- **R32 — honest social proof.** Subscriber count (rounded to 25) shown on
+  subscribe forms only once ≥100 real subscribers; "Read a sample issue" link.
+- **R38 — growth footer** in the digest: forward CTA, share-on-X, web version.
+- **R42 — sponsor slot**: `SPONSOR_HTML` env var (email) + hidden
+  `#sponsor-panel` (site). Nothing renders until you activate them.
+- **R43 — affiliate-ready links**: `?ref=promptai` on tool links; `aff` field
+  in tools.json for real affiliate URLs later.
 
----
+## Ops / misc
+- **R9/R41 — `/health`**: public ok/stale check (for UptimeRobot) + full
+  authed report (bindings, last runs, subscriber counts).
+- **R10 — PWA**: manifest + icons + service worker (offline shell,
+  network-first content).
+- **R33 — stats panel** shows content stats (stories/papers this week,
+  sources) instead of vanity visitor counters. Visits still recorded.
+- **R40 — Cloudflare Web Analytics** snippet ready (commented; needs token).
+- **R8** — `display=swap` fonts already in place; preconnects tidied.
 
-## 1. Email deliverability — the biggest lever (newsletter is the product)
-
-**`functions/send-digest.js`**
-- **Plain-text alternative** on every send. Added `digestText()` (exported) and pass a
-  `text:` field alongside `html:` in the Resend batch. HTML-only mail is penalised by
-  spam filters; a proper multipart message scores better.
-- **One-click unsubscribe headers** on every message:
-  `List-Unsubscribe: <…>` + `List-Unsubscribe-Post: List-Unsubscribe=One-Click`.
-  Gmail & Yahoo now **require** these for bulk senders — this is a direct inbox-placement
-  improvement, not cosmetic.
-
-**`functions/subscribe.js`**
-- Imports `digestText` and sends a `text:` alternative on the signup confirmation send.
-- Added `welcomeText()` for the feeds-empty fallback path.
-- Same `List-Unsubscribe` one-click headers on the signup send.
-- Tightened the inlined `welcomeHtml()` bullets so they describe what the digest
-  **actually** sends (headlines · hand-picked deep dives · one paper) — previously
-  promised "3 must-read papers".
-
-## 2. Content consistency (trust)
-
-- **Cadence fixed.** The homepage promised "**Mondays**" but the welcome email, the digest
-  footer, and `emails/index.html` all say **Tuesday**. Homepage → **Tuesdays**. (If your
-  real send day is Monday, flip these four spots instead — they should match whichever is true.)
-- **"What's inside" made accurate.** Homepage chip "🛠 3 new tools" → "📝 Hand-picked deep
-  dives" — the briefing sends news + blogs + a paper, not tools.
-- **Meta description** no longer cites "MIT Tech Review" (not a current source); now lists
-  arXiv, Hacker News, TechCrunch and the top AI labs.
-- **`emails/welcome.html`** preview copy re-synced to match the live `welcomeHtml()` so the
-  preview shown in `emails/index.html` reflects reality.
-
-## 3. Accessibility polish (`index.html`)
-
-- Extended the `prefers-reduced-motion` block: disables `scroll-behavior: smooth` and the
-  looping `pulse` animations (hero badge dot, live dot) for users who opt out of motion.
-
-## 4. Cleanup — drifting local copies removed
-
-Deleted the stale local folder copies that drift from git and caused exactly the confusion
-CLAUDE.md warns about (none of these are in the repo):
-`promptai-deploy/`, `promptai-latest/`, `promptai-site/`, `promptai-update/`, `changed-files/`.
-The repo `pradeepsarathe/Prompt-AI-Git@main` remains the single source of truth.
-
----
-
-## Recommended next — needs a product decision (not changed blindly)
-
-1. **Email theme mismatch.** The *sent* digest (`digestHtml()`) is **dark**
-   (`#0b1020`). `emails/briefing-preview.html` is a **light** mockup, and
-   `emails/weekly-digest.html` is an older "Issue #12" mockup that is **never sent**.
-   Pick the canonical look (dark vs light), then regenerate the two static previews from
-   `digestHtml()` so `emails/index.html` shows what subscribers actually receive. I left the
-   live email untouched since the intended theme is a brand call.
-2. **SPF / DKIM / DMARC** for `promptai.in` must show **Verified** in Resend — the single
-   biggest factor in whether briefings reach the inbox. The List-Unsubscribe headers above
-   help, but only alongside verified auth.
-3. **Feed resilience** (`functions/send-digest.js`): log feeds that return 0 items so dead
-   sources surface, and cache the last good digest in KV so a total feed outage still sends
-   something rather than the no-op.
-4. **SEO**: the feed is JS-rendered — server-inject the latest headlines into `index.html`
-   so Googlebot sees real content on first paint (see DISCOVERABILITY.md).
+## NOT done (deliberately)
+- D1 migration (kept KV per your call), payments/Pro tier, R22/R37-style
+  external account changes beyond the dashboard steps in ACTIONS_REQUIRED.

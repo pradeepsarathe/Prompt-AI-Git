@@ -71,6 +71,24 @@
     syncUp(kind, d);
   }
 
+  // unrecord(kind, url) — remove from a list (un-save / un-like, R28).
+  async function unrecord(kind, url) {
+    if (!url || !CAPS[kind]) return;
+    const d = getData();
+    d[kind] = (d[kind] || []).filter(x => x.url !== url);
+    putData(d);
+    // push the removal to the server copy (overwrite that list)
+    const token = getToken(); const sess = getSession();
+    if (!token || !sess || sess.local) return;
+    try {
+      const g = await api({ action: 'getdata', token });
+      if (!g || g.error) return;
+      const server = Object.assign(blankData(), g.data || {});
+      server[kind] = (server[kind] || []).filter(x => x.url !== url);
+      await api({ action: 'setdata', token, data: server });
+    } catch (e) { /* offline — local removal already done */ }
+  }
+
   // merge one list into the server copy without clobbering other devices
   async function syncUp(kind, local) {
     const token = getToken();
@@ -343,7 +361,7 @@
   }
 
   // ── public API ────────────────────────────────────────
-  window.paiAccount = { record, getSession, getData, pullData, renderUser };
+  window.paiAccount = { record, unrecord, getSession, getData, pullData, renderUser };
 
   // ── boot ──────────────────────────────────────────────
   function boot() { renderUser(); validate(); maybeResetFromLink(); }

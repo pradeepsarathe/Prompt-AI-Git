@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<script>/* pre-paint theme (R29) */(function(){try{var t=localStorage.getItem('pai_theme')||'auto';if(t==='auto')t=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'default';if(t!=='default')document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Prompt Library — 25 battle-tested AI prompts | PromptAI</title>
+<meta name="description" content="25 copy-paste prompts that actually work — for writing, coding, research, marketing and learning. Tested with Claude, ChatGPT and Gemini. Free, no sign-up."/>
+<link rel="canonical" href="https://promptai.in/prompts.html"/>
+<meta property="og:type" content="website"/>
+<meta property="og:url" content="https://promptai.in/prompts.html"/>
+<meta property="og:site_name" content="PromptAI"/>
+<meta property="og:title" content="Prompt Library — 25 battle-tested AI prompts"/>
+<meta property="og:description" content="Copy-paste prompts for writing, coding, research, marketing and learning. Tested with Claude, ChatGPT and Gemini."/>
+<meta property="og:image" content="https://promptai.in/og-image.jpg"/>
+<meta name="twitter:card" content="summary_large_image"/>
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"CollectionPage","name":"PromptAI Prompt Library","url":"https://promptai.in/prompts.html","description":"25 battle-tested AI prompts for writing, coding, research, marketing and learning.","isPartOf":{"@type":"WebSite","url":"https://promptai.in/","name":"PromptAI"}}
+</script>
+<link rel="alternate" type="application/rss+xml" title="PromptAI — AI Research Feed" href="/feed.xml"/>
+<meta name="color-scheme" content="light dark"/>
+<link rel="manifest" href="manifest.webmanifest"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Roboto+Serif:opsz,wght@8..144,400;8..144,500;8..144,600&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="pai-chrome.css"/>
+<style>
+  /* base reset (pai-chrome.css assumes the page provides this) */
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Roboto',system-ui,sans-serif; color:var(--text); background:var(--bg); line-height:1.5; -webkit-font-smoothing:antialiased; }
+  a { color:inherit; text-decoration:none; }
+  button { font-family:inherit; cursor:pointer; }
+  ::selection { background:var(--accent-subtle); }
+  :focus-visible { outline:2px solid var(--accent); outline-offset:2px; border-radius:4px; }
+  @media (prefers-reduced-motion:reduce){ *{animation:none!important;transition:none!important;} }
+  code { font-family:'Roboto Mono',monospace; font-size:0.85em; background:var(--bg-subtle); padding:1px 5px; border-radius:5px; }
+
+  .lib-head { margin:6px 0 22px; }
+  .lib-head .sec-sub { margin-left:14px; }
+  .chips#cat-filters { position:sticky; top:64px; background:var(--bg); z-index:5; padding:10px 0; border-bottom:1px solid var(--border-soft); margin-bottom:18px; display:flex; gap:8px; flex-wrap:wrap; }
+
+  .prompt-grid { display:grid; grid-template-columns:1fr; gap:14px; }
+  .prompt-card {
+    background:var(--card); border:1px solid var(--border-soft); border-radius:14px;
+    padding:18px 20px 16px; box-shadow:var(--shadow);
+  }
+  .prompt-card .ph { display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; margin-bottom:6px; }
+  .prompt-card h3 { font-family:var(--serif); font-size:1.08rem; font-weight:600; }
+  .prompt-card .cat-pill { font-size:0.68rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:var(--accent); background:var(--accent-subtle); border-radius:12px; padding:3px 10px; }
+  .prompt-card .why { font-size:0.85rem; color:var(--text-2); line-height:1.55; margin-bottom:12px; }
+  .prompt-card pre {
+    font-family:'Roboto Mono',ui-monospace,monospace; font-size:0.8rem; line-height:1.65;
+    background:var(--bg-subtle); border-radius:10px; padding:14px 16px; white-space:pre-wrap;
+    color:var(--text); max-height:230px; overflow:auto; border:1px solid var(--border-soft);
+  }
+  .prompt-card .pf { display:flex; align-items:center; gap:10px; margin-top:12px; flex-wrap:wrap; }
+  .copy-btn {
+    display:inline-flex; align-items:center; gap:7px; padding:9px 18px; border-radius:18px;
+    border:none; background:var(--accent); color:#fff; font-weight:600; font-size:0.84rem;
+  }
+  :root[data-theme="dark"] .copy-btn { color:#17181c; }
+  .copy-btn:hover { background:var(--accent-2); }
+  .pf .hint { font-size:0.74rem; color:var(--text-3); }
+  .lib-tip { background:var(--accent-subtle); border-radius:14px; padding:16px 18px; font-size:0.88rem; line-height:1.6; margin:0 0 20px; color:var(--text); }
+  .lib-tip b { color:var(--accent); }
+  .empty-lib { color:var(--text-3); padding:30px 0; text-align:center; }
+  @media (min-width:980px){ .prompt-grid { grid-template-columns:1fr 1fr; } .prompt-card.wide { grid-column:1 / -1; } }
+</style>
+</head>
+<body>
+
+<!-- ════ TOP BAR (shared chrome) ════ -->
+<header class="topbar">
+  <a class="brand" href="index.html" aria-label="PromptAI home" data-no-translate>
+    <span class="brand-mark">
+      <svg viewBox="0 0 32 32"><rect x="1.5" y="1.5" width="29" height="29" rx="8" fill="var(--accent)"/><path d="M9.5 10.5 14.5 16l-5 5.5" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/><line x1="16.5" y1="21.5" x2="23" y2="21.5" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/></svg>
+    </span>
+    <span class="brand-text">Prompt<b>AI</b></span>
+  </a>
+  <div class="topbar-spacer"></div>
+  <div class="topbar-actions">
+    <button class="icon-btn" onclick="toggleThemeMenu(event)" aria-label="Theme" title="Appearance">
+      <svg viewBox="0 0 24 24"><path d="M12 22a10 10 0 0 1 0-20c5.51 0 10 4.04 10 9 0 3.31-2.69 6-6 6h-1.77c-.28 0-.5.22-.5.5 0 .12.05.23.13.33.41.47.64 1.06.64 1.67A2.5 2.5 0 0 1 12 22zm0-18a8 8 0 0 0 0 16c.28 0 .5-.22.5-.5a.54.54 0 0 0-.14-.35c-.41-.46-.63-1.05-.63-1.65a2.5 2.5 0 0 1 2.5-2.5H16a4 4 0 0 0 4-4c0-3.86-3.59-7-8-7zm-5.5 6a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3zm3-4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3zm5 0a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3z"/></svg>
+    </button>
+    <button class="subscribe-cta" id="subscribe-btn" onclick="toggleSubscribe(event)">Subscribe</button>
+  </div>
+</header>
+
+<!-- theme menu (Dark + Follow system are appended by pai-chrome.js) -->
+<div class="theme-menu" id="theme-menu">
+  <h5>Appearance</h5>
+  <button class="theme-opt" data-theme="default" onclick="setTheme('default')">
+    <span class="sw"><i style="background:#1a73e8"></i><i style="background:#ffffff"></i><i style="background:#202124"></i></span>
+    Briefing (clean white)<span class="chk">✓</span>
+  </button>
+  <button class="theme-opt" data-theme="promptai" onclick="setTheme('promptai')">
+    <span class="sw"><i style="background:#2563eb"></i><i style="background:#f3f6fc"></i><i style="background:#0a1628"></i></span>
+    PromptAI blue<span class="chk">✓</span>
+  </button>
+  <button class="theme-opt" data-theme="slate" onclick="setTheme('slate')">
+    <span class="sw"><i style="background:#0f766e"></i><i style="background:#f7f5f1"></i><i style="background:#1c1917"></i></span>
+    Slate &amp; teal<span class="chk">✓</span>
+  </button>
+</div>
+
+<!-- subscribe popover -->
+<div class="sub-menu" id="sub-menu">
+  <h5>Get the briefing</h5>
+  <p class="sub-lead">The one story that matters, 5 headlines and the paper everyone's citing — every Tuesday.</p>
+  <form onsubmit="return doTopSubscribe(event)">
+    <input id="top-email" type="email" placeholder="you@example.com" required aria-label="Email"/>
+    <button type="submit">Subscribe free</button>
+  </form>
+  <p class="sub-note">No spam. Unsubscribe anytime.</p>
+</div>
+
+<!-- ════ TAB BAR ════ -->
+<nav class="tabs" aria-label="Sections">
+  <a class="tab" href="index.html#home">Home</a>
+  <a class="tab" href="index.html#news">News</a>
+  <a class="tab" href="index.html#research">Research</a>
+  <a class="tab" href="index.html#deepdives">Deep dives</a>
+  <a class="tab" href="index.html#tools">Tools</a>
+  <a class="tab active" href="prompts.html">Prompts</a>
+  <a class="tab" href="education.html">Learn AI</a>
+  <a class="tab" href="archive.html">Archive</a>
+</nav>
+
+<!-- ════ SHELL ════ -->
+<div class="canvas" data-screen-label="Prompt Library">
+  <main class="main">
+    <div class="lib-head">
+      <div class="sec-title"><span class="bar"></span> Prompt library</div>
+      <p class="sec-sub">25 battle-tested prompts you can copy straight into Claude, ChatGPT or Gemini. Replace the <code>[bracketed]</code> parts with your own details.</p>
+    </div>
+
+    <div class="lib-tip"><b>How to use these:</b> the best prompts give the model a role, the context it needs, the format you want back, and one example or constraint. Every prompt below follows that pattern — edit the brackets, keep the structure.</div>
+
+    <div class="chips" id="cat-filters"></div>
+    <div class="prompt-grid" id="prompt-grid"></div>
+    <div class="empty-lib" id="empty-lib" style="display:none">No prompts in this category yet.</div>
+  </main>
+</div>
+
+<!-- ════ FOOTER ════ -->
+<footer class="site-footer">
+  <div class="foot-in">
+    <span data-no-translate>© 2026 PromptAI · promptai.in</span>
+    <a href="privacy.html">Privacy</a>
+    <a href="terms.html">Terms</a>
+    <a href="index.html">Briefing</a>
+    <a href="education.html">Learn AI</a>
+    <a href="archive.html">Archive</a>
+    <a href="/feed.xml">RSS</a>
+  </div>
+</footer>
+
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script src="pai-chrome.js"></script>
+<script src="prompts-data.js"></script>
+<script>
+(function () {
+  const $ = (s) => document.querySelector(s);
+  const grid = $('#prompt-grid');
+  const PROMPTS = window.PAI_PROMPTS || [];
+  const CATS = ['All', ...new Set(PROMPTS.map(p => p.cat))];
+  let _cat = 'All';
+
+  function chips() {
+    const box = $('#cat-filters');
+    box.innerHTML = '';
+    CATS.forEach(c => {
+      const b = document.createElement('button');
+      b.className = 'chip' + (c === _cat ? ' active' : '');
+      b.textContent = c === 'All' ? `All (${PROMPTS.length})` : `${c} (${PROMPTS.filter(p => p.cat === c).length})`;
+      b.onclick = () => { _cat = c; chips(); render(); };
+      box.appendChild(b);
+    });
+  }
+
+  function render() {
+    grid.innerHTML = '';
+    const list = _cat === 'All' ? PROMPTS : PROMPTS.filter(p => p.cat === _cat);
+    $('#empty-lib').style.display = list.length ? 'none' : 'block';
+    list.forEach(p => {
+      const card = document.createElement('article');
+      card.className = 'prompt-card';
+      const h = document.createElement('div'); h.className = 'ph';
+      const pill = document.createElement('span'); pill.className = 'cat-pill'; pill.textContent = p.cat;
+      const t = document.createElement('h3'); t.textContent = p.title;
+      h.appendChild(pill); h.appendChild(t);
+      const why = document.createElement('p'); why.className = 'why'; why.textContent = p.why;
+      const pre = document.createElement('pre'); pre.textContent = p.prompt;
+      const f = document.createElement('div'); f.className = 'pf';
+      const btn = document.createElement('button'); btn.className = 'copy-btn'; btn.textContent = '📋 Copy prompt';
+      btn.onclick = () => {
+        navigator.clipboard.writeText(p.prompt).then(
+          () => { btn.textContent = '✓ Copied'; if (window.toast) toast('Prompt copied — paste it into your AI of choice'); setTimeout(() => btn.textContent = '📋 Copy prompt', 1800); },
+          () => { if (window.toast) toast('Copy failed — select the text manually'); });
+      };
+      const hint = document.createElement('span'); hint.className = 'hint'; hint.textContent = p.hint || '';
+      f.appendChild(btn); if (p.hint) f.appendChild(hint);
+      card.appendChild(h); card.appendChild(why); card.appendChild(pre); card.appendChild(f);
+      grid.appendChild(card);
+    });
+  }
+
+  chips(); render();
+})();
+</script>
+</body>
+</html>

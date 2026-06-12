@@ -27,6 +27,46 @@
     try { localStorage.setItem('pai_' + key, JSON.stringify({ ts: Date.now(), data, t: ttl })); } catch (e) {}
   }
 
+  // ── AGGREGATED PAYLOAD (R1/R6) ───────────────────────────────
+  // ONE request to /api/feeds replaces the old ~80-request storm. The
+  // server (Pages Function + cron) aggregates every source, classifies
+  // topics and adds the AI daily summary. Everything below falls back to
+  // the legacy client-side fetching when the API is unreachable (local
+  // preview, first deploy, KV outage).
+  let _payloadPromise = null;
+  function loadPayload() {
+    if (_payloadPromise) return _payloadPromise;
+    _payloadPromise = (async () => {
+      const cached = cacheGet('apifeeds', 5 * 60 * 1000);
+      if (cached) return cached;
+      try {
+        const ctrl = new AbortController();
+        setTimeout(() => ctrl.abort(), 12000);
+        const r = await fetch('/api/feeds', { signal: ctrl.signal });
+        if (r.ok) {
+          const d = await r.json();
+          if (d && !d.offline && ((d.news && d.news.length) || (d.papers && d.papers.length))) {
+            cacheSet('apifeeds', d, 5 * 60 * 1000);
+            return d;
+          }
+        }
+      } catch (e) {}
+      return null;
+    })();
+    return _payloadPromise;
+  }
+  function getPayloadSync() {
+    return cacheGet('apifeeds', 5 * 60 * 1000);
+  }
+  async function getSummary() {
+    const p = await loadPayload();
+    return p && p.summary ? p.summary : null;
+  }
+  async function getMeta() {
+    const p = await loadPayload();
+    return p && p.meta ? p.meta : {};
+  }
+
   // ── DATA-QUALITY HELPERS ──────────────────────────────
   function clip(str, n = 220) {
     const s = (str || '').replace(/\s+/g, ' ').trim();
@@ -213,7 +253,7 @@
   }
 
   // ── FETCH: HACKER NEWS ────────────────────────────────
-  async function fetchHN() {
+  async function legacyFetchHN() {
     const cached = cacheGet('hn', CACHE_TTL_NEWS);
     if (cached) return cached;
     const res = await fetch('https://hacker-news.firebaseio.com/v0/topstories.json');
@@ -239,7 +279,7 @@
   }
 
   // ── FETCH: NEWS RSS (same 9 sources as the live site) ─
-  async function fetchTech() {
+  async function legacyFetchTech() {
     const feeds = [
       { url: 'https://huggingface.co/blog/feed.xml',                          src: 'hf' },
       { url: 'https://techcrunch.com/category/artificial-intelligence/feed/', src: 'tc' },
@@ -268,7 +308,7 @@
     { url: 'https://blog.langchain.dev/rss/',              src: 'langchain' },
     { url: 'https://interconnects.ai/feed',               src: 'interconnects' },
   ];
-  async function fetchBlogs() {
+  async function legacyFetchBlogs() {
     const settled = await Promise.allSettled(BLOG_FEEDS.map(f => fetchRSS(f.url, f.src, 6, CACHE_TTL_BLOGS)));
     const out = [];
     settled.forEach(r => { if (r.status === 'fulfilled') out.push(...r.value); });
@@ -293,7 +333,7 @@
     'cs.RO': { label: 'Robotics',         cls: 'cat-rl' },
     'cs.NE': { label: 'Neural Nets',      cls: 'cat-ai' },
   };
-  async function fetchPapers(cat = 'all') {
+  async function legacyFetchPapers(cat = 'all') {
     const cKey = 'papers_' + cat;
     const cached = cacheGet(cKey, CACHE_TTL_PAPERS);
     if (cached) return cached;
@@ -339,6 +379,34 @@
     return results;
   }
 
+  // ── PUBLIC FETCHERS — aggregated payload first, legacy fallback ──
+  async function fetchHN() {
+    const p = await loadPayload();
+    if (p) return (p.news || []).filter(s => s.src === 'hn');
+    return legacyFetchHN();
+  }
+  async function fetchTech() {
+    const p = await loadPayload();
+    if (p) return (p.news || []).filter(s => s.src !== 'hn');
+    return legacyFetchTech();
+  }
+  async function fetchBlogs() {
+    const p = await loadPayload();
+    if (p && p.blogs && p.blogs.length) return p.blogs.slice().sort((a, b) => storyMs(b) - storyMs(a));
+    return legacyFetchBlogs();
+  }
+  async function fetchPapers(cat = 'all') {
+    const p = await loadPayload();
+    if (p && p.papers && p.papers.length) {
+      if (cat === 'all') return p.papers;
+      const info = PAPER_CAT_MAP[cat];
+      const want = info ? info.label : cat;
+      const hits = p.papers.filter(x => x.cat === want);
+      if (hits.length >= 3) return hits;
+    }
+    return legacyFetchPapers(cat);
+  }
+
   // ── SOURCE METADATA ───────────────────────────────────
   const SRC_LABEL = {
     hn: 'Hacker News', arxiv: 'arXiv', tc: 'TechCrunch', mit: 'MIT News', wired: 'Wired',
@@ -364,10 +432,20 @@
     marktechpost: '#0ea5e9', analytics: '#a16207', databricks: '#ff3621', cohere: '#39594d',
     venturebeat: '#d6482b', mistral: '#fa520f', perplexity: '#20808d', bair: '#003262',
   };
-  function srcLabel(src) { return SRC_LABEL[src] || (src ? src.charAt(0).toUpperCase() + src.slice(1) : 'Source'); }
-  function srcColor(src) { return SRC_COLOR[src] || '#5f6368'; }
+  function srcLabel(src) {
+    const p = getPayloadSync();
+    if (p && p.sources && p.sources[src]) return p.sources[src].label;
+    return SRC_LABEL[src] || (src ? src.charAt(0).toUpperCase() + src.slice(1) : 'Source');
+  }
+  function srcColor(src) {
+    const p = getPayloadSync();
+    if (p && p.sources && p.sources[src]) return p.sources[src].color;
+    return SRC_COLOR[src] || '#5f6368';
+  }
   function srcFavicon(src, urlGuess) {
-    const dom = SRC_DOMAIN[src] || (urlGuess ? domainOf(urlGuess) : '');
+    const p = getPayloadSync();
+    const meta = p && p.sources && p.sources[src];
+    const dom = (meta && meta.domain) || SRC_DOMAIN[src] || (urlGuess ? domainOf(urlGuess) : '');
     return dom ? `https://www.google.com/s2/favicons?domain=${dom}&sz=64` : '';
   }
 
@@ -435,8 +513,10 @@
 
   // ── EXPORT ────────────────────────────────────────────
   window.PAI = {
-    fetchHN, fetchTech, fetchArxiv: () => fetchRSS('https://rss.arxiv.org/rss/cs.AI+cs.LG+cs.CL', 'arxiv', 15, CACHE_TTL_NEWS),
+    fetchHN, fetchTech,
+    fetchArxiv: () => fetchPapers('all'),
     fetchBlogs, fetchPapers,
+    loadPayload, getSummary, getMeta,
     srcLabel, srcColor, srcFavicon, classifyTopic,
     storyMs, timeAgo, domainOf, summarizeContent, rankStories,
     syncStats, bumpReadCount, subscribe,

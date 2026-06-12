@@ -1,32 +1,12 @@
 // functions/rss-proxy.js
 // Cloudflare Pages Function — RSS proxy, bypasses CORS
 // Deployed at: /rss-proxy?url=<encoded_feed_url>
+//
+// Kept as a fallback for the client-side feed engine (used only when
+// /api/feeds is unavailable). The allow-list is DERIVED from the single
+// sources module (R2) — add a feed there and the proxy allows it.
 
-const ALLOWED = [
-  'rss.arxiv.org', 'export.arxiv.org',
-  'techcrunch.com', 'venturebeat.com',
-  'www.theverge.com', 'feeds.arstechnica.com',
-  'thegradient.pub', 'medium.com',
-  'blog.research.google', 'openai.com',
-  'sloanreview.mit.edu', 'www.analyticsinsight.net',
-  'api.rss2json.com',
-  'www.anthropic.com', 'huggingface.co',
-  'www.deeplearning.ai', 'ai.meta.com',
-  'blog.perplexity.ai', 'mistral.ai',
-  'cohere.com', 'www.databricks.com',
-  'blog.langchain.dev', 'wandb.ai',
-  // Alt research sources
-  'spectrum.ieee.org',
-  'www.sciencedaily.com',
-  'www.jmlr.org',
-  // News + lab research replacements
-  'www.marktechpost.com', 'www.unite.ai',
-  'www.microsoft.com', 'news.mit.edu',
-  'bair.berkeley.edu',
-  // Educational blogs
-  'www.fast.ai', 'distill.pub',
-  'interconnects.ai',
-];
+import { ALLOWED_DOMAINS } from './lib/sources.js';
 
 export async function onRequest(context) {
   const { request } = context;
@@ -59,7 +39,8 @@ export async function onRequest(context) {
     });
   }
 
-  if (!ALLOWED.some(d => host === d || host.endsWith('.' + d))) {
+  const ok = ALLOWED_DOMAINS.some(d => host === d || host.endsWith('.' + d) || ('www.' + host) === d);
+  if (!ok) {
     return new Response(JSON.stringify({ error: 'Domain not allowed' }), {
       status: 403,
       headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },

@@ -1,57 +1,102 @@
 // functions/unsubscribe.js
-// Cloudflare Pages Function — one-click unsubscribe.
+// Cloudflare Pages Function — unsubscribe with HMAC-signed links (R17).
 //
-// Every digest/confirmation email links here:
-//   https://promptai.in/unsubscribe?email=someone@example.com
-// This removes the address from the SUBSCRIBERS KV namespace so the hourly
-// send (send-digest.js) skips them, and shows a friendly confirmation page.
+// Every email now links:  /unsubscribe?email=<addr>&sig=<hmac>
+// The sig is an HMAC-SHA256 of the email (secret: UNSUB_SECRET or
+// CRON_SECRET), so strangers can no longer unsubscribe arbitrary
+// addresses with a guessable URL.
+//
+//   • GET/POST with a VALID sig   → removed instantly (true one-click;
+//     also satisfies Gmail/Yahoo List-Unsubscribe-Post).
+//   • GET without / with bad sig  → shows a "confirm unsubscribe" page;
+//     the button POSTs back here (legacy links keep working, but it now
+//     takes a human click).
+//   • POST confirm=1 (the form)   → removed.
 //
 // Uses the same SUBSCRIBERS KV binding the subscribe endpoint writes to.
+
+import { hmacVerify } from './lib/feedlib.js';
 
 export async function onRequest(context) {
   const { request, env } = context;
   const url = new URL(request.url);
-  const email = (url.searchParams.get('email') || '').trim().toLowerCase();
+
+  let email = (url.searchParams.get('email') || '').trim().toLowerCase();
+  let sig = url.searchParams.get('sig') || '';
+  let confirmed = false;
+
+  if (request.method === 'POST') {
+    const ct = request.headers.get('content-type') || '';
+    try {
+      if (ct.includes('application/x-www-form-urlencoded') || ct.includes('multipart/form-data')) {
+        const form = await request.formData();
+        email = (String(form.get('email') || email)).trim().toLowerCase();
+        if (form.get('confirm')) confirmed = true;
+        // RFC 8058 one-click POSTs "List-Unsubscribe=One-Click" — the sig in
+        // the URL still authorizes it.
+        if (form.get('List-Unsubscribe')) confirmed = false;
+      }
+    } catch (e) { /* fall through */ }
+  }
 
   const valid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-  let removed = false;
+  const secret = env.UNSUB_SECRET || env.CRON_SECRET || '';
+  const signed = valid && secret && await hmacVerify(secret, email, sig);
 
-  if (valid && env.SUBSCRIBERS) {
+  // No secret configured at all → behave like the legacy endpoint (but
+  // still require the confirm click for GETs).
+  const authorized = signed || confirmed || (request.method === 'POST' && !secret);
+
+  let removed = false;
+  let existed = false;
+  if (valid && authorized && env.SUBSCRIBERS) {
     try {
       const existing = await env.SUBSCRIBERS.get(email);
+      existed = !!existing;
       if (existing) { await env.SUBSCRIBERS.delete(email); removed = true; }
+      // also clear any pending double-opt-in record
+      await env.SUBSCRIBERS.delete('pending:' + email).catch?.(() => {});
     } catch (e) { /* fall through to page */ }
   }
 
-  const title = !valid
-    ? 'Invalid link'
-    : removed
-      ? "You're unsubscribed"
-      : "You're already unsubscribed";
-  const msg = !valid
-    ? 'This unsubscribe link is missing or malformed. If you keep getting emails, reply to one and we’ll remove you.'
-    : removed
-      ? `<b>${escapeHtml(email)}</b> has been removed. You won’t receive any more PromptAI emails. Sorry to see you go.`
-      : `<b>${escapeHtml(email)}</b> isn’t on our list — you’re all set, no more emails will be sent.`;
+  // ── render ──
+  if (!valid) {
+    return page('Invalid link',
+      'This unsubscribe link is missing or malformed. If you keep getting emails, reply to one and we’ll remove you.', '');
+  }
 
-  return new Response(page(title, msg, valid && email), {
-    status: 200,
-    headers: { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store' },
-  });
+  if (!authorized) {
+    // Legacy/unsigned link: ask for one click.
+    return page('Confirm unsubscribe',
+      `Click below to stop PromptAI emails to <b>${escapeHtml(email)}</b>.`,
+      email,
+      `<form method="POST" action="/unsubscribe" style="margin-top:24px;">
+         <input type="hidden" name="email" value="${escapeHtml(email)}"/>
+         <input type="hidden" name="confirm" value="1"/>
+         <button type="submit" style="padding:13px 28px;background:#dc2626;color:#fff;border:none;border-radius:10px;font-weight:600;font-size:15px;cursor:pointer;font-family:inherit;">Unsubscribe ${escapeHtml(email)}</button>
+       </form>`);
+  }
+
+  const title = removed ? "You're unsubscribed" : "You're already unsubscribed";
+  const msg = removed
+    ? `<b>${escapeHtml(email)}</b> has been removed. You won’t receive any more PromptAI emails. Sorry to see you go.`
+    : `<b>${escapeHtml(email)}</b> isn’t on our list — you’re all set, no more emails will be sent.`;
+  return page(title, msg, email);
 }
 
 function escapeHtml(s) {
   return (s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
-function page(title, msg, email) {
+function page(title, msg, email, extraHtml) {
   const resub = email
     ? `<p style="margin:22px 0 0;font-size:14px;color:#64748b;">Changed your mind?
          <a href="https://promptai.in/#newsletter" style="color:#2563eb;font-weight:600;text-decoration:none;">Re-subscribe</a></p>`
     : '';
-  return `<!DOCTYPE html><html lang="en"><head>
+  const html = `<!DOCTYPE html><html lang="en"><head>
 <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>${title} — PromptAI</title>
+<meta name="robots" content="noindex"/>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet"/>
 <style>
@@ -70,8 +115,13 @@ function page(title, msg, email) {
   <div class="body">
     <h1>${title}</h1>
     <p>${msg}</p>
+    ${extraHtml || ''}
     ${resub}
     <a class="btn" href="https://promptai.in">← Back to PromptAI</a>
   </div>
 </div></body></html>`;
+  return new Response(html, {
+    status: 200,
+    headers: { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store' },
+  });
 }

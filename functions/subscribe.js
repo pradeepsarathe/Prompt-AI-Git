@@ -21,6 +21,7 @@
 // Setup: Pages → Settings → Functions → KV namespace bindings → SUBSCRIBERS
 
 import { fetchDigestContent, digestHtml, digestText } from './send-digest.js';
+import { unsubscribeUrl } from './lib/feedlib.js';
 
 const PENDING_TTL = 60 * 60 * 24 * 7; // unconfirmed signups expire after 7 days
 
@@ -160,7 +161,8 @@ async function sendFirstBriefing(env, email) {
     const dateStr = new Date().toLocaleString('en-US', {
       month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit',
     });
-    const unsub = 'https://promptai.in/unsubscribe?email=' + encodeURIComponent(email);
+    const unsub = await unsubscribeUrl(env, email);
+    const issueDate = new Date().toISOString().slice(0, 10);
     const resp = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: { 'Authorization': 'Bearer ' + env.RESEND_API_KEY, 'Content-Type': 'application/json' },
@@ -168,8 +170,8 @@ async function sendFirstBriefing(env, email) {
         from: env.FROM_EMAIL,
         to: [email],
         subject: `✅ You're subscribed — your PromptAI briefing inside`,
-        html: digestHtml({ ...content, dateStr, email }),
-        text: digestText({ ...content, dateStr, email }),
+        html: digestHtml({ ...content, dateStr, email, unsubUrl: unsub, issueDate }),
+        text: digestText({ ...content, dateStr, email, unsubUrl: unsub, issueDate }),
         headers: {
           'List-Unsubscribe': '<' + unsub + '>',
           'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',

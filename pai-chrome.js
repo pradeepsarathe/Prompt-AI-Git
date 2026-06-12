@@ -14,13 +14,38 @@
   window.toast = toast;
 
   // ── THEME ──────────────────────────────────────────────
+  // R29: light themes + dark + follow-system (default = follow system)
+  function systemDark() { try { return matchMedia('(prefers-color-scheme: dark)').matches; } catch (e) { return false; } }
+  function applyTheme(t) {
+    const eff = (!t || t === 'auto') ? (systemDark() ? 'dark' : 'default') : t;
+    if (eff === 'default') document.documentElement.removeAttribute('data-theme');
+    else document.documentElement.setAttribute('data-theme', eff);
+    document.querySelectorAll('.theme-opt').forEach(o => o.classList.toggle('active', (o.dataset.theme || '') === t));
+  }
   window.setTheme = function (t) {
-    if (t === 'default') document.documentElement.removeAttribute('data-theme');
-    else document.documentElement.setAttribute('data-theme', t);
     try { localStorage.setItem('pai_theme', t); } catch (e) {}
-    document.querySelectorAll('.theme-opt').forEach(o => o.classList.toggle('active', o.dataset.theme === t));
+    applyTheme(t);
   };
-  window.toggleThemeMenu = function (e) { e.stopPropagation(); $('#theme-menu').classList.toggle('open'); $('#sub-menu') && $('#sub-menu').classList.remove('open'); $('#lang-menu') && $('#lang-menu').classList.remove('open'); };
+  // keep following the OS while in auto mode
+  try {
+    matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+      let s = 'auto'; try { s = localStorage.getItem('pai_theme') || 'auto'; } catch (e) {}
+      if (s === 'auto') applyTheme('auto');
+    });
+  } catch (e) {}
+  // add Dark + Follow-system options to any page's theme menu (no per-page edits)
+  function ensureThemeOptions() {
+    const menu = document.getElementById('theme-menu');
+    if (!menu || menu.querySelector('[data-theme="dark"]')) return;
+    menu.insertAdjacentHTML('beforeend',
+      '<button class="theme-opt" data-theme="dark" onclick="setTheme(\'dark\')">' +
+        '<span class="sw"><i style="background:#8ab4f8"></i><i style="background:#17181c"></i><i style="background:#2d2f33"></i></span>' +
+        'Dark<span class="chk">\u2713</span></button>' +
+      '<button class="theme-opt" data-theme="auto" onclick="setTheme(\'auto\')">' +
+        '<span class="sw"><i style="background:#ffffff"></i><i style="background:#9aa0a6"></i><i style="background:#17181c"></i></span>' +
+        'Follow system<span class="chk">\u2713</span></button>');
+  }
+  window.toggleThemeMenu = function (e) { e.stopPropagation(); ensureThemeOptions(); $('#theme-menu').classList.toggle('open'); $('#sub-menu') && $('#sub-menu').classList.remove('open'); $('#lang-menu') && $('#lang-menu').classList.remove('open'); };
 
   // ── SUBSCRIBE ──────────────────────────────────────────
   window.toggleSubscribe = function (e) {
@@ -100,8 +125,8 @@
 
   // ── BOOT ───────────────────────────────────────────────
   function boot() {
-    let saved = 'default'; try { saved = localStorage.getItem('pai_theme') || 'default'; } catch (e) {}
-    setTheme(saved); markActiveLang();
+    let saved = 'auto'; try { saved = localStorage.getItem('pai_theme') || 'auto'; } catch (e) {}
+    ensureThemeOptions(); applyTheme(saved); markActiveLang();
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
 })();
