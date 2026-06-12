@@ -2,7 +2,7 @@ name: CI — sanity checks
 
 # R5: catches syntax errors and broken imports in Pages Functions before
 # Cloudflare deploys them. Runs on every push and PR to the default branch.
-
+snvldnvkjvbdv k
 on:
   push:
     branches: [main, master]
