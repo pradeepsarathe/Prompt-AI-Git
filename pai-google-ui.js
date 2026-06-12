@@ -838,9 +838,11 @@
     e.preventDefault();
     const email = $('#promo-email').value.trim();
     if (!email) return false;
+    const pf = document.querySelector('input[name="promo-freq"]:checked');
+    const freq = pf ? pf.value : 'weekly';
     toast('Subscribing…');
     P.event && P.event('subscribe_submit');
-    P.subscribe(email).then(r => {
+    P.subscribe(email, freq).then(r => {
       if (r && (r.ok || r.success || r.status === 'ok' || r.subscribed)) {
         P.event && P.event('subscribe_success');
         toast(r.message || '✓ Subscribed! Check your inbox.');

@@ -479,6 +479,10 @@ if(t!=='default')document.documentElement.setAttribute('data-theme',t);}catch(e)
   .freq-row label { flex:1; display:flex; align-items:center; justify-content:center; gap:6px; height:36px; border:1px solid var(--border); border-radius:10px; font-size:0.78rem; color:var(--text-2); cursor:pointer; }
   .freq-row label:has(input:checked) { border-color:var(--accent); color:var(--accent); background:var(--accent-subtle); font-weight:600; }
   .freq-row input { accent-color:var(--accent); margin:0; }
+  /* freq-row on the blue Briefing panel — white-on-blue treatment */
+  .news-promo .freq-row label { color:rgba(255,255,255,0.92); border-color:rgba(255,255,255,0.55); }
+  .news-promo .freq-row label:has(input:checked) { background:#fff; border-color:#fff; color:var(--accent); }
+  .news-promo .freq-row input { accent-color:#fff; }
   .search-suggest { display:none; position:absolute; top:50px; left:0; right:0; background:var(--card); border:1px solid var(--border-soft); border-radius:14px; box-shadow:var(--shadow-hover); padding:6px; z-index:70; }
   .search-suggest.open { display:flex; flex-direction:column; }
   .search-suggest button { display:flex; align-items:center; gap:9px; width:100%; padding:9px 12px; border:none; background:none; border-radius:9px; text-align:left; font-size:0.88rem; color:var(--text); cursor:pointer; }
@@ -721,9 +725,13 @@ if(t!=='default')document.documentElement.setAttribute('data-theme',t);}catch(e)
     <aside class="rightrail">
       <div class="panel news-promo">
         <h4>The Briefing</h4>
-        <p>The one story that matters, 5 headlines and the paper everyone's citing — every Tuesday.</p>
+        <p>The one story that matters, 5 headlines and the paper everyone's citing — daily or weekly, your call.</p>
         <form onsubmit="return doSubscribe(event)">
           <input type="email" id="promo-email" placeholder="you@example.com" required/>
+          <div class="freq-row" role="radiogroup" aria-label="How often">
+            <label><input type="radio" name="promo-freq" value="weekly" checked="checked"/> Weekly · Tue</label>
+            <label><input type="radio" name="promo-freq" value="daily"/> Daily</label>
+          </div>
           <button type="submit">Subscribe free</button>
           <span class="note" data-social-proof>No spam. Unsubscribe anytime.</span>
           <span class="note"><a href="/issues" style="color:var(--accent)" onclick="window.PAI&&PAI.event&&PAI.event('sample_issue_click')">Read a sample issue →</a></span>
@@ -735,7 +743,7 @@ if(t!=='default')document.documentElement.setAttribute('data-theme',t);}catch(e)
         <div class="panel-h"><svg viewBox="0 0 24 24"><path d="M20 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zm0 14H4V6h16v12z"/></svg> Sponsor</div>
         <div class="panel-b" id="sponsor-slot">
           <!-- sponsor creative goes here -->
-          <p style="font-size:0.78rem;color:var(--text-3);margin-top:8px;">Sponsored · <a href="mailto:hello@promptai.in?subject=Sponsoring%20PromptAI" style="color:var(--accent)">Sponsor PromptAI</a></p>
+          <p style="font-size:0.78rem;color:var(--text-3);margin-top:8px;">Sponsored · <a href="/cdn-cgi/l/email-protection#9ff7faf3f3f0dfefedf0f2efebfef6b1f6f1a0eceafdf5fafceba2cceff0f1ecf0edf6f1f8baadafcfedf0f2efebded6" style="color:var(--accent)">Sponsor PromptAI</a></p>
         </div>
       </div>
       <div class="panel">
@@ -823,7 +831,7 @@ if(t!=='default')document.documentElement.setAttribute('data-theme',t);}catch(e)
 
 <div id="toast" role="status" aria-live="polite"></div>
 
-<script src="pai-translate.js"></script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script src="pai-translate.js"></script>
 <script src="pai-feed-engine.js"></script>
 <script src="pai-google-ui.js"></script>
 <script src="pai-account.js"></script>

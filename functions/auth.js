@@ -21,8 +21,9 @@
 //
 // Security (June 2026 hardening):
 //   • KV-backed rate limiting per IP + per-account login lockout.
-//   • PBKDF2-SHA256 at 600k iterations for new hashes (OWASP guidance);
-//     legacy 100k hashes are upgraded transparently on successful login.
+//   • PBKDF2-SHA256 at 100k iterations — the Cloudflare Workers runtime cap
+//     (it throws NotSupportedError above 100,000, so OWASP's 600k is not
+//     possible on this platform; 100k + 16-byte salt is the practical max).
 //   • CORS restricted to promptai.in / *.pages.dev previews (was "*").
 //   • Email-based password reset (30-minute single-use token via Resend).
 //
@@ -31,7 +32,9 @@
 
 const SESSION_TTL = 60 * 60 * 24 * 90; // 90 days
 const RESET_TTL = 60 * 30;             // reset links live 30 minutes
-const PBKDF2_ITER = 600000;            // new hashes (legacy users have 100000)
+const PBKDF2_ITER = 100000;             // Cloudflare Workers HARD-CAPS PBKDF2 at 100k
+                                        // iterations — deriveBits THROWS above that
+                                        // (NotSupportedError). Do not raise this here.
 const LEGACY_ITER = 100000;
 
 // ── CORS: only our own origins may call this endpoint ──
@@ -101,7 +104,18 @@ export async function onRequest(context) {
   const { request, env } = context;
   const json = mkJson(corsOrigin(request));
 
-  if (request.method === 'OPTIONS') return json({}, 204);
+  if (request.method === 'OPTIONS') {
+    // NB: a 204 must have a NULL body — Response(json, {status:204}) throws.
+    return new Response(null, {
+      status: 204,
+      headers: {
+        'Access-Control-Allow-Origin': corsOrigin(request),
+        'Access-Control-Allow-Methods': 'POST, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type',
+        'Vary': 'Origin',
+      },
+    });
+  }
   if (request.method !== 'POST') return json({ error: 'Method not allowed' }, 405);
 
   // No KV binding → tell client to use local fallback
