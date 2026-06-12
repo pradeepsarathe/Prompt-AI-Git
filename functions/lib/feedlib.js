@@ -301,6 +301,22 @@ export async function aiExplain(env, title, abstract) {
   } catch (e) { return null; }
 }
 
+export async function aiStorySummary(env, title, text) {
+  if (!env.AI) return null;
+  try {
+    const r = await withTimeout(env.AI.run(AI_MODEL, {
+      messages: [
+        { role: 'system', content: 'You summarize articles for PromptAI, a daily AI briefing. Be factual and plain-spoken. Use ONLY the material given — if it is thin, summarize what is there; never invent specifics, numbers or quotes.' },
+        { role: 'user', content: `Title: ${title}\nMaterial:\n${(text || '').slice(0, 3500)}\n\nWrite a single-paragraph summary of about 100 words (90–110). No preamble, no bullet points, no "This article…" opener — start directly with the substance.` },
+      ],
+      max_tokens: 260,
+    }), 18000, null);
+    const out = r && (r.response || '').trim();
+    if (!out || out.length < 60) return null;
+    return out;
+  } catch (e) { return null; }
+}
+
 // ── aggregated payload (R1) ─────────────────────────────────────────
 export const FEEDS_KEY = 'feeds:v1';
 export const FEEDS_TTL_MS = 35 * 60 * 1000; // refresh cadence ≈ 30 min cron

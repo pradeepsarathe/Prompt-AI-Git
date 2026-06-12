@@ -620,9 +620,34 @@
         ex.appendChild(b);
       }
     }
+    loadModalSummary(s); // ~100-word AI summary for any item (news, research, blogs…)
     $('#modal').classList.add('open'); document.body.style.overflow = 'hidden';
     const x = document.querySelector('#modal .modal-x'); if (x) x.focus();
   };
+  // Auto-load a ~100-word AI summary into the modal. Falls back silently
+  // to the RSS excerpt when AI is unavailable, offline, or rate-limited.
+  async function loadModalSummary(s) {
+    if (!s || !s.url || !/^https?:/.test(s.url)) return;
+    const note = $('#m-note');
+    const fallbackNote = `Summary from <strong>${P.domainOf(s.url)}</strong> · open the source for the full article.`;
+    if (note) note.innerHTML = `✨ Writing a quick summary… · <strong>${P.domainOf(s.url)}</strong>`;
+    try {
+      const r = await fetch('/api/summarize', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: s.url, title: s.title, desc: s.desc || '' }),
+      });
+      const d = await r.json().catch(() => null);
+      if (_modalUrl !== s.url) return; // a different story was opened meanwhile
+      if (d && d.summary) {
+        $('#m-text').innerHTML = esc(d.summary);
+        if (note) note.innerHTML = `✨ AI summary — may miss nuance · source: <strong>${P.domainOf(s.url)}</strong>`;
+      } else if (note) {
+        note.innerHTML = fallbackNote;
+      }
+    } catch (e) {
+      if (_modalUrl === s.url && note) note.innerHTML = fallbackNote;
+    }
+  }
   async function explainPaper(s, box) {
     box.innerHTML = '<div class="explain-loading">Reading the abstract…</div>';
     try {
