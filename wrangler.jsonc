@@ -1,6 +1,6 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "prompt-ai-git",
+  "name": "promptaigit",
   "compatibility_date": "2026-06-04",
   "observability": {
     "enabled": true
