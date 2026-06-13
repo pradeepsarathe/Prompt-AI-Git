@@ -6,8 +6,9 @@
 // /issue/<date> snapshot in KV, the /topic/* hubs and /prompts.html.
 
 import { PROMPT_PAGES } from './lib/promptslugs.js';
+import { LEARN_PATHS } from './lib/learnpaths.js';
 
-const EDU_LASTMOD = '2026-06-07';   // ← update when education.html changes
+const EDU_LASTMOD = '2026-06-13';   // ← update when education.html changes
 const LEGAL_LASTMOD = '2026-06-11'; // privacy.html / terms.html
 const PROMPTS_LASTMOD = '2026-06-13'; // ← update when prompts.html changes
 
@@ -24,12 +25,18 @@ export async function onRequest(context) {
     { loc: 'https://promptai.in/prompts-hindi.html', lastmod: PROMPTS_LASTMOD, changefreq: 'weekly', priority: '0.7' },
     { loc: 'https://promptai.in/archive.html',   lastmod: today,           changefreq: 'daily',   priority: '0.8' },
     { loc: 'https://promptai.in/education.html', lastmod: EDU_LASTMOD,     changefreq: 'weekly',  priority: '0.7' },
+    { loc: 'https://promptai.in/learn',          lastmod: EDU_LASTMOD,     changefreq: 'weekly',  priority: '0.7' },
     { loc: 'https://promptai.in/privacy.html',   lastmod: LEGAL_LASTMOD,   changefreq: 'yearly',  priority: '0.2' },
     { loc: 'https://promptai.in/terms.html',     lastmod: LEGAL_LASTMOD,   changefreq: 'yearly',  priority: '0.2' },
   ];
 
   TOPICS.forEach(t => urls.push({
     loc: 'https://promptai.in/topic/' + t, lastmod: today, changefreq: 'daily', priority: '0.7',
+  }));
+
+  // Per-path Learn AI pages (/learn/<slug>) — generated from learnpaths.js
+  LEARN_PATHS.forEach(p => urls.push({
+    loc: 'https://promptai.in/learn/' + p.slug, lastmod: EDU_LASTMOD, changefreq: 'monthly', priority: '0.7',
   }));
 
   // Per-prompt pages (R21/issue #1) — generated from prompts-data.js

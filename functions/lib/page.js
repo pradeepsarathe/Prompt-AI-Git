@@ -110,6 +110,7 @@ ${jsonLd ? `<script type="application/ld+json">${JSON.stringify(jsonLd)}</script
   <a href="/archive.html">Archive</a>
   <a href="/feed.xml">RSS</a>
 </footer>
+<script src="/pai-metrics.js" defer></script>
 </body>
 </html>`;
 }

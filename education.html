@@ -143,6 +143,8 @@
   .path-steps li:last-child::after { display:none; }
   .path-steps a { color:var(--lvl); font-weight:600; border-bottom:1px solid transparent; transition:border-color .15s; }
   .path-steps a:hover { border-bottom-color:var(--lvl); }
+  .path-open { display:inline-flex; align-items:center; gap:5px; margin-top:16px; font-size:0.82rem; font-weight:600; color:var(--lvl); }
+  .path-open:hover { text-decoration:underline; text-underline-offset:2px; }
 
   /* ── PROMPT ENGINEERING ── */
   .prompt-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:14px; }
@@ -391,6 +393,7 @@
             <li>Pick 1–2 tools: <a href="https://claude.ai" target="_blank" rel="noopener">Claude</a>, <a href="https://chatgpt.com" target="_blank" rel="noopener">ChatGPT</a>, <a href="https://www.perplexity.ai" target="_blank" rel="noopener">Perplexity</a></li>
             <li>Follow <a href="https://www.deeplearning.ai/the-batch/" target="_blank" rel="noopener">The Batch</a> newsletter weekly</li>
           </ol>
+          <a class="path-open" href="/learn/use-ai-productively">Open the full guide →</a>
         </article>
         <article class="path-card" data-level="intermediate">
           <div class="path-card-top">
@@ -410,6 +413,7 @@
             <li>Build with <a href="https://python.langchain.com/docs/introduction/" target="_blank" rel="noopener">LangChain</a> &amp; vector databases</li>
             <li>Deploy: <a href="https://www.deeplearning.ai/courses/large-language-models-application-through-production/" target="_blank" rel="noopener">LLMs in Production</a> (Databricks)</li>
           </ol>
+          <a class="path-open" href="/learn/build-ai-applications">Open the full guide →</a>
         </article>
         <article class="path-card" data-level="advanced">
           <div class="path-card-top">
@@ -429,6 +433,7 @@
             <li>Read arXiv papers daily via <a href="index.html#research">PromptAI Research</a></li>
             <li>Follow <a href="https://thegradient.pub/" target="_blank" rel="noopener">The Gradient</a> and <a href="https://distill.pub/" target="_blank" rel="noopener">Distill.pub</a></li>
           </ol>
+          <a class="path-open" href="/learn/research-ai-systems">Open the full guide →</a>
         </article>
       </div>
     </section>
@@ -561,6 +566,7 @@
 <script src="pai-translate.js"></script>
 <script src="pai-chrome.js"></script>
 <script src="pai-account.js"></script>
+<script src="pai-metrics.js" defer></script>
 
 <script>
 // ── chips scrollspy: highlight the chip for the section in view ──

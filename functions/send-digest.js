@@ -27,6 +27,7 @@
 // ── feed sources — single shared module (R2) ────────────────────────
 import { DIGEST_NEWS_FEEDS as NEWS_FEEDS, DIGEST_BLOG_FEEDS as BLOG_FEEDS, DIGEST_PAPER_FEEDS as PAPER_FEEDS } from './lib/sources.js';
 import { fetchFeedItems as libFetchFeedItems, withTimeout, truncate, domainOf, unsubscribeUrl } from './lib/feedlib.js';
+import { promptOfTheWeek } from './lib/promptpicks.js';
 
 export async function onRequest(context) {
   const { request, env } = context;
@@ -325,6 +326,17 @@ export function digestHtml({ news = [], blogs = [], paper = null, dateStr, email
     ${blogRows ? sectionHeader('✍️ &nbsp;Blogs &amp; Deep Dives', 'Hand-picked') + blogRows : ''}
     ${paperBlock}
 
+    ${(() => { const p = promptOfTheWeek(); return `
+    <tr><td style="padding:26px 36px 4px;">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#e8f0fe;border-radius:14px;"><tr>
+        <td style="padding:20px 24px;font-family:Helvetica,Arial,sans-serif;">
+          <div style="font-size:10px;letter-spacing:1.8px;text-transform:uppercase;color:#1a73e8;font-weight:bold;">🧰 &nbsp;Prompt of the week</div>
+          <div style="font-family:Georgia,serif;font-size:19px;color:#202124;margin:7px 0 5px;">${esc(p.title)}</div>
+          <div style="font-size:13.5px;line-height:1.6;color:#5f6368;">${esc(p.hook)}</div>
+          <a href="https://promptai.in/prompt/${p.slug}" style="display:inline-block;margin-top:11px;color:#1a73e8;text-decoration:none;font-size:13px;font-weight:bold;">Copy this prompt →</a>
+        </td>
+      </tr></table></td></tr>`; })()}
+
     <tr><td align="center" style="padding:30px 36px 6px;">
       <table role="presentation" cellpadding="0" cellspacing="0"><tr><td style="background:#1a73e8;border-radius:10px;">
         <a href="https://promptai.in" style="display:inline-block;padding:15px 32px;font-family:Helvetica,Arial,sans-serif;font-size:14px;font-weight:bold;color:#ffffff;text-decoration:none;">Open the live feed →</a>
@@ -391,6 +403,12 @@ export function digestText({ news = [], blogs = [], paper = null, dateStr, email
     lines.push(paper.link);
     lines.push('');
   }
+  const potw = promptOfTheWeek();
+  lines.push('PROMPT OF THE WEEK');
+  lines.push('------------------------------------');
+  lines.push(potw.title + ' — ' + potw.hook);
+  lines.push('Copy it: https://promptai.in/prompt/' + potw.slug);
+  lines.push('');
   lines.push('Open the live feed: https://promptai.in');
   lines.push('Read this issue on the web: ' + webUrl);
   lines.push('Forwarded this? Get your own copy: https://promptai.in/#newsletter');

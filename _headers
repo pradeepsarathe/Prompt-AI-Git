@@ -1,7 +1,11 @@
 # Cloudflare Pages — security headers for promptai.in
-# Note: a Content-Security-Policy is deliberately NOT set yet — the pages use
-# inline event handlers and fetch several third-party feed proxies, so a strict
-# CSP would break them. Refactor inline handlers first, then add CSP.
+# CSP is shipped in REPORT-ONLY mode first (it never blocks — it only reports).
+# The policy below mirrors current usage (inline handlers/JSON-LD, Google Fonts,
+# Translate, the feed proxies, Cloudflare analytics), so reports flag only the
+# UNEXPECTED — e.g. an injected script from an XSS. Watch /metrics for a couple
+# of weeks, then to ENFORCE: rename the header to `Content-Security-Policy`
+# (ideally after refactoring inline onclick handlers so 'unsafe-inline' can drop
+# from script-src). Violation reports are collected at /api/csp-report.
 
 /*
   Strict-Transport-Security: max-age=31536000; includeSubDomains
@@ -9,6 +13,7 @@
   X-Frame-Options: DENY
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=()
+  Content-Security-Policy-Report-Only: default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://static.cloudflareinsights.com https://translate.google.com https://translate.googleapis.com https://www.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://www.gstatic.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https:; connect-src 'self' https://api.rss2json.com https://hacker-news.firebaseio.com https://hn.algolia.com https://cloudflareinsights.com; frame-src 'self' https://translate.google.com; form-action 'self' https://promptai.in https://www.promptai.in; report-uri /api/csp-report
 
 # Service worker: must revalidate on every load so deploys roll out fast
 /sw.js
