@@ -50,12 +50,18 @@ export async function onRequest(context) {
 
     // ── Activate ── (frequency chosen at signup carries over — review #3/#8)
     const frequency = pending.frequency === 'daily' ? 'daily' : 'weekly';
+    const nowIso = new Date().toISOString();
     await env.SUBSCRIBERS.put(email, JSON.stringify({
       email,
-      subscribedAt: pending.at || new Date().toISOString(),
-      confirmedAt: new Date().toISOString(),
+      subscribedAt: pending.at || nowIso,
+      confirmedAt: nowIso,
       source: 'promptai.in (double opt-in)',
       frequency,
+      // Enrol in the welcome series (review #8). The daily drip
+      // (functions/welcome-series.js) reads this and sends steps 1→3 over the
+      // first week. Subscribers confirmed before this shipped have no `welcome`
+      // field and are never back-filled, so the old list is left untouched.
+      welcome: { enrolledAt: nowIso, sent: [] },
     }));
     await env.SUBSCRIBERS.delete('pending:' + email);
 

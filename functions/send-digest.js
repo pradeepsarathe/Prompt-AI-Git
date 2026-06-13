@@ -348,7 +348,7 @@ export function digestHtml({ news = [], blogs = [], paper = null, dateStr, email
 
   </table>
   <div style="font-family:Helvetica,Arial,sans-serif;font-size:11px;color:#9aa0a6;padding:16px 0 0;">© 2026 PromptAI · promptai.in</div>
-  </td></tr></table></body></html>`;
+  </td></tr></table>${email ? `<img src="https://promptai.in/e/open?e=${encodeURIComponent(email)}" width="1" height="1" alt="" style="display:block;width:1px;height:1px;border:0;opacity:0;overflow:hidden;" />` : ''}</body></html>`;
 }
 
 // ── plain-text alternative ───────────────────────────────────────────
