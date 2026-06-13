@@ -53,17 +53,20 @@
     const m = $('#sub-menu'); m.classList.toggle('open'); $('#theme-menu').classList.remove('open'); $('#lang-menu').classList.remove('open');
     if (m.classList.contains('open')) { const i = $('#top-email'); if (i) setTimeout(() => i.focus(), 30); }
   };
-  function subscribe(email) {
+  function subscribe(email, freq) {
     // Same endpoint the briefing/home use; fall back gracefully in preview.
-    return fetch('/subscribe', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email }) })
+    const frequency = freq === 'daily' ? 'daily' : 'weekly';
+    return fetch('/subscribe', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, frequency }) })
       .then(r => r.json()).catch(() => null);
   }
   window.doTopSubscribe = function (e) {
     e.preventDefault();
     const input = $('#top-email'), email = (input && input.value || '').trim();
     if (!email) return false;
-    subscribe(email).then(r => {
-      if (r && (r.ok || r.success || r.status === 'ok' || r.subscribed)) toast('✓ Subscribed! Check your inbox.');
+    const fr = document.querySelector('input[name="sub-freq"]:checked');
+    const freq = fr ? fr.value : 'weekly';
+    subscribe(email, freq).then(r => {
+      if (r && (r.ok || r.success || r.status === 'ok' || r.subscribed)) toast(freq === 'daily' ? '✓ Subscribed — daily. Check your inbox.' : '✓ Subscribed — weekly. Check your inbox.');
       else toast('✓ Thanks — you’re on the list.');
       if (input) input.value = '';
     }).catch(() => toast('Saved — we’ll be in touch.'));
@@ -75,7 +78,9 @@
     e.preventDefault();
     const input = $('#rail-email'), email = (input && input.value || '').trim();
     if (!email) return false;
-    subscribe(email).then(r => {
+    const rf = document.querySelector('input[name="rail-freq"]:checked');
+    const freq = rf ? rf.value : 'weekly';
+    subscribe(email, freq).then(r => {
       if (r && (r.ok || r.success || r.status === 'ok' || r.subscribed)) toast('✓ Subscribed! Check your inbox.');
       else toast('✓ Thanks — you’re on the list.');
       if (input) input.value = '';

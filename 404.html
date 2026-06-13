@@ -21,8 +21,8 @@ if(t!=='default')document.documentElement.setAttribute('data-theme',t);}catch(e)
   :root[data-theme="slate"] { --accent:#0f766e; --accent-2:#0d5d57; --accent-subtle:#d8efe9; --bg:#f7f5f1; --bg-subtle:#edeae3; --card:#fffefb; --text:#1c1917; --text-2:#57534e; --text-3:#a8a29e; --border:#d6d1c7; --border-soft:#e5e1d8; }
   :root[data-theme="dark"] { --accent:#8ab4f8; --accent-2:#aecbfa; --accent-subtle:#1f3658; --bg:#17181c; --bg-subtle:#222327; --card:#1e1f24; --text:#e8eaed; --text-2:#9aa0a6; --text-3:#7d818a; --border:#3c4043; --border-soft:#2d2f33; color-scheme:dark; }
   * { margin:0; padding:0; box-sizing:border-box; }
-  body { font-family:Roboto,system-ui,sans-serif; background:var(--bg); color:var(--text); min-height:100vh; display:flex; align-items:center; justify-content:center; padding:24px; line-height:1.5; }
-  .wrap { max-width:480px; width:100%; text-align:center; }
+  body { font-family:Roboto,system-ui,sans-serif; background:var(--bg); color:var(--text); min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:24px; line-height:1.5; }
+  .wrap { max-width:480px; width:100%; text-align:center; margin:auto; }
   .brand { display:inline-flex; align-items:center; gap:9px; margin-bottom:34px; text-decoration:none; color:var(--text); }
   .brand svg { width:30px; height:30px; display:block; }
   .brand b { font-family:var(--serif); font-size:1.45rem; font-weight:600; letter-spacing:-0.3px; }
@@ -37,6 +37,10 @@ if(t!=='default')document.documentElement.setAttribute('data-theme',t);}catch(e)
   .links { display:flex; flex-wrap:wrap; justify-content:center; gap:8px; }
   .links a { display:inline-flex; align-items:center; height:36px; padding:0 16px; border:1px solid var(--border); border-radius:18px; background:var(--card); color:var(--accent); font-size:0.86rem; font-weight:500; text-decoration:none; }
   .links a:hover { background:var(--accent-subtle); }
+  .site-footer { width:100%; border-top:1px solid var(--border); margin-top:40px; padding:22px 8px 4px; }
+  .site-footer .foot-in { max-width:1100px; margin:0 auto; display:flex; flex-wrap:wrap; align-items:center; justify-content:center; gap:8px 20px; font-size:0.8rem; color:var(--text-3); }
+  .site-footer a { color:var(--text-2); text-decoration:none; }
+  .site-footer a:hover { color:var(--accent); text-decoration:underline; }
 </style>
 </head>
 <body>
@@ -60,5 +64,18 @@ if(t!=='default')document.documentElement.setAttribute('data-theme',t);}catch(e)
     <a href="/archive.html">Archive</a>
   </div>
 </div>
+<footer class="site-footer">
+  <div class="foot-in">
+    <span data-no-translate>© 2026 PromptAI · promptai.in</span>
+    <a href="/privacy.html">Privacy</a>
+    <a href="/terms.html">Terms</a>
+    <a href="/prompts.html">Prompts</a>
+    <a href="/education.html">Learn AI</a>
+    <a href="/archive.html">Archive</a>
+    <a href="/issues">Issues</a>
+    <a href="/feed.xml">RSS</a>
+    <a href="/unsubscribe">Unsubscribe</a>
+  </div>
+</footer>
 </body>
 </html>

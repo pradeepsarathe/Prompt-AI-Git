@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<script>/* pre-paint theme */(function(){try{var t=localStorage.getItem('pai_theme')||'auto';if(t==='auto')t=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'default';if(t!=='default')document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>AI Glossary — 16 AI terms explained in plain English | PromptAI</title>
+<meta name="description" content="What is an LLM? A token? RAG? Hallucination? 16 AI terms explained in plain English, with analogies and concrete examples. Free, no sign-up."/>
+<link rel="canonical" href="https://promptai.in/glossary.html"/>
+<meta property="og:type" content="website"/>
+<meta property="og:url" content="https://promptai.in/glossary.html"/>
+<meta property="og:site_name" content="PromptAI"/>
+<meta property="og:title" content="AI Glossary — 16 terms in plain English"/>
+<meta property="og:description" content="LLM, token, RAG, hallucination, agents — explained with analogies and real examples."/>
+<meta property="og:image" content="https://promptai.in/og/glossary/index.png"/>
+<meta property="og:image:width" content="1200"/>
+<meta property="og:image:height" content="630"/>
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="https://promptai.in/og/glossary/index.png"/>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"DefinedTermSet","name":"PromptAI AI Glossary","url":"https://promptai.in/glossary.html","description":"Plain-English definitions of the AI terms that actually come up — LLM, token, RAG, hallucination, agents and more.","hasDefinedTerm":[{"@type":"DefinedTerm","name":"LLM (large language model)","url":"https://promptai.in/glossary/llm"},{"@type":"DefinedTerm","name":"Token","url":"https://promptai.in/glossary/token"},{"@type":"DefinedTerm","name":"Context window","url":"https://promptai.in/glossary/context-window"},{"@type":"DefinedTerm","name":"Hallucination","url":"https://promptai.in/glossary/hallucination"},{"@type":"DefinedTerm","name":"Prompt engineering","url":"https://promptai.in/glossary/prompt-engineering"},{"@type":"DefinedTerm","name":"AI agent","url":"https://promptai.in/glossary/ai-agent"},{"@type":"DefinedTerm","name":"RAG (retrieval-augmented generation)","url":"https://promptai.in/glossary/rag"},{"@type":"DefinedTerm","name":"Fine-tuning","url":"https://promptai.in/glossary/fine-tuning"},{"@type":"DefinedTerm","name":"Embedding","url":"https://promptai.in/glossary/embedding"},{"@type":"DefinedTerm","name":"Transformer","url":"https://promptai.in/glossary/transformer"},{"@type":"DefinedTerm","name":"Inference","url":"https://promptai.in/glossary/inference"},{"@type":"DefinedTerm","name":"Parameters","url":"https://promptai.in/glossary/parameters"},{"@type":"DefinedTerm","name":"Temperature","url":"https://promptai.in/glossary/temperature"},{"@type":"DefinedTerm","name":"Chain of thought","url":"https://promptai.in/glossary/chain-of-thought"},{"@type":"DefinedTerm","name":"Multimodal","url":"https://promptai.in/glossary/multimodal"},{"@type":"DefinedTerm","name":"AGI (artificial general intelligence)","url":"https://promptai.in/glossary/agi"}]}</script>
+<meta name="color-scheme" content="light dark"/>
+<link rel="manifest" href="manifest.webmanifest"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Roboto+Serif:opsz,wght@8..144,400;8..144,500;8..144,600&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="pai-chrome.css"/>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Roboto',system-ui,sans-serif; color:var(--text); background:var(--bg); line-height:1.6; -webkit-font-smoothing:antialiased; }
+  a { color:inherit; text-decoration:none; }
+  button { font-family:inherit; cursor:pointer; }
+  ::selection { background:var(--accent-subtle); }
+  :focus-visible { outline:2px solid var(--accent); outline-offset:2px; border-radius:4px; }
+  @media (prefers-reduced-motion:reduce){ *{animation:none!important;transition:none!important;} }
+  code { font-family:'Roboto Mono',monospace; font-size:0.85em; background:var(--bg-subtle); padding:1px 5px; border-radius:5px; }
+  .lib-head { margin:14px 0 6px; }
+  .sec-title { display:flex; align-items:center; gap:10px; font-family:var(--serif); font-size:1.55rem; font-weight:600; letter-spacing:-0.3px; }
+  .sec-title .bar { width:5px; height:26px; border-radius:3px; background:var(--accent); }
+  .sec-sub { font-size:0.95rem; color:var(--text-2); margin:10px 0 4px; max-width:680px; }
+  .g-grid { display:grid; gap:14px; margin:22px 0 30px; }
+  .g-card { display:block; background:var(--card); border:1px solid var(--border-soft); border-radius:14px; padding:18px 20px; box-shadow:var(--shadow); transition:box-shadow .15s; }
+  .g-card:hover { box-shadow:var(--shadow-hover); }
+  .g-card h2 { font-family:var(--serif); font-size:1.08rem; font-weight:600; color:var(--text); margin-bottom:6px; }
+  .g-card p { font-size:0.88rem; color:var(--text-2); line-height:1.6; }
+  .cta { background:var(--accent-subtle); border-radius:14px; padding:18px 20px; font-size:0.9rem; line-height:1.6; margin-bottom:10px; }
+  .cta b { color:var(--accent); }
+  .cta a { color:var(--accent); font-weight:600; }
+  @media (min-width:760px){ .g-grid { grid-template-columns:repeat(2,1fr); } }
+  @media (min-width:1080px){ .g-grid { grid-template-columns:repeat(3,1fr); } }
+</style>
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="index.html" aria-label="PromptAI home" data-no-translate>
+    <span class="brand-mark"><svg viewBox="0 0 32 32"><rect x="1.5" y="1.5" width="29" height="29" rx="8" fill="var(--accent)"/><path d="M9.5 10.5 14.5 16l-5 5.5" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/><line x1="16.5" y1="21.5" x2="23" y2="21.5" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/></svg></span>
+    <span class="brand-text">Prompt<b>AI</b></span>
+  </a>
+  <div class="topbar-spacer"></div>
+  <div class="topbar-actions">
+    <button class="icon-btn" onclick="toggleThemeMenu(event)" aria-label="Theme" title="Appearance"><svg viewBox="0 0 24 24"><path d="M12 22a10 10 0 0 1 0-20c5.51 0 10 4.04 10 9 0 3.31-2.69 6-6 6h-1.77c-.28 0-.5.22-.5.5 0 .12.05.23.13.33.41.47.64 1.06.64 1.67A2.5 2.5 0 0 1 12 22zm0-18a8 8 0 0 0 0 16c.28 0 .5-.22.5-.5a.54.54 0 0 0-.14-.35c-.41-.46-.63-1.05-.63-1.65a2.5 2.5 0 0 1 2.5-2.5H16a4 4 0 0 0 4-4c0-3.86-3.59-7-8-7zm-5.5 6a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3zm3-4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3zm5 0a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3z"/></svg></button>
+    <button class="subscribe-cta" id="subscribe-btn" onclick="toggleSubscribe(event)">Subscribe</button>
+  </div>
+</header>
+<div class="theme-menu" id="theme-menu">
+  <h5>Appearance</h5>
+  <button class="theme-opt" data-theme="default" onclick="setTheme('default')"><span class="sw"><i style="background:#1a73e8"></i><i style="background:#ffffff"></i><i style="background:#202124"></i></span>Briefing (clean white)<span class="chk">✓</span></button>
+  <button class="theme-opt" data-theme="promptai" onclick="setTheme('promptai')"><span class="sw"><i style="background:#2563eb"></i><i style="background:#f3f6fc"></i><i style="background:#0a1628"></i></span>PromptAI blue<span class="chk">✓</span></button>
+  <button class="theme-opt" data-theme="slate" onclick="setTheme('slate')"><span class="sw"><i style="background:#0f766e"></i><i style="background:#f7f5f1"></i><i style="background:#1c1917"></i></span>Slate &amp; teal<span class="chk">✓</span></button>
+</div>
+<div class="sub-menu" id="sub-menu">
+  <h5>Get the briefing</h5>
+  <p class="sub-lead">The one story that matters, 5 headlines and the paper everyone's citing — daily or weekly, your call.</p>
+  <form onsubmit="return doTopSubscribe(event)">
+    <input id="top-email" type="email" placeholder="you@example.com" required aria-label="Email"/>
+    <div class="freq-row" role="radiogroup" aria-label="How often">
+      <label><input type="radio" name="sub-freq" value="weekly" checked="checked"/> Weekly · Tue</label>
+      <label><input type="radio" name="sub-freq" value="daily"/> Daily</label>
+    </div>
+    <button type="submit">Subscribe free</button>
+  </form>
+  <p class="sub-note">No spam. Unsubscribe anytime.</p>
+</div>
+<nav class="tabs" aria-label="Sections">
+  <a class="tab" href="index.html#home">Home</a>
+  <a class="tab" href="index.html#news">News</a>
+  <a class="tab" href="index.html#deepdives">Deep dives</a>
+  <a class="tab" href="index.html#research">Research</a>
+  <a class="tab active" href="education.html">Learn AI</a>
+  <a class="tab" href="index.html#tools">Tools</a>
+  <a class="tab" href="prompts.html">Prompts</a>
+  <a class="tab" href="archive.html">Archive</a>
+</nav>
+<div class="canvas" data-screen-label="AI Glossary">
+  <main class="main">
+    <div class="lib-head">
+      <div class="sec-title"><span class="bar"></span> AI Glossary</div>
+      <p class="sec-sub">16 AI terms in plain English — one analogy, three reasons it matters, one concrete example. No jargon explaining jargon.</p>
+    </div>
+    <div class="g-grid">
+      <a class="g-card" href="glossary/llm.html"><h2>What is an LLM?</h2><p>An LLM — large language model — is an AI system trained on enormous amounts of text to predict the next word, and through that to write, summarize, translate and reason.</p></a>
+      <a class="g-card" href="glossary/token.html"><h2>What is a token in AI?</h2><p>A token is the small chunk of text — roughly three-quarters of an English word — that an AI model reads and writes, one at a time.</p></a>
+      <a class="g-card" href="glossary/context-window.html"><h2>What is a context window?</h2><p>The context window is the maximum amount of text — measured in tokens — that an AI model can "see" at once in a conversation.</p></a>
+      <a class="g-card" href="glossary/hallucination.html"><h2>What is an AI hallucination?</h2><p>A hallucination is when an AI states something false with full confidence — invented facts, fake citations, wrong numbers, non-existent court cases.</p></a>
+      <a class="g-card" href="glossary/prompt-engineering.html"><h2>What is prompt engineering?</h2><p>Prompt engineering is the craft of writing instructions that get reliably good output from an AI model — by specifying role, context, format and constraints.</p></a>
+      <a class="g-card" href="glossary/ai-agent.html"><h2>What is an AI agent?</h2><p>An AI agent is a model that doesn’t just answer — it takes actions: browsing the web, running code, calling tools and working toward a goal across multiple steps.</p></a>
+      <a class="g-card" href="glossary/rag.html"><h2>What is RAG?</h2><p>RAG — retrieval-augmented generation — lets an AI look up relevant documents first and answer from them, instead of relying only on what it memorized during training.</p></a>
+      <a class="g-card" href="glossary/fine-tuning.html"><h2>What is fine-tuning?</h2><p>Fine-tuning takes an already-trained model and trains it further on your own examples, so it adopts your task, tone or domain by default.</p></a>
+      <a class="g-card" href="glossary/embedding.html"><h2>What is an embedding?</h2><p>An embedding turns text into a long list of numbers that captures its meaning, so computers can measure how similar two pieces of text are.</p></a>
+      <a class="g-card" href="glossary/transformer.html"><h2>What is a transformer in AI?</h2><p>The transformer is the neural-network architecture behind modern AI. Its "attention" mechanism lets a model weigh every word against every other word at once.</p></a>
+      <a class="g-card" href="glossary/inference.html"><h2>What is inference in AI?</h2><p>Inference is when a trained AI model is actually used — every reply it generates. Training builds the model; inference runs it.</p></a>
+      <a class="g-card" href="glossary/parameters.html"><h2>What are parameters in an AI model?</h2><p>Parameters are the internal numbers a model adjusts during training — its "knowledge dials". More parameters generally means a more capable, more expensive model.</p></a>
+      <a class="g-card" href="glossary/temperature.html"><h2>What is temperature in AI?</h2><p>Temperature controls how predictable or adventurous a model’s word choices are — low means consistent and safe, high means varied and creative.</p></a>
+      <a class="g-card" href="glossary/chain-of-thought.html"><h2>What is chain-of-thought reasoning?</h2><p>Chain-of-thought is when a model works through a problem step by step instead of jumping straight to an answer — usually improving accuracy on hard problems.</p></a>
+      <a class="g-card" href="glossary/multimodal.html"><h2>What does multimodal mean in AI?</h2><p>A multimodal model understands more than text — images, audio, sometimes video — in one system, and can often produce them too.</p></a>
+      <a class="g-card" href="glossary/agi.html"><h2>What is AGI?</h2><p>AGI — artificial general intelligence — is a hypothetical AI that matches or exceeds humans across most intellectual work, not just one narrow skill. It does not exist yet.</p></a>
+    </div>
+    <div class="cta"><b>Now put the vocabulary to work:</b> the <a href="prompts.html">prompt library</a> has 50 tested prompts, and the free <a href="index.html">daily briefing</a> keeps you current in 2 minutes.</div>
+  </main>
+</div>
+<footer class="site-footer">
+  <div class="foot-in">
+    <span data-no-translate>© 2026 PromptAI · promptai.in</span>
+    <a href="/privacy.html">Privacy</a>
+    <a href="/terms.html">Terms</a>
+    <a href="/prompts.html">Prompts</a>
+    <a href="/education.html">Learn AI</a>
+    <a href="/archive.html">Archive</a>
+    <a href="/issues">Issues</a>
+    <a href="/feed.xml">RSS</a>
+    <a href="/unsubscribe">Unsubscribe</a>
+  </div>
+</footer>
+<div id="toast" role="status" aria-live="polite"></div>
+<script src="pai-chrome.js"></script>
+</body>
+</html>

@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<script>/* pre-paint theme */(function(){try{var t=localStorage.getItem('pai_theme')||'auto';if(t==='auto')t=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'default';if(t!=='default')document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>What is an embedding? — plain-English AI glossary | PromptAI</title>
+<meta name="description" content="An embedding turns text into a long list of numbers that captures its meaning, so computers can measure how similar two pieces of text are."/>
+<link rel="canonical" href="https://promptai.in/glossary/embedding"/>
+<meta property="og:type" content="article"/>
+<meta property="og:url" content="https://promptai.in/glossary/embedding"/>
+<meta property="og:site_name" content="PromptAI"/>
+<meta property="og:title" content="What is an embedding? — plain-English answer"/>
+<meta property="og:description" content="An embedding turns text into a long list of numbers that captures its meaning, so computers can measure how similar two pieces of text are."/>
+<meta property="og:image" content="https://promptai.in/og/glossary/embedding.png"/>
+<meta property="og:image:width" content="1200"/>
+<meta property="og:image:height" content="630"/>
+<meta property="og:image:alt" content="What is an embedding? — PromptAI glossary"/>
+<meta name="twitter:image" content="https://promptai.in/og/glossary/embedding.png"/>
+<meta name="twitter:card" content="summary_large_image"/>
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"FAQPage","mainEntity":[{"@type":"Question","name":"What is an embedding?","acceptedAnswer":{"@type":"Answer","text":"An embedding turns text into a long list of numbers that captures its meaning, so computers can measure how similar two pieces of text are."}}]},{"@type":"DefinedTerm","name":"Embedding","description":"An embedding turns text into a long list of numbers that captures its meaning, so computers can measure how similar two pieces of text are.","url":"https://promptai.in/glossary/embedding","inDefinedTermSet":{"@type":"DefinedTermSet","name":"PromptAI AI Glossary","url":"https://promptai.in/glossary.html"}},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Learn AI","item":"https://promptai.in/education.html"},{"@type":"ListItem","position":2,"name":"AI Glossary","item":"https://promptai.in/glossary.html"},{"@type":"ListItem","position":3,"name":"Embedding","item":"https://promptai.in/glossary/embedding"}]}]}</script>
+<meta name="color-scheme" content="light dark"/>
+<link rel="manifest" href="../manifest.webmanifest"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Roboto+Serif:opsz,wght@8..144,400;8..144,500;8..144,600&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="../pai-chrome.css"/>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Roboto',system-ui,sans-serif; color:var(--text); background:var(--bg); line-height:1.6; -webkit-font-smoothing:antialiased; }
+  a { color:inherit; text-decoration:none; }
+  button { font-family:inherit; cursor:pointer; }
+  ::selection { background:var(--accent-subtle); }
+  :focus-visible { outline:2px solid var(--accent); outline-offset:2px; border-radius:4px; }
+  @media (prefers-reduced-motion:reduce){ *{animation:none!important;transition:none!important;} }
+  code { font-family:'Roboto Mono',monospace; font-size:0.85em; background:var(--bg-subtle); padding:1px 5px; border-radius:5px; }
+  .crumbs { font-size:0.8rem; color:var(--text-3); margin:8px 0 18px; display:flex; gap:7px; align-items:center; flex-wrap:wrap; }
+  .crumbs a { color:var(--accent); font-weight:500; }
+  .cat-pill { font-size:0.68rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:var(--accent); background:var(--accent-subtle); border-radius:12px; padding:3px 10px; }
+  .g-head h1 { font-family:var(--serif); font-size:1.85rem; font-weight:600; letter-spacing:-0.3px; line-height:1.25; margin:10px 0 14px; }
+  .g-def { background:var(--card); border:1px solid var(--border-soft); border-left:none; border-radius:14px; box-shadow:var(--shadow); padding:20px 22px; font-size:1.05rem; line-height:1.7; margin-bottom:22px; max-width:720px; }
+  .g-def b { color:var(--accent); }
+  .g-h { font-family:var(--serif); font-size:1.1rem; font-weight:600; margin:24px 0 8px; }
+  .g-p { font-size:0.95rem; color:var(--text-2); line-height:1.75; max-width:680px; margin-bottom:6px; }
+  .g-p a { color:var(--accent); font-weight:500; }
+  ul.g-why { margin:6px 0 6px 20px; max-width:680px; }
+  ul.g-why li { font-size:0.93rem; color:var(--text-2); margin:7px 0; line-height:1.6; }
+  .g-ex { background:var(--bg-subtle); border:1px solid var(--border-soft); border-radius:10px; padding:14px 18px; font-size:0.92rem; color:var(--text-2); line-height:1.7; max-width:680px; margin:4px 0 10px; }
+  .g-ex a { color:var(--accent); font-weight:500; }
+  .rel-h { font-family:var(--serif); font-size:1.05rem; font-weight:600; margin:28px 0 10px; }
+  .chips { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:26px; }
+  .chip { display:inline-flex; align-items:center; background:var(--card); border:1px solid var(--border-soft); border-radius:16px; padding:6px 14px; font-size:0.84rem; font-weight:500; color:var(--accent); box-shadow:var(--shadow); }
+  .chip:hover { box-shadow:var(--shadow-hover); }
+  .cta { background:var(--accent-subtle); border-radius:14px; padding:18px 20px; font-size:0.9rem; line-height:1.6; margin-bottom:10px; max-width:720px; }
+  .cta b { color:var(--accent); }
+  .cta a { color:var(--accent); font-weight:600; }
+</style>
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="../index.html" aria-label="PromptAI home" data-no-translate>
+    <span class="brand-mark"><svg viewBox="0 0 32 32"><rect x="1.5" y="1.5" width="29" height="29" rx="8" fill="var(--accent)"/><path d="M9.5 10.5 14.5 16l-5 5.5" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/><line x1="16.5" y1="21.5" x2="23" y2="21.5" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/></svg></span>
+    <span class="brand-text">Prompt<b>AI</b></span>
+  </a>
+  <div class="topbar-spacer"></div>
+  <div class="topbar-actions">
+    <button class="icon-btn" onclick="toggleThemeMenu(event)" aria-label="Theme" title="Appearance"><svg viewBox="0 0 24 24"><path d="M12 22a10 10 0 0 1 0-20c5.51 0 10 4.04 10 9 0 3.31-2.69 6-6 6h-1.77c-.28 0-.5.22-.5.5 0 .12.05.23.13.33.41.47.64 1.06.64 1.67A2.5 2.5 0 0 1 12 22zm0-18a8 8 0 0 0 0 16c.28 0 .5-.22.5-.5a.54.54 0 0 0-.14-.35c-.41-.46-.63-1.05-.63-1.65a2.5 2.5 0 0 1 2.5-2.5H16a4 4 0 0 0 4-4c0-3.86-3.59-7-8-7zm-5.5 6a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3zm3-4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3zm5 0a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3z"/></svg></button>
+    <button class="subscribe-cta" id="subscribe-btn" onclick="toggleSubscribe(event)">Subscribe</button>
+  </div>
+</header>
+<div class="theme-menu" id="theme-menu">
+  <h5>Appearance</h5>
+  <button class="theme-opt" data-theme="default" onclick="setTheme('default')"><span class="sw"><i style="background:#1a73e8"></i><i style="background:#ffffff"></i><i style="background:#202124"></i></span>Briefing (clean white)<span class="chk">✓</span></button>
+  <button class="theme-opt" data-theme="promptai" onclick="setTheme('promptai')"><span class="sw"><i style="background:#2563eb"></i><i style="background:#f3f6fc"></i><i style="background:#0a1628"></i></span>PromptAI blue<span class="chk">✓</span></button>
+  <button class="theme-opt" data-theme="slate" onclick="setTheme('slate')"><span class="sw"><i style="background:#0f766e"></i><i style="background:#f7f5f1"></i><i style="background:#1c1917"></i></span>Slate &amp; teal<span class="chk">✓</span></button>
+</div>
+<div class="sub-menu" id="sub-menu">
+  <h5>Get the briefing</h5>
+  <p class="sub-lead">The one story that matters, 5 headlines and the paper everyone's citing — daily or weekly, your call.</p>
+  <form onsubmit="return doTopSubscribe(event)">
+    <input id="top-email" type="email" placeholder="you@example.com" required aria-label="Email"/>
+    <div class="freq-row" role="radiogroup" aria-label="How often">
+      <label><input type="radio" name="sub-freq" value="weekly" checked="checked"/> Weekly · Tue</label>
+      <label><input type="radio" name="sub-freq" value="daily"/> Daily</label>
+    </div>
+    <button type="submit">Subscribe free</button>
+  </form>
+  <p class="sub-note">No spam. Unsubscribe anytime.</p>
+</div>
+<nav class="tabs" aria-label="Sections">
+  <a class="tab" href="../index.html#home">Home</a>
+  <a class="tab" href="../index.html#news">News</a>
+  <a class="tab" href="../index.html#deepdives">Deep dives</a>
+  <a class="tab" href="../index.html#research">Research</a>
+  <a class="tab active" href="../education.html">Learn AI</a>
+  <a class="tab" href="../index.html#tools">Tools</a>
+  <a class="tab" href="../prompts.html">Prompts</a>
+  <a class="tab" href="../archive.html">Archive</a>
+</nav>
+<div class="canvas" data-screen-label="Glossary: Embedding">
+  <main class="main">
+    <nav class="crumbs" aria-label="Breadcrumb"><a href="../education.html">Learn AI</a> <span>›</span> <a href="../glossary.html">AI Glossary</a> <span>›</span> <span>Embedding</span></nav>
+    <div class="g-head">
+      <span class="cat-pill">AI Glossary</span>
+      <h1>What is an embedding?</h1>
+    </div>
+    <p class="g-def"><b>Embedding:</b> An embedding turns text into a long list of numbers that captures its meaning, so computers can measure how similar two pieces of text are.</p>
+    <h2 class="g-h">In plain English</h2>
+    <p class="g-p">Imagine giving every sentence coordinates on a giant map of meaning. "How do I reset my password?" and "I can't log in" land close together on that map even though they share no words. Once meaning is geometry, "find similar text" becomes "find nearby points" — something computers do brilliantly.</p>
+    <h2 class="g-h">Why it matters</h2>
+    <ul class="g-why">
+      <li>The engine behind semantic search — matching by meaning, not keywords</li>
+      <li>Step one of every RAG system: find the passages worth retrieving</li>
+      <li>Also powers recommendations, deduplication and clustering</li>
+    </ul>
+    <h2 class="g-h">A concrete example</h2>
+    <div class="g-ex">Search a help center for "money back" and embedding search surfaces the refund policy — a keyword search would have missed it entirely.</div>
+    <h2 class="rel-h">Related terms</h2>
+    <div class="chips">
+      <a class="chip" href="rag.html">RAG (retrieval-augmented generation)</a>
+      <a class="chip" href="token.html">Token</a>
+      <a class="chip" href="transformer.html">Transformer</a>
+    </div>
+    <div class="cta"><b>Learning AI from scratch?</b> Start with the free <a href="../education.html">Learn AI</a> course picks, then put it to work with <a href="../prompts.html">50 tested prompts</a> — or get the daily 2-minute briefing, <a href="../index.html">free →</a></div>
+  </main>
+</div>
+<footer class="site-footer">
+  <div class="foot-in">
+    <span data-no-translate>© 2026 PromptAI · promptai.in</span>
+    <a href="/privacy.html">Privacy</a>
+    <a href="/terms.html">Terms</a>
+    <a href="/prompts.html">Prompts</a>
+    <a href="/education.html">Learn AI</a>
+    <a href="/archive.html">Archive</a>
+    <a href="/issues">Issues</a>
+    <a href="/feed.xml">RSS</a>
+    <a href="/unsubscribe">Unsubscribe</a>
+  </div>
+</footer>
+<div id="toast" role="status" aria-live="polite"></div>
+<script src="../pai-chrome.js"></script>
+</body>
+</html>

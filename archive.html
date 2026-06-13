@@ -150,9 +150,13 @@
 <!-- subscribe popover -->
 <div class="sub-menu" id="sub-menu">
   <h5>Get the briefing</h5>
-  <p class="sub-lead">The one story that matters, 5 headlines and the paper everyone's citing — every Tuesday.</p>
+  <p class="sub-lead">The one story that matters, 5 headlines and the paper everyone's citing — daily or weekly, your call.</p>
   <form onsubmit="return doTopSubscribe(event)">
     <input id="top-email" type="email" placeholder="you@example.com" required aria-label="Email"/>
+    <div class="freq-row" role="radiogroup" aria-label="How often">
+      <label><input type="radio" name="sub-freq" value="weekly" checked="checked"/> Weekly · Tue</label>
+      <label><input type="radio" name="sub-freq" value="daily"/> Daily</label>
+    </div>
     <button type="submit">Subscribe free</button>
   </form>
   <p class="sub-note">No spam. Unsubscribe anytime.</p>
@@ -225,7 +229,7 @@
   <aside class="rightrail">
     <div class="panel news-promo">
       <h4>The Briefing</h4>
-      <p>The one story that matters, 5 headlines and the paper everyone's citing — every Tuesday.</p>
+      <p>The one story that matters, 5 headlines and the paper everyone's citing — daily or weekly, your call.</p>
       <form onsubmit="return doRailSubscribe(event)">
         <input type="email" id="rail-email" placeholder="you@example.com" required/>
         <button type="submit">Subscribe free</button>
@@ -256,17 +260,17 @@
 </div>
 
 <!-- FOOTER -->
-<footer class="site-foot">
-  <div class="site-foot-inner">
-    <span>© 2026 PromptAI · promptai.in</span>
-    <nav>
-      <a href="index.html#news">News</a>
-      <a href="index.html#research">Research</a>
-      <a href="index.html#tools">Tools</a>
-      <a href="education.html">Learn AI</a>
-      <a href="https://twitter.com/promptai_in" target="_blank" rel="noopener">Twitter / X</a>
-    </nav>
-    <span>Content sourced via RSS · all articles © their publishers</span>
+<footer class="site-footer">
+  <div class="foot-in">
+    <span data-no-translate>© 2026 PromptAI · promptai.in</span>
+    <a href="/privacy.html">Privacy</a>
+    <a href="/terms.html">Terms</a>
+    <a href="/prompts.html">Prompts</a>
+    <a href="/education.html">Learn AI</a>
+    <a href="/archive.html">Archive</a>
+    <a href="/issues">Issues</a>
+    <a href="/feed.xml">RSS</a>
+    <a href="/unsubscribe">Unsubscribe</a>
   </div>
 </footer>
 
