@@ -363,17 +363,26 @@
     const xml = await fetchWithProxyRace(feedUrl);
     if (!xml) return [];
     const doc = new DOMParser().parseFromString(xml, 'text/xml');
-    const items = Array.from(doc.querySelectorAll('item')).slice(0, 30);
-    const results = items.map(item => {
-      const title = item.querySelector('title')?.textContent?.replace(/\[.*?\]/g, '').trim() || '';
-      const link = item.querySelector('link')?.textContent?.trim() || '';
-      const desc = (item.querySelector('description')?.textContent || '').replace(/<[^>]+>/g, '').replace(/&[a-z#0-9]+;/gi, ' ').trim().slice(0, 300) + '…';
-      const rawCats = Array.from(item.querySelectorAll('category')).map(c => c.textContent.trim());
+    // arXiv serves RSS (<item>) but can also return Atom (<entry>) — handle both
+    // so a feed-format change never empties the Research tab.
+    let nodes = Array.from(doc.querySelectorAll('item'));
+    if (!nodes.length) nodes = Array.from(doc.querySelectorAll('entry'));
+    const results = nodes.slice(0, 30).map(item => {
+      const title = (item.querySelector('title')?.textContent || '').replace(/\[.*?\]/g, '').replace(/\s+/g, ' ').trim();
+      // RSS: <link>url</link>; Atom: <link href="url"/>; fallback to <id>
+      let link = (item.querySelector('link')?.textContent || '').trim();
+      if (!link) { const la = item.querySelector('link'); link = (la && la.getAttribute('href')) || ''; }
+      if (!link) link = (item.querySelector('id')?.textContent || '').trim();
+      const descRaw = item.querySelector('description')?.textContent
+        || item.querySelector('summary')?.textContent
+        || item.querySelector('content')?.textContent || '';
+      const desc = descRaw.replace(/<[^>]+>/g, '').replace(/&[a-z#0-9]+;/gi, ' ').trim().slice(0, 300) + '…';
+      const rawCats = Array.from(item.querySelectorAll('category')).map(c => (c.getAttribute('term') || c.textContent || '').trim());
       const catMatch = rawCats.find(c => PAPER_CAT_MAP[c]) || rawCats[0] || 'cs.AI';
       const catInfo = PAPER_CAT_MAP[catMatch] || { label: catMatch, cls: 'cat-llm' };
-      const authors = item.querySelector('author')?.textContent?.trim() || 'arXiv';
-      const pubDate = item.querySelector('pubDate')?.textContent?.slice(0, 16) || '';
-      return { title, url: link, desc, cat: catInfo.label, cls: catInfo.cls, authors, date: pubDate, src: 'arxiv' };
+      const authors = (item.querySelector('author name')?.textContent || item.querySelector('author')?.textContent || 'arXiv').replace(/\s+/g, ' ').trim();
+      const pubDate = (item.querySelector('pubDate')?.textContent || item.querySelector('published')?.textContent || item.querySelector('updated')?.textContent || '').slice(0, 16);
+      return { title, url: link, desc, cat: catInfo.label, cls: catInfo.cls, authors: authors || 'arXiv', date: pubDate, src: 'arxiv' };
     }).filter(p => p.title && p.url);
     if (results.length) cacheSet(cKey, results, CACHE_TTL_PAPERS);
     return results;

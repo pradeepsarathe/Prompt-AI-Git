@@ -1,56 +1,40 @@
-# Edit #3 — Footer consistency + universal subscribe + summary restyle (2026-06-13)
+# Edit #4 — Research feed fix (arXiv parser + CSP connect-src) — 2026-06-13
 
-Push the contents of this folder to the repo root (paths mirror the repo).
-**No backend / env changes.** Pure front-end (HTML/CSS/JS). First rule honoured:
-nothing existing was removed or rewired — only additive styling + markup.
+Push the contents of this folder to the repo root. Front-end + headers only.
 
-## What changed & why
+## Symptom
+News tab populated, **Research tab empty** ("Nothing here yet"). The page/JS
+were fine — arXiv just returned 0 papers to the client.
 
-### 1. Footer — same on every page, all links working
-- Audited every live page: the static pages, prompt/* and glossary/* detail
-  pages, and the server-rendered shell (`functions/lib/page.js`) **already share
-  the identical 8-link footer** (Privacy · Terms · Prompts · Learn AI · Archive ·
-  Issues · RSS · Unsubscribe) and every target resolves.
-- The only outlier was **`404.html`** (had no site footer). Added the standard
-  footer there, pinned to the bottom. Now truly universal.
+## Root cause (not the recent UI/email/footer pushes)
+The Research feed pulls from **arXiv**. The client-side fallback parser in
+`pai-feed-engine.js` (`legacyFetchPapers`) only read RSS `<item>` elements — if
+arXiv serves **Atom `<entry>`** (or the server payload had 0 papers and the
+client had to parse the feed itself), it found nothing → empty tab. News uses
+different sources (HN + rss2json) so it kept working.
 
-### 2. Subscribe — universal Weekly/Daily choice + clear selected state
-- **Before:** the home page showed a Weekly/Daily choice; every *other* page's
-  Subscribe popover was just an email box ("subscribe"), and `pai-chrome.js`
-  didn't send the frequency at all → inconsistent.
-- **Now:** the Weekly · Tue / Daily choice appears in the Subscribe popover on
-  **all** pages, with the same copy. Wired through `pai-chrome.js`
-  (`doTopSubscribe` / `doRailSubscribe` now read the choice and POST
-  `frequency` to `/subscribe`, which already stores it).
-- **Clarity fix (the ambiguous toggle):** the freq control is now a proper
-  segmented control — the **selected** option is a solid accent pill with a ✓
-  and bold text; the unselected is a quiet outline. Native radio dots are
-  hidden. Same treatment on the blue Briefing panel (selected = solid white
-  pill + ✓). No more guessing which is picked.
+The server aggregator's parser (`feedlib.js parseFeed`) already handled both
+`<item>` and `<entry>`, so this was a client-fallback-only gap.
 
-### 3. AI summary — better font + gradient
-- The per-story summary in the article modal (`.modal-text`) is now an
-  editorial **serif** block on a subtle **accent gradient** panel with a soft
-  border — much more readable and intentional than the old flat paragraph.
-- The home "Today in 60 seconds" card (`.summary-card`) got the matching
-  gradient treatment for consistency.
-
-## Files in this bundle
-- `index.html` — freq segmented-control CSS (+ dark-mode fix), summary gradient/serif, popover copy
-- `pai-chrome.css` — `.freq-row` segmented-control styles (shared by all non-home pages)
-- `pai-chrome.js` — frequency now read + sent on non-home pages
-- `404.html` — standard site footer added
-- `prompts.html`, `education.html`, `archive.html`, `glossary.html`, `prompts-hindi.html` — freq popover + unified copy
-- `prompt/` (50 pages), `glossary/` (16 pages) — freq popover + unified copy
+## Fixes
+1. **`pai-feed-engine.js`** — `legacyFetchPapers` now parses **both** RSS
+   `<item>` and Atom `<entry>` (title, link via text *or* `href` *or* `<id>`,
+   summary/content for description, `category term`, `author > name`,
+   published/updated dates). A single arXiv format change can no longer empty
+   the Research tab. The 4-way proxy race (`/rss-proxy`, `export.arxiv.org`,
+   allorigins, corsproxy) is unchanged — now any one succeeding renders papers.
+2. **`_headers`** — added the arXiv + proxy hosts to the CSP `connect-src`
+   (`rss.arxiv.org`, `export.arxiv.org`, `api.allorigins.win`, `corsproxy.io`).
+   The CSP is still **Report-Only** (doesn't block today), but this keeps the
+   policy accurate and prevents Research from breaking if/when you switch the
+   CSP to enforce.
 
 ## Verify after deploy
-- Every page footer is identical and all 8 links work (incl. 404).
-- Open Subscribe on the home page AND any prompt/glossary page → identical
-  Weekly/Daily control; the picked one is an obvious solid ✓ pill.
-- Subscribe as "Daily" on a non-home page → `/subscribe` stores `frequency:daily`
-  (check the toast + the subscriber record).
-- Open any story → the AI summary sits in a gradient serif panel.
+- Open the **Research** tab → arXiv papers list within a few seconds.
+- If still empty, check `/metrics?key=CRON_SECRET` for the aggregator's
+  `papers` count and `/api/feeds` JSON — a 0 there means the Worker itself
+  can't reach arXiv (rate-limit/IP), which the client fallback now covers.
 
-> Note: in the in-app live preview a hot-swapped stylesheet can briefly mis-render
-> the `:has()` selected state; a normal page load (and production) renders it
-> correctly — verified.
+## Not changed
+No subscribe/footer/email/summary code touched. Research render code
+(`pai-google-ui.js`) untouched — it was already correct.
