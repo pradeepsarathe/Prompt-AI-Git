@@ -9,7 +9,7 @@ import { PROMPT_PAGES } from './lib/promptslugs.js';
 
 const EDU_LASTMOD = '2026-06-07';   // ← update when education.html changes
 const LEGAL_LASTMOD = '2026-06-11'; // privacy.html / terms.html
-const PROMPTS_LASTMOD = '2026-06-12'; // ← update when prompts.html changes
+const PROMPTS_LASTMOD = '2026-06-13'; // ← update when prompts.html changes
 
 const TOPICS = ['llms', 'agents', 'vision', 'robotics', 'policy', 'research', 'tools'];
 
@@ -21,6 +21,7 @@ export async function onRequest(context) {
     { loc: 'https://promptai.in/',               lastmod: today,           changefreq: 'hourly',  priority: '1.0' },
     { loc: 'https://promptai.in/issues',         lastmod: today,           changefreq: 'daily',   priority: '0.9' },
     { loc: 'https://promptai.in/prompts.html',   lastmod: PROMPTS_LASTMOD, changefreq: 'weekly',  priority: '0.8' },
+    { loc: 'https://promptai.in/prompts-hindi.html', lastmod: PROMPTS_LASTMOD, changefreq: 'weekly', priority: '0.7' },
     { loc: 'https://promptai.in/archive.html',   lastmod: today,           changefreq: 'daily',   priority: '0.8' },
     { loc: 'https://promptai.in/education.html', lastmod: EDU_LASTMOD,     changefreq: 'weekly',  priority: '0.7' },
     { loc: 'https://promptai.in/privacy.html',   lastmod: LEGAL_LASTMOD,   changefreq: 'yearly',  priority: '0.2' },

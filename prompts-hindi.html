@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8"/>
+<script>/* pre-paint theme */(function(){try{var t=localStorage.getItem('pai_theme')||'auto';if(t==='auto')t=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'default';if(t!=='default')document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>AI प्रॉम्प्ट हिंदी में — ChatGPT, Claude और Gemini के लिए 10 आज़माए हुए प्रॉम्प्ट | PromptAI</title>
+<meta name="description" content="हिंदी में लिखे 10 तैयार AI प्रॉम्प्ट — ईमेल, इंटरव्यू की तैयारी, अंग्रेज़ी सुधारने, बच्चों की पढ़ाई, बिज़नेस पोस्ट और सरकारी पत्र के लिए। कॉपी करें और ChatGPT, Claude या Gemini में चलाएँ। मुफ़्त।"/>
+<link rel="canonical" href="https://promptai.in/prompts-hindi.html"/>
+<link rel="alternate" hreflang="hi" href="https://promptai.in/prompts-hindi.html"/>
+<link rel="alternate" hreflang="en" href="https://promptai.in/prompts.html"/>
+<link rel="alternate" hreflang="x-default" href="https://promptai.in/prompts.html"/>
+<meta property="og:type" content="website"/>
+<meta property="og:url" content="https://promptai.in/prompts-hindi.html"/>
+<meta property="og:site_name" content="PromptAI"/>
+<meta property="og:title" content="AI प्रॉम्प्ट हिंदी में — 10 आज़माए हुए प्रॉम्प्ट"/>
+<meta property="og:description" content="ईमेल, इंटरव्यू, अंग्रेज़ी सुधार, बच्चों की पढ़ाई, बिज़नेस और सरकारी पत्र — कॉपी-पेस्ट के लिए तैयार हिंदी प्रॉम्प्ट।"/>
+<meta property="og:image" content="https://promptai.in/og/prompts-hindi.png"/>
+<meta property="og:image:width" content="1200"/>
+<meta property="og:image:height" content="630"/>
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="https://promptai.in/og/prompts-hindi.png"/>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"CollectionPage","name":"AI प्रॉम्प्ट हिंदी में — PromptAI","url":"https://promptai.in/prompts-hindi.html","inLanguage":"hi","description":"हिंदी में लिखे 10 तैयार AI प्रॉम्प्ट — ChatGPT, Claude और Gemini के लिए।","isPartOf":{"@type":"WebSite","name":"PromptAI","url":"https://promptai.in/"}}</script>
+<meta name="color-scheme" content="light dark"/>
+<link rel="manifest" href="manifest.webmanifest"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Roboto+Serif:opsz,wght@8..144,400;8..144,500;8..144,600&family=Roboto+Mono:wght@400;500&family=Noto+Sans+Devanagari:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="pai-chrome.css"/>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Noto Sans Devanagari','Roboto',system-ui,sans-serif; color:var(--text); background:var(--bg); line-height:1.6; -webkit-font-smoothing:antialiased; }
+  a { color:inherit; text-decoration:none; }
+  button { font-family:inherit; cursor:pointer; }
+  ::selection { background:var(--accent-subtle); }
+  :focus-visible { outline:2px solid var(--accent); outline-offset:2px; border-radius:4px; }
+  @media (prefers-reduced-motion:reduce){ *{animation:none!important;transition:none!important;} }
+  code { font-family:'Roboto Mono',monospace; font-size:0.85em; background:var(--bg-subtle); padding:1px 5px; border-radius:5px; }
+  .lib-head { margin:14px 0 6px; }
+  .sec-title { display:flex; align-items:center; gap:10px; font-family:var(--serif); font-size:1.55rem; font-weight:600; letter-spacing:-0.3px; }
+  .sec-title .bar { width:5px; height:26px; border-radius:3px; background:var(--accent); }
+  .sec-sub { font-size:0.95rem; color:var(--text-2); margin:10px 0 4px; max-width:680px; }
+  .lang-link { font-size:0.85rem; color:var(--accent); font-weight:600; }
+  .p-grid { display:grid; gap:16px; margin:22px 0 30px; }
+  .p-card { background:var(--card); border:1px solid var(--border-soft); border-radius:14px; box-shadow:var(--shadow); padding:20px 22px 18px; }
+  .p-card .cat-pill { font-size:0.68rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:var(--accent); background:var(--accent-subtle); border-radius:12px; padding:3px 10px; }
+  .p-card h2 { font-family:'Noto Sans Devanagari',var(--serif); font-size:1.25rem; font-weight:700; margin:10px 0 6px; line-height:1.4; }
+  .p-card .why { font-size:0.92rem; color:var(--text-2); margin-bottom:14px; }
+  .p-card pre { font-family:'Noto Sans Devanagari','Roboto Mono',monospace; font-size:0.88rem; line-height:1.75; background:var(--bg-subtle); border:1px solid var(--border-soft); border-radius:10px; padding:16px 18px; white-space:pre-wrap; color:var(--text); }
+  .p-actions { display:flex; align-items:center; gap:12px; margin-top:14px; flex-wrap:wrap; }
+  .copy-btn { display:inline-flex; align-items:center; gap:7px; padding:10px 20px; border-radius:20px; border:none; background:var(--accent); color:#fff; font-weight:600; font-size:0.88rem; }
+  :root[data-theme="dark"] .copy-btn { color:#17181c; }
+  .copy-btn:hover { background:var(--accent-2); }
+  .note { background:var(--accent-subtle); border-radius:14px; padding:16px 20px; font-size:0.92rem; margin:6px 0 24px; }
+  .note b { color:var(--accent); }
+  .cta { background:var(--accent-subtle); border-radius:14px; padding:18px 20px; font-size:0.92rem; line-height:1.7; margin-bottom:10px; }
+  .cta b { color:var(--accent); }
+  .cta a { color:var(--accent); font-weight:600; }
+  @media (min-width:880px){ .p-grid { grid-template-columns:repeat(2,1fr); } }
+</style>
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="index.html" aria-label="PromptAI home" data-no-translate>
+    <span class="brand-mark"><svg viewBox="0 0 32 32"><rect x="1.5" y="1.5" width="29" height="29" rx="8" fill="var(--accent)"/><path d="M9.5 10.5 14.5 16l-5 5.5" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/><line x1="16.5" y1="21.5" x2="23" y2="21.5" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/></svg></span>
+    <span class="brand-text">Prompt<b>AI</b></span>
+  </a>
+  <div class="topbar-spacer"></div>
+  <div class="topbar-actions">
+    <button class="icon-btn" onclick="toggleThemeMenu(event)" aria-label="Theme" title="Appearance"><svg viewBox="0 0 24 24"><path d="M12 22a10 10 0 0 1 0-20c5.51 0 10 4.04 10 9 0 3.31-2.69 6-6 6h-1.77c-.28 0-.5.22-.5.5 0 .12.05.23.13.33.41.47.64 1.06.64 1.67A2.5 2.5 0 0 1 12 22zm0-18a8 8 0 0 0 0 16c.28 0 .5-.22.5-.5a.54.54 0 0 0-.14-.35c-.41-.46-.63-1.05-.63-1.65a2.5 2.5 0 0 1 2.5-2.5H16a4 4 0 0 0 4-4c0-3.86-3.59-7-8-7zm-5.5 6a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3zm3-4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3zm5 0a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3z"/></svg></button>
+    <button class="subscribe-cta" id="subscribe-btn" onclick="toggleSubscribe(event)">Subscribe</button>
+  </div>
+</header>
+<div class="theme-menu" id="theme-menu">
+  <h5>Appearance</h5>
+  <button class="theme-opt" data-theme="default" onclick="setTheme('default')"><span class="sw"><i style="background:#1a73e8"></i><i style="background:#ffffff"></i><i style="background:#202124"></i></span>Briefing (clean white)<span class="chk">✓</span></button>
+  <button class="theme-opt" data-theme="promptai" onclick="setTheme('promptai')"><span class="sw"><i style="background:#2563eb"></i><i style="background:#f3f6fc"></i><i style="background:#0a1628"></i></span>PromptAI blue<span class="chk">✓</span></button>
+  <button class="theme-opt" data-theme="slate" onclick="setTheme('slate')"><span class="sw"><i style="background:#0f766e"></i><i style="background:#f7f5f1"></i><i style="background:#1c1917"></i></span>Slate &amp; teal<span class="chk">✓</span></button>
+</div>
+<div class="sub-menu" id="sub-menu">
+  <h5>Get the briefing</h5>
+  <p class="sub-lead">The one story that matters, 5 headlines and the paper everyone's citing — every Tuesday.</p>
+  <form onsubmit="return doTopSubscribe(event)">
+    <input id="top-email" type="email" placeholder="you@example.com" required aria-label="Email"/>
+    <button type="submit">Subscribe free</button>
+  </form>
+  <p class="sub-note">No spam. Unsubscribe anytime.</p>
+</div>
+<nav class="tabs" aria-label="Sections">
+  <a class="tab" href="index.html#home">Home</a>
+  <a class="tab" href="index.html#news">News</a>
+  <a class="tab" href="index.html#deepdives">Deep dives</a>
+  <a class="tab" href="index.html#research">Research</a>
+  <a class="tab" href="education.html">Learn AI</a>
+  <a class="tab" href="index.html#tools">Tools</a>
+  <a class="tab active" href="prompts.html">Prompts</a>
+  <a class="tab" href="archive.html">Archive</a>
+</nav>
+<div class="canvas" data-screen-label="Hindi prompts hub">
+  <main class="main">
+    <div class="lib-head">
+      <div class="sec-title"><span class="bar"></span> AI प्रॉम्प्ट हिंदी में</div>
+      <p class="sec-sub">10 आज़माए हुए प्रॉम्प्ट, पूरी तरह हिंदी में — कॉपी करें, <code>[ब्रैकेट]</code> वाली जगहों पर अपनी जानकारी भरें, और ChatGPT, Claude या Gemini में चलाएँ।</p>
+      <a class="lang-link" href="prompts.html">English prompt library (50 prompts) →</a>
+    </div>
+
+    <div class="note"><b>नया है AI?</b> प्रॉम्प्ट यानी AI को दिया गया निर्देश। जितना साफ़ निर्देश, उतना अच्छा जवाब। ये 10 प्रॉम्प्ट रोज़ के असली कामों के लिए बने हैं — जैसे हैं वैसे ही काम करते हैं।</div>
+
+    <div class="p-grid">
+      <div class="p-card">
+        <span class="cat-pill">काम-काज</span>
+        <h2>प्रोफेशनल ईमेल — हिंदी और अंग्रेज़ी दोनों में</h2>
+        <p class="why">सही शब्द नहीं सूझ रहे? पहले हिंदी में बनवाएँ, साथ में अंग्रेज़ी वर्ज़न भी मिलेगा।</p>
+        <pre>मुझे एक प्रोफेशनल ईमेल लिखनी है।
+
+किसे: [नाम/पद — जैसे मैनेजर, क्लाइंट, HR]
+विषय: [क्या कहना है — छुट्टी, फॉलो-अप, शिकायत, धन्यवाद]
+मुख्य बातें: [2-3 पॉइंट]
+
+पहले ईमेल हिंदी में लिखो, फिर वही ईमेल अंग्रेज़ी में।
+नियम: 6 लाइन से ज़्यादा नहीं, भारी-भरकम शब्द नहीं, subject line भी सुझाओ।</pre>
+        <div class="p-actions"><button class="copy-btn" data-copy>📋 प्रॉम्प्ट कॉपी करें</button></div>
+      </div>
+
+      <div class="p-card">
+        <span class="cat-pill">सीखना</span>
+        <h2>मेरी अंग्रेज़ी सुधारो — बिना शर्मिंदा किए</h2>
+        <p class="why">गलतियाँ सुधरती हैं, पैटर्न समझ आता है, और बेहतर बोलने के तरीके भी मिलते हैं।</p>
+        <pre>मैं अंग्रेज़ी सीख रहा/रही हूँ। नीचे मेरा लिखा हुआ है।
+
+[अपना अंग्रेज़ी टेक्स्ट पेस्ट करें]
+
+1. सुधरा हुआ वर्ज़न दो — मेरे मतलब को बदले बिना
+2. हर सुधार का कारण एक लाइन में, हिंदी में समझाओ
+3. जो गलती मैं बार-बार करता/करती हूँ, उसका पैटर्न बताओ
+4. आखिर में वही बात कहने के 2 और स्वाभाविक तरीके सिखाओ।</pre>
+        <div class="p-actions"><button class="copy-btn" data-copy>📋 प्रॉम्प्ट कॉपी करें</button></div>
+      </div>
+
+      <div class="p-card">
+        <span class="cat-pill">करियर</span>
+        <h2>इंटरव्यू की तैयारी + मॉक इंटरव्यू</h2>
+        <p class="why">संभावित सवाल, जवाब का ढांचा, और फिर असली अभ्यास — एक ही प्रॉम्प्ट में।</p>
+        <pre>मेरा इंटरव्यू है: [पद + कंपनी का प्रकार]
+मेरा अनुभव: [2-3 लाइन में]
+
+1. इस रोल के लिए 10 सबसे संभावित सवाल — आसान से मुश्किल क्रम में
+2. हर सवाल पर जवाब का ढांचा (रटा-रटाया जवाब नहीं)
+3. 3 अच्छे सवाल जो मुझे उनसे पूछने चाहिए
+4. अब मॉक इंटरव्यू शुरू करो — एक-एक करके सवाल पूछो, मेरे हर जवाब पर ईमानदार फीडबैक दो। पहला सवाल पूछो।</pre>
+        <div class="p-actions"><button class="copy-btn" data-copy>📋 प्रॉम्प्ट कॉपी करें</button></div>
+      </div>
+
+      <div class="p-card">
+        <span class="cat-pill">करियर</span>
+        <h2>रिज़्यूमे के पॉइंट्स दमदार बनाओ</h2>
+        <p class="why">"responsible for X" नहीं — असर दिखाने वाले बुलेट, अंग्रेज़ी में, समझाना हिंदी में।</p>
+        <pre>मेरे रिज़्यूमे के पॉइंट्स दमदार बनाओ। आउटपुट अंग्रेज़ी में (रिज़्यूमे अंग्रेज़ी में है), समझाना हिंदी में।
+
+मेरा रोल: [पद, कंपनी, टीम क्या करती थी]
+मौजूदा पॉइंट्स:
+- [पेस्ट करें]
+
+नियम: हर पॉइंट मज़बूत verb से शुरू हो, जहाँ नंबर मुमकिन हो वहाँ मुझसे पूछो — खुद मत बनाओ, हर पॉइंट 20 शब्द से छोटा। आखिर में बताओ कि किन आँकड़ों की कमी से कौन से पॉइंट कमज़ोर रह गए।</pre>
+        <div class="p-actions"><button class="copy-btn" data-copy>📋 प्रॉम्प्ट कॉपी करें</button></div>
+      </div>
+
+      <div class="p-card">
+        <span class="cat-pill">सीखना</span>
+        <h2>कोई भी चीज़ आसान हिंदी में समझो</h2>
+        <p class="why">तकनीकी विषय हो या नया कॉन्सेप्ट — रोज़मर्रा के उदाहरण के साथ, आपके लेवल पर।</p>
+        <pre>[विषय/कॉन्सेप्ट] को आसान हिंदी में समझाओ।
+
+नियम:
+- रोज़मर्रा की ज़िंदगी से एक उदाहरण ज़रूर दो
+- तकनीकी शब्द आए तो ब्रैकेट में उसका आसान मतलब लिखो
+- 3 हिस्सों में समझाओ: यह है क्या → काम कैसे करता है → मेरे किस काम का है
+- आखिर में मुझसे 2 सवाल पूछो जिनसे पता चले कि मैं सच में समझा/समझी या नहीं।</pre>
+        <div class="p-actions"><button class="copy-btn" data-copy>📋 प्रॉम्प्ट कॉपी करें</button></div>
+      </div>
+
+      <div class="p-card">
+        <span class="cat-pill">परिवार</span>
+        <h2>बच्चे की पढ़ाई में मदद</h2>
+        <p class="why">जवाब रटाने के बजाय बच्चे को खुद हल निकालना सिखाता है — पैरेंट्स के लिए।</p>
+        <pre>मेरे बच्चे का होमवर्क/डाउट: [सवाल या टॉपिक + क्लास बताएँ]
+
+नियम:
+- जवाब सीधे मत दो — ऐसे समझाओ कि बच्चा खुद हल निकाल सके
+- क्लास [X] के लेवल की भाषा इस्तेमाल करो
+- एक उदाहरण रोज़ की ज़िंदगी से दो
+- आखिर में 2 मिलते-जुलते अभ्यास सवाल दो, जवाब अलग से — ताकि मैं चेक कर सकूँ।</pre>
+        <div class="p-actions"><button class="copy-btn" data-copy>📋 प्रॉम्प्ट कॉपी करें</button></div>
+      </div>
+
+      <div class="p-card">
+        <span class="cat-pill">भाषा</span>
+        <h2>अनुवाद जो अनुवाद न लगे</h2>
+        <p class="why">शब्द-दर-शब्द अनुवाद अटपटा लगता है। यह मतलब और लहजे का अनुवाद करवाता है।</p>
+        <pre>इस टेक्स्ट का [हिंदी से अंग्रेज़ी / अंग्रेज़ी से हिंदी] अनुवाद करो:
+
+[टेक्स्ट पेस्ट करें]
+
+नियम: शब्द-दर-शब्द नहीं — मतलब और लहजे का अनुवाद। जहाँ सीधा अनुवाद अटपटा लगे, वहाँ स्वाभाविक मुहावरा इस्तेमाल करो और नीचे नोट में बताओ कि क्या बदला।
+टोन: [फॉर्मल / कैज़ुअल]
+आखिर में 1 वैकल्पिक अनुवाद भी दो।</pre>
+        <div class="p-actions"><button class="copy-btn" data-copy>📋 प्रॉम्प्ट कॉपी करें</button></div>
+      </div>
+
+      <div class="p-card">
+        <span class="cat-pill">बिज़नेस</span>
+        <h2>दुकान/बिज़नेस के लिए सोशल मीडिया पोस्ट</h2>
+        <p class="why">WhatsApp स्टेटस से Instagram तक — लोकल ग्राहकों के लिए, घिसे-पिटे जुमलों के बिना।</p>
+        <pre>मेरा बिज़नेस: [क्या बेचते/करते हैं + शहर/इलाका]
+मौका: [त्योहार / नया स्टॉक / ऑफर / रोज़ की पोस्ट]
+
+बनाओ:
+1. WhatsApp स्टेटस के लिए 2 छोटे मैसेज — 40 शब्द से कम, इमोजी ठीक है पर भरमार नहीं
+2. Instagram कैप्शन हिंग्लिश में + 5 हैशटैग जो लोकल ग्राहक सच में खोजते हैं
+3. एक फेस्टिव वर्ज़न
+
+नियम: "जल्दी करें! स्टॉक सीमित!" जैसे घिसे-पिटे जुमले नहीं — असली बात, साफ़ शब्दों में।</pre>
+        <div class="p-actions"><button class="copy-btn" data-copy>📋 प्रॉम्प्ट कॉपी करें</button></div>
+      </div>
+
+      <div class="p-card">
+        <span class="cat-pill">क्रिएटर</span>
+        <h2>YouTube वीडियो स्क्रिप्ट</h2>
+        <p class="why">हुक से CTA तक पूरा ढांचा — आपकी अपनी बोलचाल की भाषा में।</p>
+        <pre>मेरा वीडियो टॉपिक: [विषय]
+चैनल किस बारे में है: [बताएँ]
+लंबाई: [जैसे 8 मिनट]
+
+स्क्रिप्ट दो:
+1. हुक (पहले 15 सेकंड) — 2 विकल्प
+2. इंट्रो — चैनल का प्रचार नहीं, सीधे मुद्दे पर
+3. मुख्य हिस्सा — 3-4 सेक्शन, हर सेक्शन के बीच जिज्ञासा बनाए रखने वाली एक लाइन
+4. आखिर में CTA — सिर्फ़ एक (सब्सक्राइब+लाइक+शेयर+कमेंट सब एक साथ नहीं)
+
+भाषा: जैसी मैं बोलता/बोलती हूँ — [हिंदी / हिंग्लिश]</pre>
+        <div class="p-actions"><button class="copy-btn" data-copy>📋 प्रॉम्प्ट कॉपी करें</button></div>
+      </div>
+
+      <div class="p-card">
+        <span class="cat-pill">काम-काज</span>
+        <h2>सरकारी काम की चिट्ठी/आवेदन</h2>
+        <p class="why">बिजली विभाग से बैंक तक — सम्मानजनक, सीधा, और काम की बात ऊपर।</p>
+        <pre>मुझे एक औपचारिक पत्र/आवेदन लिखना है।
+
+किसके लिए: [विभाग/अधिकारी — जैसे बिजली विभाग, बैंक मैनेजर, स्कूल प्रिंसिपल]
+काम: [शिकायत / अनुरोध / सूचना — पूरी बात लिखें]
+ज़रूरी जानकारी: [खाता/उपभोक्ता संख्या वगैरह]
+
+नियम: सम्मानजनक लेकिन सीधा, एक पेज से कम, ज़रूरी डिटेल ऊपर, आखिर में साफ़ लिखो कि क्या कार्रवाई चाहिए। पत्र हिंदी में दो, और नीचे वही अंग्रेज़ी में भी।</pre>
+        <div class="p-actions"><button class="copy-btn" data-copy>📋 प्रॉम्प्ट कॉपी करें</button></div>
+      </div>
+    </div>
+
+    <div class="cta"><b>हर हफ़्ते एक नया आज़माया हुआ प्रॉम्प्ट चाहिए?</b> PromptAI की ब्रीफिंग में मिलता है — दिन की सबसे ज़रूरी AI ख़बर, चर्चा में रहा रिसर्च पेपर, और एक काम का प्रॉम्प्ट। <a href="index.html">मुफ़्त सब्सक्राइब करें →</a></div>
+  </main>
+</div>
+<footer class="site-footer">
+  <div class="foot-in">
+    <span data-no-translate>© 2026 PromptAI · promptai.in</span>
+    <a href="privacy.html">Privacy</a>
+    <a href="terms.html">Terms</a>
+    <a href="index.html">Briefing</a>
+    <a href="prompts.html">Prompt library</a>
+    <a href="archive.html">Archive</a>
+  </div>
+</footer>
+<div id="toast" role="status" aria-live="polite"></div>
+<script src="pai-chrome.js"></script>
+<script>
+document.querySelectorAll('[data-copy]').forEach(function (btn) {
+  btn.addEventListener('click', function () {
+    var pre = btn.closest('.p-card').querySelector('pre');
+    navigator.clipboard.writeText(pre.textContent).then(function () {
+      btn.textContent = '✓ कॉपी हो गया';
+      if (window.toast) toast('प्रॉम्प्ट कॉपी हो गया — अब ChatGPT, Claude या Gemini में पेस्ट करें');
+      setTimeout(function () { btn.textContent = '📋 प्रॉम्प्ट कॉपी करें'; }, 1800);
+    }, function () { if (window.toast) toast('कॉपी नहीं हुआ — टेक्स्ट खुद सिलेक्ट करें'); });
+  });
+});
+</script>
+</body>
+</html>

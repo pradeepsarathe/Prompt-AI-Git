@@ -1,0 +1,82 @@
+# PromptAI
+
+> PromptAI (https://promptai.in) is a free, daily-updated AI briefing and learning site: curated AI news with the one story that matters each day, deep dives, the research paper everyone is citing, a library of tested copy-ready AI prompts, and a plain-English "Learn AI" course. No paywall, no login required to read. Made in India for a global audience.
+
+All content may be quoted and cited with a link back to the source page. Every URL below is stable and canonical.
+
+## Main sections
+- [Today's AI briefing](https://promptai.in/): today's most important AI story, top headlines, and the day's must-read research paper — updated daily
+- [Issue archive](https://promptai.in/issues): every past daily briefing, at https://promptai.in/issue/YYYY-MM-DD
+- [Prompt library](https://promptai.in/prompts.html): 50 tested, copy-ready AI prompts for Claude, ChatGPT and Gemini — each with its own page below
+- [Hindi prompts / AI प्रॉम्प्ट हिंदी में](https://promptai.in/prompts-hindi.html): 10 ready-to-use AI prompts written fully in Hindi — email, interview prep, English practice, kids’ homework, small-business posts, formal letters
+- [Learn AI](https://promptai.in/education.html): a plain-English course on AI fundamentals — tokens, context windows, hallucinations, prompting, agents
+- [Topic hubs](https://promptai.in/topic/llms): curated news by topic — llms, agents, vision, robotics, policy, research, tools (at /topic/<name>)
+- [Archive](https://promptai.in/archive.html): full searchable archive of curated stories
+
+## Prompt library — tested AI prompts
+Each page contains the full prompt text (free to copy), what it's for, and how to customize it.
+
+### Writing prompts
+- [Explain it three ways](https://promptai.in/prompt/explain-it-three-ways): The fastest way to find the right level for your audience — compare all three and steal the best.
+- [First draft from bullet points](https://promptai.in/prompt/first-draft-from-bullet-points): Turns rough notes into a structured draft you can react to, instead of staring at a blank page.
+- [Ruthless editor](https://promptai.in/prompt/ruthless-editor): Tightens any draft without changing your meaning or voice — great last pass before publishing.
+- [Subject line generator with a twist](https://promptai.in/prompt/subject-line-generator-with-a-twist): Gets past generic subject lines by forcing variety across distinct styles, then self-ranking.
+- [Resume bullets that prove impact](https://promptai.in/prompt/resume-bullets-that-prove-impact): Turns "responsible for X" into evidence — the rewrite recruiters actually notice.
+- [Say no without burning the bridge](https://promptai.in/prompt/say-no-without-burning-the-bridge): The decline email you rewrite five times, done in one pass — clear, warm, final.
+- [Tone transplant](https://promptai.in/prompt/tone-transplant): Keeps your meaning, swaps the register — formal to friendly, blunt to diplomatic, and back.
+- [Executive summary in 150 words](https://promptai.in/prompt/executive-summary-in-150-words): Compresses any document into the version a busy decision-maker will actually read.
+
+### Coding prompts
+- [Code review like a senior engineer](https://promptai.in/prompt/code-review-like-a-senior-engineer): Structured review that prioritizes real risks over style nits.
+- [Explain unfamiliar code](https://promptai.in/prompt/explain-unfamiliar-code): Three layers — what, how, why — so you can stop at the depth you need.
+- [Regex with receipts](https://promptai.in/prompt/regex-with-receipts): Regexes are write-only without tests. This makes the model prove its pattern works.
+- [Rubber-duck a bug](https://promptai.in/prompt/rubber-duck-a-bug): Forces the model to reason about the system instead of pattern-matching a generic fix.
+- [Write tests first](https://promptai.in/prompt/write-tests-first): Test cases reveal the edge cases you forgot — often more valuable than the implementation itself.
+- [Commit message and PR description](https://promptai.in/prompt/commit-message-and-pr-description): Writes the PR description your reviewer wishes you had written — from the diff itself.
+- [SQL from plain English](https://promptai.in/prompt/sql-from-plain-english): Gets you a query AND the paranoia — assumptions, edge cases and a safety check before you run it.
+- [Refactor, but prove nothing broke](https://promptai.in/prompt/refactor-but-prove-nothing-broke): Refactoring without tests is gambling. This makes the model show its safety reasoning.
+- [Decode this error](https://promptai.in/prompt/decode-this-error): Turns a cryptic stack trace into what actually happened, where, and the 3 most likely fixes.
+
+### Learning prompts
+- [Feynman technique, automated](https://promptai.in/prompt/feynman-technique-automated): You learn by explaining — this finds the gaps in your explanation.
+- [Prerequisite tree](https://promptai.in/prompt/prerequisite-tree): Learning fails when you skip a prerequisite. Map them before you start.
+- [Socratic tutor mode](https://promptai.in/prompt/socratic-tutor-mode): Stops the model from lecturing and makes it teach through questions instead.
+- [Spaced-repetition card writer](https://promptai.in/prompt/spaced-repetition-card-writer): Good flashcards are atomic and test recall, not recognition. Most people write bad ones.
+- [Misconception sweep](https://promptai.in/prompt/misconception-sweep): You don’t know what you know wrong. This lists the standard traps for any topic.
+- [Practice problems with a rubric](https://promptai.in/prompt/practice-problems-with-a-rubric): Reading feels like learning; solving is learning. Generates problems at your actual level.
+- [Book gutting (read it smarter)](https://promptai.in/prompt/book-gutting-read-it-smarter): For nonfiction you want the ideas from, not the 280 pages of anecdotes around them.
+- [Language sparring partner](https://promptai.in/prompt/language-sparring-partner): A conversation partner that corrects you without derailing the conversation.
+
+### Productivity prompts
+- [Inbox triage assistant](https://promptai.in/prompt/inbox-triage-assistant): Drafts the three hardest reply types — decline, delegate, defer — in your voice.
+- [Meeting notes → decisions &amp; actions](https://promptai.in/prompt/meeting-notes-decisions-actions): The only two things that matter from any meeting, extracted and owner-assigned.
+- [Weekly review interrogator](https://promptai.in/prompt/weekly-review-interrogator): A weekly review you'll actually do, because the questions are asked one at a time.
+- [Brain dump → action plan](https://promptai.in/prompt/brain-dump-action-plan): Empties the 2am head-noise into a list where every item is actionable, scheduled, or consciously dropped.
+- [Calendar autopsy](https://promptai.in/prompt/calendar-autopsy): Your calendar is a confession. This finds what to cut, shrink, or delegate.
+- [Plan today like a realist](https://promptai.in/prompt/plan-today-like-a-realist): A day plan that survives contact with reality, because it budgets for interruptions.
+- [Delegation brief](https://promptai.in/prompt/delegation-brief): Most delegation fails in the handoff. This writes the brief that prevents the rework.
+- [Right-size this decision](https://promptai.in/prompt/right-size-this-decision): Separates decisions worth a week of agonizing from the ones to make in five minutes.
+
+### Marketing prompts
+- [Landing page copy from features](https://promptai.in/prompt/landing-page-copy-from-features): Converts feature lists into benefit-driven copy with the classic PAS structure.
+- [Name generator with filters](https://promptai.in/prompt/name-generator-with-filters): Most name brainstorms die from vague criteria. This bakes the filters in upfront.
+- [Objection mining](https://promptai.in/prompt/objection-mining): Anticipates why people DON'T buy — the highest-leverage marketing question.
+- [One idea, five channels](https://promptai.in/prompt/one-idea-five-channels): Stops copy-paste cross-posting — each channel gets its native format from one source idea.
+- [Customer interview script that won’t lie to you](https://promptai.in/prompt/customer-interview-script-that-wont-lie-to-you): Questions about their life, not your idea — the only interviews that produce the truth.
+- [SEO content brief](https://promptai.in/prompt/seo-content-brief): Briefs a writer (or yourself) properly: intent, structure, and what the top results all miss.
+- [Case study from a messy customer call](https://promptai.in/prompt/case-study-from-a-messy-customer-call): Turns a rambling "yeah it’s been great" call into a credible before/after story.
+- [Ad angles matrix](https://promptai.in/prompt/ad-angles-matrix): Ten ads that are actually different — each tests a distinct angle, not ten synonyms.
+
+### Research prompts
+- [Assumption auditor](https://promptai.in/prompt/assumption-auditor): Surfaces the hidden assumptions in a plan before reality does.
+- [Compare anything, honestly](https://promptai.in/prompt/compare-anything-honestly): Forces a real decision framework instead of a mushy &quot;it depends&quot;.
+- [Learning roadmap for any topic](https://promptai.in/prompt/learning-roadmap-for-any-topic): Replaces &quot;where do I start&quot; paralysis with a sequenced plan sized to your actual time budget.
+- [Paper deconstruction](https://promptai.in/prompt/paper-deconstruction): The questions a good journal-club reviewer would ask, applied to any paper abstract or text.
+- [Steelman both sides](https://promptai.in/prompt/steelman-both-sides): Cuts through one-sided takes — useful before forming an opinion on anything contested.
+- [Honest summarizer](https://promptai.in/prompt/honest-summarizer): A summary you can trust, because it tells you what it left out.
+- [Pre-mortem](https://promptai.in/prompt/pre-mortem): Imagine the project already failed, then work backwards — finds the risks optimism hides.
+- [Question bank for an expert interview](https://promptai.in/prompt/question-bank-for-an-expert-interview): Better questions than "tell me about your journey" — built from what only THIS person can answer.
+- [Statistics sanity check](https://promptai.in/prompt/statistics-sanity-check): Checks the number before you repeat it — base rates, denominators, and what the stat conveniently omits.
+
+## Newsletter
+Free email briefing — daily or weekly — sign up at https://promptai.in/ (no spam, one-click unsubscribe).
