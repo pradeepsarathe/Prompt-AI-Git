@@ -16,7 +16,7 @@
 //   KV binding   STATS          (visitor/read/event counters)
 //   KV binding   SUBSCRIBERS    (subscriber list + meta:lastRun)
 //   Secret       RESEND_API_KEY
-//   Variable     FROM_EMAIL     e.g.  PromptAI <briefing@promptai.in>
+//   Variable     FROM_EMAIL     e.g.  PromptAI <hello@promptai.in>
 //   Secret       CRON_SECRET
 // New (one variable):
 //   Variable     REPORT_EMAIL   where the report goes, e.g. you@gmail.com

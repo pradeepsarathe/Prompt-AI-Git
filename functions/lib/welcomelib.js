@@ -107,7 +107,7 @@ export function welcomeEmail(step, ctx) {
         title: "You're in. Here's how to get the most out of PromptAI.",
         intro: `<p style="margin:0 0 6px;">Thanks for confirming — your first briefing is already on its way. Here's the 30-second orientation so PromptAI earns its spot in your week.</p>`,
         rowsHtml:
-          row('⭐', 'Never miss it', 'Move <b>briefing@promptai.in</b> to your Primary tab (or add it to your contacts). A great briefing is useless in the Promotions folder.') +
+          row('⭐', 'Never miss it', 'Move <b>hello@promptai.in</b> to your Primary tab (or add it to your contacts). A great briefing is useless in the Promotions folder.') +
           row('🔴', 'The feed is live all day', 'The briefing is the highlight reel — but <b>promptai.in</b> updates continuously. Bookmark it for the moment news breaks.') +
           row('🧰', '50 prompts, ready to steal', 'Our prompt library has 50 copy-paste prompts for writing, coding, research and planning. We\u2019ll show you around in a couple of days.'),
         ctaText: 'Explore the live feed →',
@@ -119,7 +119,7 @@ export function welcomeEmail(step, ctx) {
         'WELCOME TO PROMPTAI', '===================', '',
         "You're in. Thanks for confirming — your first briefing is on its way.",
         'Here is the 30-second orientation:', '',
-        '1. NEVER MISS IT — move briefing@promptai.in to your Primary tab / contacts.',
+        '1. NEVER MISS IT — move hello@promptai.in to your Primary tab / contacts.',
         '2. THE FEED IS LIVE ALL DAY — bookmark https://promptai.in for breaking news.',
         '3. 50 PROMPTS, READY TO STEAL — a copy-paste library for writing, coding, research, planning.',
         '', 'Explore the live feed: ' + SITE, '',

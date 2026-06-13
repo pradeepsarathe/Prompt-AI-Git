@@ -21,7 +21,7 @@
 // Required (Pages → Settings → Functions):
 //   KV binding   SUBSCRIBERS
 //   Secret       RESEND_API_KEY     (from resend.com)
-//   Variable     FROM_EMAIL         e.g.  PromptAI <briefing@promptai.in>
+//   Variable     FROM_EMAIL         e.g.  PromptAI <hello@promptai.in>
 //   Secret       CRON_SECRET        any long random string
 
 // ── feed sources — single shared module (R2) ────────────────────────
