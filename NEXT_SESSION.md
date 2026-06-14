@@ -1,5 +1,61 @@
 # NEXT SESSION
 
+# NEXT SESSION
+
+## State (2026-06-14, latest 2) — Review action pack: 15 changes shipped (front-end + SEO)
+Implemented 15 self-contained items from `PromptAI Full Platform Review - June 14.html`
+(no keys/binaries/accounts needed). Working tree only — push to repo to deploy.
+**Bumped `sw.js` VERSION → `pai-v5`** (cached static assets changed shape — required so
+returning users get the new JS/CSS).
+
+Changes & files:
+1. **WCAG AA contrast** — darkened `--text-3` in every theme: `index.html`,
+   `pai-chrome.css`, `functions/lib/page.js`, `404.html`, `promptai_google.html`.
+2. **Modal a11y** — aria-labels on Save/Like/Post/Share/Copy emoji buttons (`index.html`).
+3. **CLS** — explicit width/height on story card thumbnails (`pai-google-ui.js`).
+4. **i18n a11y** — set `<html lang>` on translate switch (`pai-translate.js`).
+5. **First-run interest picker** — `#onboard` overlay + `paiMaybeOnboard/Save/Skip`
+   (`index.html` markup+CSS, `pai-google-ui.js`). Persists `pai_interests`/`pai_onboarded`.
+6. **For-you cold-start fixed** — `topInterests()` seeds from chosen interests (weight 4);
+   note now "Tuned to your interests · …".
+7. **Modal CTA rebalance** — "Read full article" no longer auto-closes the modal (opens
+   in new tab; reader returns to "Up next").
+8. **Unified search** — homepage `SearchAction` schema target → `/?q={search_term_string}`.
+9. **`?q=` handled in-app** on boot (`pai-google-ui.js`).
+10. **Richer issue schema** — `Article` → `NewsArticle` + image/author/publisher-logo/
+    dateModified/mainEntityOfPage (`functions/issue/[date].js`).
+11. **BreadcrumbList JSON-LD** auto-emitted for ALL server pages from `breadcrumbs`
+    (`functions/lib/page.js`) — covers issues/learn/topic.
+12. Issue meta descriptions already unique (verified) + enhanced via #10.
+13. **Editorial Standards / methodology page** (`methodology.html`) — E-E-A-T: sourcing,
+    AI-summary disclosure, independence, corrections, contact. Added to `sitemap.js`,
+    footers (`index.html`, server `page.js`).
+14. **Internal linking** — methodology interlinks + breadcrumb schema + footer links.
+15. **Reading streak** — `renderStreak()` adds a streak row to the rail stats (≥2 days).
+
+Verified in preview (after SW cache refresh): picker shows, interests seed For-you,
+search routes, no console errors. NOTE: stale-while-revalidate means a hard-refresh or
+the `pai-v5` bump is needed to see new JS — that's expected SW behavior.
+
+Still NOT done (needs you / bigger lifts): CSP enforce (refactor inline handlers),
+web push (VAPID keys), self-host fonts (binaries), original editorial content, real
+affiliate/sponsor deals, embeddings search, localized indexable pages.
+
+## State (2026-06-14, latest) — "Up next" in-modal next-story loop (front-end only)
+Built the missing **next-story modal** loop (was on the punch list). When any
+article opens, the modal now shows an **"Up next"** rail of 2–3 related reads;
+clicking one swaps the modal content in place (records history, bumps read
+count, regenerates a fresh rail, resets scroll to top) so readers keep going
+without closing the modal. Files touched (working tree only, no backend/env):
+- `index.html` — `.modal-next`/`.m-next-*` CSS + `<div id="m-next">` in modal body.
+- `pai-google-ui.js` — `relatedStories(cur,n)` (ranks loaded news+blogs+papers by
+  topic, source, title-keyword overlap, recency; mild already-read penalty;
+  two-pass backfill so even a heavy returning reader gets a full rail) and
+  `renderModalNext(cur)`; both wired into `openModal` + scrollTop reset. Fires a
+  `next_story` funnel event (P.event). Falls back to hidden if <2 candidates.
+Note: only renders on pages that load the UI engine (home `index.html`). Could
+be ported to issue/archive pages later if wanted.
+
 ## State (2026-06-13, latest) — Research feed fix
 `esig/Prompt ai - Research feed fix (arXiv parser + CSP) - 2026-06-13 - 4/`.
 Research tab was empty (News fine). Cause: client fallback `legacyFetchPapers`

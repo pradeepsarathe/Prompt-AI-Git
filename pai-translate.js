@@ -126,10 +126,18 @@
     try { localStorage.setItem('pai_lang', code); } catch (e) {}
     if (!code || code === 'en') { location.reload(); return; }   // revert = reload to original
     curLang = code;
+    // Reflect the active language on the document so screen readers and search
+    // engines announce/treat the content correctly (a11y + i18n correctness).
+    try { document.documentElement.setAttribute('lang', code); } catch (e) {}
     if (window.toast) window.toast('Translating…');
     translatePage(code).then(function () { if (window.toast) window.toast('✓ Translated'); });
   };
 
-  function boot() { if (curLang && curLang !== 'en') translatePage(curLang); }
+  function boot() {
+    if (curLang && curLang !== 'en') {
+      try { document.documentElement.setAttribute('lang', curLang); } catch (e) {}
+      translatePage(curLang);
+    }
+  }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
 })();

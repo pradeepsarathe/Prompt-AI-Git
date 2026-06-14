@@ -38,6 +38,7 @@ export async function onRequest(context) {
     { loc: 'https://promptai.in/glossary.html',  lastmod: GLOSSARY_LASTMOD, changefreq: 'monthly', priority: '0.7' },
     { loc: 'https://promptai.in/privacy.html',   lastmod: LEGAL_LASTMOD,   changefreq: 'yearly',  priority: '0.2' },
     { loc: 'https://promptai.in/terms.html',     lastmod: LEGAL_LASTMOD,   changefreq: 'yearly',  priority: '0.2' },
+    { loc: 'https://promptai.in/methodology.html', lastmod: '2026-06-14',  changefreq: 'monthly', priority: '0.4' },
   ];
 
   // Per-term glossary pages (/glossary/<slug>) — generated from the list above

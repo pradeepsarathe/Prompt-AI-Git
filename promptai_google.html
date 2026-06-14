@@ -3,36 +3,8 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>PromptAI — AI Research Hub &amp; Daily Briefing</title>
-<meta name="description" content="PromptAI — your hub for AI research, papers, tools and insights. A clean, scannable briefing of live AI news, research and explainers, curated daily."/>
-<link rel="canonical" href="https://promptai.in/"/>
-<meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"/>
-<meta property="og:type" content="website"/>
-<meta property="og:url" content="https://promptai.in/"/>
-<meta property="og:site_name" content="PromptAI"/>
-<meta property="og:title" content="PromptAI — AI Research Hub"/>
-<meta property="og:description" content="Curated AI papers, breaking research news, tool reviews and expert analysis — all in one place. Updated daily."/>
-<meta property="og:image" content="https://promptai.in/og-image.jpg"/>
-<meta property="og:image:width" content="1200"/>
-<meta property="og:image:height" content="630"/>
-<meta name="twitter:card" content="summary_large_image"/>
-<meta name="twitter:site" content="@promptai_in"/>
-<meta name="twitter:title" content="PromptAI — AI Research Hub"/>
-<meta name="twitter:description" content="Curated AI papers, breaking research news, tool reviews and expert analysis — updated daily."/>
-<meta name="twitter:image" content="https://promptai.in/og-image.jpg"/>
-<link rel="alternate" type="application/rss+xml" title="PromptAI — AI Research Feed" href="/feed.xml"/>
-<link rel="sitemap" type="application/xml" href="/sitemap.xml"/>
-<meta name="color-scheme" content="light dark"/>
-<meta name="theme-color" content="#1a73e8"/>
-<link rel="manifest" href="manifest.webmanifest"/>
-<link rel="apple-touch-icon" href="icon-192.png"/>
-<script>/* pre-paint theme (R29): saved theme or system preference, before first paint */
-(function(){try{var t=localStorage.getItem('pai_theme')||'auto';
-if(t==='auto')t=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'default';
-if(t!=='default')document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
-<script type="application/ld+json">
-{"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://promptai.in/#org","name":"PromptAI","url":"https://promptai.in/","logo":"https://promptai.in/og-image.jpg","description":"Independent hub for AI research, papers, tools and insights.","sameAs":["https://twitter.com/promptai_in","https://www.linkedin.com/company/promptai-in","https://www.instagram.com/promptai.in"]},{"@type":"WebSite","@id":"https://promptai.in/#website","url":"https://promptai.in/","name":"PromptAI","publisher":{"@id":"https://promptai.in/#org"},"potentialAction":{"@type":"SearchAction","target":"https://promptai.in/?q={search_term_string}","query-input":"required name=search_term_string"}},{"@type":"WebPage","@id":"https://promptai.in/#webpage","url":"https://promptai.in/","name":"PromptAI — AI Research Hub","description":"Curated AI papers, breaking research news, tool reviews and expert analysis — all in one place. Updated daily.","isPartOf":{"@id":"https://promptai.in/#website"},"about":{"@id":"https://promptai.in/#org"},"primaryImageOfPage":"https://promptai.in/og-image.jpg","inLanguage":"en"}]}
-</script>
+<title>PromptAI — Your AI briefing</title>
+<meta name="description" content="PromptAI in a clean, scannable briefing layout — live AI news, research papers, explainers and tools, all in one feed."/>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,300;0,400;0,500;0,700;1,400&family=Roboto+Serif:opsz,wght@8..144,400;8..144,500;8..144,600&display=swap" rel="stylesheet"/>
@@ -50,36 +22,16 @@ if(t!=='default')document.documentElement.setAttribute('data-theme',t);}catch(e)
     --radius:8px; --maxmain:760px;
     --serif:'Roboto Serif',Georgia,serif;
   }
-  /* PromptAI blue — cool tinted canvas, navy ink, saturated blue accent */
   :root[data-theme="promptai"] {
-    --accent:#2563eb; --accent-2:#1d4ed8; --accent-subtle:#dbeafe;
-    --bg:#f3f6fc; --bg-subtle:#e7edf8; --bg-rail:#ffffff; --card:#ffffff;
-    --text:#0a1628; --text-2:#44546e; --text-3:#5b6b84;
-    --border:#ccd8ea; --border-soft:#dde6f3;
-    --shadow:0 1px 2px rgba(10,22,40,0.08),0 2px 6px rgba(10,22,40,0.06);
-    --shadow-hover:0 2px 6px rgba(10,22,40,0.14),0 8px 20px rgba(10,22,40,0.1);
+    --accent:#2563eb; --accent-2:#1d4ed8; --accent-subtle:#eff6ff;
+    --text:#0a1628; --text-2:#475569; --text-3:#5f6f88;
+    --border:#e2e8f0; --border-soft:#eef2f7; --bg-subtle:#f4f7fb;
   }
-  /* Slate & teal — warm paper canvas, stone ink, deep teal accent */
   :root[data-theme="slate"] {
-    --accent:#0f766e; --accent-2:#0d5d57; --accent-subtle:#d8efe9;
-    --bg:#f7f5f1; --bg-subtle:#edeae3; --bg-rail:#fffefb; --card:#fffefb;
+    --accent:#0f766e; --accent-2:#0d5d57; --accent-subtle:#ecfdf7;
     --text:#1c1917; --text-2:#57534e; --text-3:#6f6a64;
-    --border:#d6d1c7; --border-soft:#e5e1d8;
-    --shadow:0 1px 2px rgba(28,25,23,0.08),0 2px 6px rgba(28,25,23,0.05);
-    --shadow-hover:0 2px 6px rgba(28,25,23,0.13),0 8px 20px rgba(28,25,23,0.09);
+    --border:#e7e5e4; --border-soft:#f0efee; --bg-subtle:#f5f4f2;
   }
-
-  /* Dark — manual pick or "follow system" (R29) */
-  :root[data-theme="dark"] {
-    --accent:#8ab4f8; --accent-2:#aecbfa; --accent-subtle:#1f3658;
-    --bg:#17181c; --bg-subtle:#222327; --bg-rail:#1e1f24; --card:#1e1f24;
-    --text:#e8eaed; --text-2:#9aa0a6; --text-3:#969ba2;
-    --border:#3c4043; --border-soft:#2d2f33;
-    --shadow:0 1px 2px rgba(0,0,0,0.5),0 1px 3px rgba(0,0,0,0.4);
-    --shadow-hover:0 1px 3px rgba(0,0,0,0.6),0 4px 12px rgba(0,0,0,0.5);
-    color-scheme:dark;
-  }
-  :root[data-theme="dark"] .modal-read, :root[data-theme="dark"] .subscribe-cta, :root[data-theme="dark"] .freq-row label:has(input:checked) { color:#17181c; }
 
   * { margin:0; padding:0; box-sizing:border-box; }
   html { scroll-behavior:smooth; }
@@ -124,14 +76,13 @@ if(t!=='default')document.documentElement.setAttribute('data-theme',t);}catch(e)
   }
   #pai-search::placeholder { color:var(--text-3); }
   #pai-search:focus {
-    outline:none; background:var(--card); border-color:var(--border-soft);
+    outline:none; background:var(--bg); border-color:var(--border-soft);
     box-shadow:var(--shadow);
   }
-  #search-toggle { display:none; }
   .topbar-actions { display:flex; align-items:center; gap:4px; flex:none; }
   .signin-btn {
     display:flex; align-items:center; gap:8px; height:40px; padding:0 18px; border-radius:20px;
-    border:1px solid var(--border); background:var(--card); color:var(--accent); font-weight:500; font-size:0.9rem;
+    border:1px solid var(--border); background:var(--bg); color:var(--accent); font-weight:500; font-size:0.9rem;
     transition:background .15s,box-shadow .15s;
   }
   .signin-btn:hover { background:var(--accent-subtle); box-shadow:var(--shadow); }
@@ -145,15 +96,15 @@ if(t!=='default')document.documentElement.setAttribute('data-theme',t);}catch(e)
     display:none; align-items:center; justify-content:center; background:var(--accent);
   }
 
-  /* theme menu — FIXED so it stays glued under the sticky top bar after scroll */
+  /* theme menu */
   .theme-menu {
-    position:fixed; top:60px; right:12px; background:var(--card); border:1px solid var(--border-soft);
+    position:absolute; top:58px; right:12px; background:var(--bg); border:1px solid var(--border-soft);
     border-radius:14px; box-shadow:var(--shadow-hover); padding:8px; width:230px; z-index:80; display:none;
   }
   .theme-menu.open { display:block; }
   /* subscribe popover */
   .sub-menu {
-    position:fixed; top:60px; right:16px; background:var(--card); border:1px solid var(--border-soft);
+    position:absolute; top:60px; right:16px; background:var(--bg); border:1px solid var(--border-soft);
     border-radius:14px; box-shadow:var(--shadow-hover); padding:16px; width:288px; z-index:80; display:none;
   }
   .sub-menu.open { display:block; }
@@ -167,7 +118,7 @@ if(t!=='default')document.documentElement.setAttribute('data-theme',t);}catch(e)
   .sub-menu .sub-note { font-size:0.72rem; color:var(--text-3); margin-top:9px; line-height:1.5; }
   /* language menu */
   .lang-menu {
-    position:fixed; top:60px; right:16px; background:var(--card); border:1px solid var(--border-soft);
+    position:absolute; top:60px; right:16px; background:var(--bg); border:1px solid var(--border-soft);
     border-radius:14px; box-shadow:var(--shadow-hover); padding:8px; width:240px; z-index:80; display:none;
     max-height:min(70vh,460px); overflow-y:auto;
   }
@@ -219,17 +170,14 @@ if(t!=='default')document.documentElement.setAttribute('data-theme',t);}catch(e)
   @keyframes fade { from{transform:translateY(6px)} to{transform:none} }
   .sec-title {
     display:flex; align-items:center; gap:10px; font-size:1.35rem; font-weight:500; color:var(--text);
-    margin:6px 0 4px; font-family:inherit;
+    margin:6px 0 4px;
   }
   .sec-title .bar { width:4px; height:22px; border-radius:3px; background:var(--accent); }
   .sec-sub { font-size:0.86rem; color:var(--text-2); margin:0 0 18px 14px; }
-  .sec-divider { margin:42px 0 18px; }
-  .sec-divider .sec-kick { display:flex; align-items:center; gap:10px; font-size:0.7rem; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; color:var(--accent); margin-bottom:6px; }
-  .sec-divider .sec-kick::before { content:''; width:18px; height:3px; border-radius:2px; background:var(--accent); }
-  .sec-divider .sec-row { display:flex; align-items:baseline; gap:14px; }
-  .sec-divider h2 { font-family:var(--serif); font-size:1.5rem; font-weight:600; letter-spacing:-0.3px; color:var(--text); white-space:nowrap; }
-  .sec-divider .line { flex:1; height:1px; background:var(--border-soft); align-self:center; }
-  .sec-divider a { font-size:0.84rem; color:var(--accent); font-weight:500; white-space:nowrap; }
+  .sec-divider { display:flex; align-items:center; gap:12px; margin:34px 0 16px; }
+  .sec-divider h3 { font-size:1.05rem; font-weight:500; color:var(--text); white-space:nowrap; }
+  .sec-divider .line { flex:1; height:1px; background:var(--border-soft); }
+  .sec-divider a { font-size:0.82rem; color:var(--accent); font-weight:500; }
 
   /* ════ CHIPS (sticky filter bar) ════ */
   .chips {
@@ -239,7 +187,7 @@ if(t!=='default')document.documentElement.setAttribute('data-theme',t);}catch(e)
   }
   .chip {
     height:32px; padding:0 16px; border-radius:16px; border:1px solid var(--border);
-    background:var(--card); color:var(--text-2); font-size:0.82rem; font-weight:500;
+    background:var(--bg); color:var(--text-2); font-size:0.82rem; font-weight:500;
     display:inline-flex; align-items:center; gap:6px; transition:all .12s;
   }
   .chip:hover { background:var(--bg-subtle); }
@@ -249,7 +197,7 @@ if(t!=='default')document.documentElement.setAttribute('data-theme',t);}catch(e)
   .load-more-wrap { display:flex; justify-content:center; padding:14px 0 4px; }
   .load-more {
     height:42px; padding:0 30px; border-radius:21px; border:1px solid var(--border);
-    background:var(--card); color:var(--accent); font-weight:500; font-size:0.9rem;
+    background:var(--bg); color:var(--accent); font-weight:500; font-size:0.9rem;
     display:inline-flex; align-items:center; gap:8px; transition:background .15s, box-shadow .15s;
   }
   .load-more:hover { background:var(--accent-subtle); box-shadow:var(--shadow); }
@@ -270,11 +218,11 @@ if(t!=='default')document.documentElement.setAttribute('data-theme',t);}catch(e)
   .card-src .topic { font-size:0.72rem; color:var(--accent); font-weight:500; }
   .card-row { display:flex; gap:18px; align-items:flex-start; }
   .card-body { flex:1; min-width:0; }
-  .card h3, .card h4 {
+  .card h4 {
     font-family:var(--serif); font-size:1.06rem; line-height:1.32; font-weight:500; color:var(--text);
     letter-spacing:-0.1px; margin-bottom:8px;
   }
-  .card:hover h3, .card:hover h4 { text-decoration:underline; text-decoration-color:var(--border); text-underline-offset:2px; }
+  .card:hover h4 { text-decoration:underline; text-decoration-color:var(--border); text-underline-offset:2px; }
   .card .excerpt { font-size:0.86rem; color:var(--text-2); line-height:1.5; margin-bottom:10px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
   .card-meta { display:flex; align-items:center; gap:10px; font-size:0.76rem; color:var(--text-3); }
   .card-thumb { width:128px; height:96px; border-radius:10px; object-fit:cover; flex:none; background:var(--bg-subtle); }
@@ -307,24 +255,11 @@ if(t!=='default')document.documentElement.setAttribute('data-theme',t);}catch(e)
   .access.free { background:#e6f4ea; color:#137333; }
   .access.both { background:var(--accent-subtle); color:var(--accent); }
   .access.paid { background:#fef7e0; color:#b06000; }
-  .tool h3, .tool h4 { font-size:0.98rem; font-weight:500; color:var(--text); }
+  .tool h4 { font-size:0.98rem; font-weight:500; color:var(--text); }
   .tool p { font-size:0.82rem; color:var(--text-2); line-height:1.45; flex:1; }
   .tool-foot { display:flex; align-items:center; justify-content:space-between; margin-top:2px; }
   .tool-tag { font-size:0.72rem; font-weight:500; color:var(--text-2); background:var(--bg-subtle); padding:3px 10px; border-radius:8px; }
   .tool-open { font-size:0.78rem; font-weight:500; color:var(--accent); display:flex; align-items:center; gap:3px; }
-
-  /* ════ VISUAL CARDS (image-on-top — Blogs tab) ════ */
-  .vis-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:14px; margin-bottom:12px; }
-  .vis-card {
-    background:var(--card); border:1px solid var(--border-soft); border-radius:12px; box-shadow:var(--shadow);
-    overflow:hidden; cursor:pointer; transition:box-shadow .15s; display:flex; flex-direction:column;
-  }
-  .vis-card:hover { box-shadow:var(--shadow-hover); }
-  .vis-card .vis-img { width:100%; height:158px; object-fit:cover; background:var(--bg-subtle); display:block; }
-  .vis-card .vis-body { padding:14px 16px 16px; display:flex; flex-direction:column; gap:8px; flex:1; }
-  .vis-card h3, .vis-card h4 { font-family:var(--serif); font-size:0.98rem; line-height:1.35; font-weight:500; color:var(--text); flex:1; margin:0; }
-  .vis-card:hover h3, .vis-card:hover h4 { text-decoration:underline; text-decoration-color:var(--border); text-underline-offset:2px; }
-  .vis-card .card-src { margin-bottom:0; }
 
   /* paper cards reuse .card with category pill */
   .pill { display:inline-block; font-size:0.7rem; font-weight:600; padding:3px 10px; border-radius:20px; letter-spacing:0.03em; }
@@ -359,56 +294,6 @@ if(t!=='default')document.documentElement.setAttribute('data-theme',t);}catch(e)
   .trend-num { font-family:var(--serif); font-size:1rem; font-weight:600; color:var(--text-3); flex:none; width:18px; }
   .trend-item h5 { font-size:0.84rem; font-weight:500; line-height:1.35; color:var(--text); }
   .trend-item span { font-size:0.72rem; color:var(--text-3); }
-  .about-panel p { font-size:0.84rem; color:var(--text-2); line-height:1.6; margin-bottom:10px; }
-
-  /* footer */
-  .site-footer { border-top:1px solid var(--border); margin-top:46px; padding:26px 24px 34px; }
-  .site-footer .foot-in { max-width:1440px; margin:0 auto; display:flex; flex-wrap:wrap; align-items:center; gap:8px 22px; font-size:0.8rem; color:var(--text-3); }
-  .site-footer a { color:var(--text-2); text-decoration:none; }
-  .site-footer a:hover { color:var(--accent); text-decoration:underline; }
-  .about-panel ul { list-style:none; margin:0 0 4px; padding:0; display:flex; flex-direction:column; gap:7px; }
-  .about-panel li { display:flex; gap:8px; font-size:0.8rem; color:var(--text-2); line-height:1.5; }
-  .about-panel li::before { content:'→'; color:var(--accent); font-weight:700; flex:none; }
-
-  /* ════ "TODAY IN 60 SECONDS" (R30) ════ */
-  .summary-card { background:linear-gradient(140deg, color-mix(in srgb, var(--accent) 14%, var(--card)) 0%, color-mix(in srgb, var(--accent) 5%, var(--card)) 100%); border:1px solid color-mix(in srgb, var(--accent) 18%, var(--border-soft)); border-radius:14px; padding:18px 20px; margin:2px 0 22px; }
-  .summary-k { display:flex; align-items:center; gap:7px; font-size:0.72rem; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; color:var(--accent); margin-bottom:8px; }
-  .summary-k svg { width:14px; height:14px; fill:currentColor; }
-  .summary-card ul { list-style:none; margin:0; padding:0; }
-  .summary-card li { font-size:0.92rem; line-height:1.55; padding:4px 0 4px 18px; position:relative; color:var(--text); }
-  .summary-card li::before { content:'•'; position:absolute; left:2px; color:var(--accent); font-weight:700; }
-  .summary-note { font-size:0.7rem; color:var(--text-3); margin-top:8px; }
-
-  /* ════ SAVE / LIKE buttons on cards (R28) ════ */
-  .card-act { display:flex; gap:2px; margin-left:auto; flex:none; }
-  .act-btn { width:30px; height:30px; border-radius:50%; border:none; background:none; color:var(--text-3); display:flex; align-items:center; justify-content:center; padding:0; }
-  .act-btn svg { width:16px; height:16px; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linejoin:round; }
-  .act-btn:hover { background:var(--bg-subtle); color:var(--text); }
-  .act-btn.on { color:var(--accent); }
-  .act-btn.on svg { fill:currentColor; }
-  .modal-share button.on { border-color:var(--accent); color:var(--accent); }
-
-  /* ════ "EXPLAIN THIS PAPER" (R30) ════ */
-  #m-explain { margin:0 0 16px; }
-  .explain-btn { width:100%; padding:11px; border-radius:10px; border:1px dashed var(--accent); background:var(--accent-subtle); color:var(--accent); font-weight:600; font-size:0.88rem; }
-  .explain-btn:hover { background:var(--card); }
-  .explain-loading { font-size:0.85rem; color:var(--text-3); padding:10px 2px; }
-  .explain-out { font-size:0.9rem; line-height:1.7; background:var(--bg-subtle); border-radius:12px; padding:14px 16px; color:var(--text); }
-  .explain-out strong { color:var(--accent); }
-  .explain-note { font-size:0.7rem; color:var(--text-3); margin-top:8px; }
-
-  /* ════ SERVER-RENDERED HEADLINES (R19) — visible until the app boots ════ */
-  #ssr-home { padding:4px 0 10px; }
-  #ssr-home h2 { font-family:var(--serif); font-size:1.15rem; font-weight:600; margin:18px 0 8px; }
-  #ssr-home ul { list-style:none; margin:0; padding:0; }
-  #ssr-home li { padding:6px 0; border-bottom:1px solid var(--border-soft); font-size:0.93rem; line-height:1.5; }
-  #ssr-home li a { color:var(--text); }
-  #ssr-home li a:hover { color:var(--accent); }
-  #ssr-home li span { color:var(--text-3); font-size:0.78rem; }
-  #ssr-home .ssr-summary { background:var(--accent-subtle); border-radius:14px; padding:16px 18px; }
-  #ssr-home .ssr-summary h2 { margin:0 0 6px; color:var(--accent); font-size:0.9rem; text-transform:uppercase; letter-spacing:0.08em; font-family:'Roboto',sans-serif; }
-  #ssr-home .ssr-more { font-size:0.85rem; margin-top:12px; }
-  #ssr-home .ssr-more a { color:var(--accent); font-weight:500; }
 
   /* ════ MODAL ════ */
   .modal-overlay { display:none; position:fixed; inset:0; z-index:200; background:rgba(32,33,36,0.6); backdrop-filter:blur(3px); overflow-y:auto; }
@@ -422,39 +307,13 @@ if(t!=='default')document.documentElement.setAttribute('data-theme',t);}catch(e)
   .modal-body { padding:26px 28px 28px; }
   .modal-body h2 { font-family:var(--serif); font-size:1.55rem; line-height:1.25; font-weight:600; margin:8px 0 12px; }
   .modal-meta { display:flex; gap:14px; flex-wrap:wrap; font-size:0.8rem; color:var(--text-3); margin-bottom:16px; }
-  .modal-text { font-family:var(--serif); font-size:1.04rem; color:var(--text); line-height:1.78; margin-bottom:12px; padding:18px 20px; border-radius:14px; background:linear-gradient(140deg, color-mix(in srgb, var(--accent) 9%, var(--card)) 0%, color-mix(in srgb, var(--accent) 2%, var(--card)) 100%); border:1px solid color-mix(in srgb, var(--accent) 16%, var(--border-soft)); }
-  .modal-note { font-size:0.76rem; color:var(--text-3); margin:2px 0 18px; }
+  .modal-text { font-size:0.96rem; color:var(--text); line-height:1.75; margin-bottom:8px; }
+  .modal-note { font-size:0.78rem; color:var(--text-3); padding-top:10px; border-top:1px solid var(--border-soft); margin-bottom:18px; }
   .modal-read { display:block; text-align:center; background:var(--accent); color:#fff; padding:14px; border-radius:12px; font-weight:600; font-size:0.95rem; transition:background .15s; }
   .modal-read:hover { background:var(--accent-2); }
   .modal-share { display:flex; gap:8px; margin-top:10px; }
   .modal-share a, .modal-share button { flex:1; display:flex; align-items:center; justify-content:center; gap:6px; padding:10px; border-radius:10px; border:1px solid var(--border-soft); background:var(--bg); font-size:0.8rem; font-weight:500; color:var(--text-2); transition:background .15s; }
   .modal-share a:hover, .modal-share button:hover { background:var(--bg-subtle); }
-  /* "Up next" — keeps the read going without leaving the modal */
-  .modal-next { display:none; margin-top:22px; padding-top:18px; border-top:1px solid var(--border-soft); }
-  .m-next-h { font-size:0.74rem; font-weight:600; letter-spacing:0.05em; text-transform:uppercase; color:var(--text-3); margin-bottom:6px; }
-  .m-next-list { display:flex; flex-direction:column; }
-  .m-next-item { display:flex; gap:11px; align-items:flex-start; padding:11px 0; border-bottom:1px solid var(--border-soft); cursor:pointer; }
-  .m-next-item:last-child { border-bottom:none; }
-  .m-next-item:hover h5 { text-decoration:underline; }
-  .m-next-item img { width:20px; height:20px; border-radius:5px; flex:none; margin-top:2px; }
-  .m-next-item h5 { font-size:0.92rem; font-weight:500; line-height:1.35; color:var(--text); }
-  .m-next-item span { font-size:0.74rem; color:var(--text-3); }
-  /* First-run interest picker (onboarding) */
-  .onb-overlay { display:none; position:fixed; inset:0; z-index:300; background:rgba(32,33,36,0.55); backdrop-filter:blur(3px); align-items:center; justify-content:center; padding:20px; }
-  .onb-overlay.open { display:flex; }
-  .onb-card { background:var(--bg); border-radius:18px; max-width:460px; width:100%; padding:30px 30px 24px; box-shadow:0 24px 80px rgba(0,0,0,0.35); }
-  .onb-card h2 { font-family:var(--serif); font-size:1.5rem; font-weight:600; margin-bottom:6px; }
-  .onb-card p { font-size:0.92rem; color:var(--text-2); margin-bottom:18px; }
-  .onb-topics { display:flex; flex-wrap:wrap; gap:9px; margin-bottom:24px; }
-  .onb-chip { font-size:0.9rem; font-weight:500; padding:9px 16px; border-radius:22px; border:1.5px solid var(--border); background:var(--card); color:var(--text-2); cursor:pointer; transition:all .12s; }
-  .onb-chip:hover { border-color:var(--accent); }
-  .onb-chip.sel { background:var(--accent); border-color:var(--accent); color:#fff; }
-  .onb-actions { display:flex; justify-content:space-between; align-items:center; gap:12px; }
-  .onb-skip { background:none; border:none; color:var(--text-3); font-size:0.9rem; cursor:pointer; padding:8px; }
-  .onb-skip:hover { color:var(--text-2); }
-  .onb-save { background:var(--accent); color:#fff; border:none; padding:12px 26px; border-radius:11px; font-weight:600; font-size:0.95rem; cursor:pointer; }
-  .onb-save:hover { background:var(--accent-2); }
-  .onb-save:disabled { opacity:0.5; cursor:default; }
 
   /* ════ SIGN-IN SLIDE-OVER ════ */
   .sheet-overlay { display:none; position:fixed; inset:0; z-index:150; background:rgba(32,33,36,0.4); }
@@ -473,20 +332,6 @@ if(t!=='default')document.documentElement.setAttribute('data-theme',t);}catch(e)
   .sheet-btn:hover { background:var(--accent-2); }
   .signed-card { text-align:center; padding:10px 0 20px; }
   .signed-card .big-av { width:64px; height:64px; border-radius:50%; background:var(--accent); color:#fff; font-size:1.6rem; font-weight:600; display:flex; align-items:center; justify-content:center; margin:0 auto 14px; }
-  .sheet-btn:disabled { opacity:0.6; cursor:default; }
-  /* account sheet — login/signup tabs + saved-data lists */
-  .acct-tabs { display:flex; gap:6px; background:var(--bg-subtle); border-radius:12px; padding:4px; margin-bottom:18px; }
-  .acct-tab { flex:1; height:38px; border:none; border-radius:9px; background:none; font-family:inherit; font-size:0.88rem; font-weight:500; color:var(--text-2); cursor:pointer; }
-  .acct-tab.active { background:var(--card); color:var(--accent); box-shadow:var(--shadow); }
-  .acct-err { color:#c5221f; font-size:0.82rem; line-height:1.5; margin:2px 0 6px; }
-  .acct-h { font-family:var(--serif); font-size:0.98rem; font-weight:600; color:var(--text); margin:20px 0 10px; padding-top:18px; border-top:1px solid var(--border-soft); }
-  .acct-empty { font-size:0.82rem; color:var(--text-3); line-height:1.55; }
-  .acct-list { display:flex; flex-direction:column; }
-  .acct-item { display:flex; flex-direction:column; gap:2px; padding:9px 10px; margin:0 -10px; border-radius:10px; }
-  .acct-item:hover { background:var(--bg-subtle); }
-  .acct-item .t { font-size:0.86rem; font-weight:500; color:var(--text); line-height:1.35; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
-  .acct-item .m { font-size:0.72rem; color:var(--text-3); }
-  .acct-offline { display:inline-block; margin-top:10px; font-size:0.7rem; color:#b06000; background:#fef7e0; border-radius:8px; padding:4px 10px; }
 
   /* ════ TOAST ════ */
   #toast { position:fixed; bottom:26px; left:50%; transform:translateX(-50%) translateY(20px); background:#202124; color:#fff; padding:12px 22px; border-radius:10px; font-size:0.88rem; opacity:0; pointer-events:none; transition:all .25s; z-index:300; }
@@ -497,57 +342,19 @@ if(t!=='default')document.documentElement.setAttribute('data-theme',t);}catch(e)
   @keyframes sweep { to { transform:translateX(100%); } }
   .empty { text-align:center; color:var(--text-3); padding:60px 20px; font-size:0.9rem; }
 
-  /* ════ FIX PACK (June 12) ════ */
-  .skip-link { position:absolute; left:-9999px; top:0; z-index:100; background:var(--accent); color:#fff; padding:10px 18px; border-radius:0 0 10px 0; font-weight:600; font-size:0.9rem; }
-  .skip-link:focus { left:0; }
-  .new-since { display:inline-block; margin-left:10px; padding:2px 10px; border-radius:12px; background:var(--accent-subtle); color:var(--accent); font-size:0.74rem; font-weight:600; vertical-align:1px; white-space:nowrap; }
-  .freq-row { display:flex; gap:8px; }
-  .freq-row label { flex:1; position:relative; display:flex; align-items:center; justify-content:center; gap:6px; height:38px; border:1.5px solid var(--border); border-radius:10px; font-size:0.8rem; font-weight:500; color:var(--text-2); cursor:pointer; transition:border-color .15s, background .15s, color .15s, box-shadow .15s; user-select:none; }
-  .freq-row input { position:absolute; opacity:0; width:0; height:0; margin:0; pointer-events:none; }
-  .freq-row label:hover { border-color:var(--accent); color:var(--accent); }
-  .freq-row label:has(input:checked) { border-color:var(--accent); background:var(--accent); color:#fff; font-weight:700; box-shadow:0 2px 8px color-mix(in srgb, var(--accent) 30%, transparent); }
-  .freq-row label:has(input:checked)::before { content:'\2713'; font-weight:800; font-size:0.8rem; }
-  /* freq-row on the blue Briefing panel — white-on-blue treatment */
-  .news-promo .freq-row label { color:rgba(255,255,255,0.92); border-color:rgba(255,255,255,0.5); background:transparent; }
-  .news-promo .freq-row label:hover { border-color:#fff; color:#fff; }
-  .news-promo .freq-row label:has(input:checked) { background:#fff; border-color:#fff; color:var(--accent); box-shadow:0 3px 12px rgba(0,0,0,0.20); }
-  .search-suggest { display:none; position:absolute; top:50px; left:0; right:0; background:var(--card); border:1px solid var(--border-soft); border-radius:14px; box-shadow:var(--shadow-hover); padding:6px; z-index:70; }
-  .search-suggest.open { display:flex; flex-direction:column; }
-  .search-suggest button { display:flex; align-items:center; gap:9px; width:100%; padding:9px 12px; border:none; background:none; border-radius:9px; text-align:left; font-size:0.88rem; color:var(--text); cursor:pointer; }
-  .search-suggest button:hover { background:var(--bg-subtle); }
-  .search-suggest .sg-op { color:var(--accent); font-weight:500; }
-  .search-suggest .sg-item span { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-  .foryou-note { font-size:0.74rem; color:var(--text-3); margin:0 0 4px; }
-
   /* ════ RESPONSIVE ════ */
   @media (max-width:1120px){ .canvas{ grid-template-columns:minmax(0,1fr); } .rightrail{ display:none; } }
   @media (max-width:900px){
-    .canvas{ padding:18px 16px 70px; }
+    .canvas{ padding:18px 18px 70px; }
     .tabs{ padding:0 10px; top:64px; }
     .search-wrap{ display:none; }
     .topbar-spacer{ flex:1; }
-    #search-toggle{ display:flex; }
-    /* mobile search: tap the magnifier to drop the search bar under the top bar */
-    .topbar.search-open .search-wrap{
-      display:flex; position:fixed; top:64px; left:0; right:0; z-index:59;
-      margin:0; max-width:none; padding:10px 12px; background:var(--bg);
-      border-bottom:1px solid var(--border-soft); box-shadow:var(--shadow);
-    }
-    .topbar.search-open .search-wrap svg{ left:28px; }
   }
   @media (min-width:901px){ .topbar-spacer{ display:none; } }
   @media (max-width:560px){
     .lead h2{ font-size:1.4rem; } .lead-img{ height:200px; }
-    .card{ padding:15px 16px; }
     .card-thumb{ width:96px; height:74px; }
     .brand-text{ font-size:1.25rem; }
-    .topbar{ padding:0 10px; gap:4px; }
-    .signin-btn{ padding:0 12px; }
-    .signin-btn span{ display:none; }
-    .subscribe-cta{ padding:0 14px; font-size:0.84rem; }
-    .vis-grid{ grid-template-columns:1fr; }
-    .sec-divider h3{ font-size:1.3rem; }
-    .modal{ margin:0 auto; min-height:100vh; border-radius:0; }
   }
 
   /* ════ GOOGLE TRANSLATE (hide its chrome; keep our own UI) ════ */
@@ -559,9 +366,7 @@ if(t!=='default')document.documentElement.setAttribute('data-theme',t);}catch(e)
   .goog-tooltip { display:none !important; }
 </style>
 </head>
-<body>
-
-<a class="skip-link" href="#main">Skip to content</a>
+<body style="background-color: rgb(255, 255, 255)">
 
 <!-- ════ TOP BAR ════ -->
 <header class="topbar">
@@ -573,14 +378,10 @@ if(t!=='default')document.documentElement.setAttribute('data-theme',t);}catch(e)
   </a>
   <div class="search-wrap">
     <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 1 0-.7.7l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0A4.5 4.5 0 1 1 14 9.5 4.49 4.49 0 0 1 9.5 14z"/></svg>
-    <input id="pai-search" type="search" placeholder="Search AI news, papers, tools…" autocomplete="off" oninput="onSearch(this.value)" onkeydown="if(event.key==='Enter')this.blur()"/>
-    <div class="search-suggest" id="search-suggest"></div>
+    <input id="pai-search" type="search" placeholder="Search AI news, papers, tools…" autocomplete="off" oninput="onSearch(this.value)"/>
   </div>
   <div class="topbar-spacer"></div>
   <div class="topbar-actions">
-    <button class="icon-btn" id="search-toggle" onclick="toggleMobileSearch(event)" aria-label="Search" title="Search">
-      <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 1 0-.7.7l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0A4.5 4.5 0 1 1 14 9.5 4.49 4.49 0 0 1 9.5 14z"/></svg>
-    </button>
     <button class="icon-btn" onclick="toggleThemeMenu(event)" aria-label="Theme" title="Appearance">
       <svg viewBox="0 0 24 24"><path d="M12 22a10 10 0 0 1 0-20c5.51 0 10 4.04 10 9 0 3.31-2.69 6-6 6h-1.77c-.28 0-.5.22-.5.5 0 .12.05.23.13.33.41.47.64 1.06.64 1.67A2.5 2.5 0 0 1 12 22zm0-18a8 8 0 0 0 0 16c.28 0 .5-.22.5-.5a.54.54 0 0 0-.14-.35c-.41-.46-.63-1.05-.63-1.65a2.5 2.5 0 0 1 2.5-2.5H16a4 4 0 0 0 4-4c0-3.86-3.59-7-8-7zm-5.5 6a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3zm3-4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3zm5 0a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3z"/></svg>
     </button>
@@ -600,40 +401,28 @@ if(t!=='default')document.documentElement.setAttribute('data-theme',t);}catch(e)
 <div class="theme-menu" id="theme-menu">
   <h5>Appearance</h5>
   <button class="theme-opt" data-theme="default" onclick="setTheme('default')">
-    <span class="sw"><i style="background:#1a73e8"></i><i style="background:#ffffff"></i><i style="background:#202124"></i></span>
-    Briefing (clean white)<span class="chk">✓</span>
+    <span class="sw"><i style="background:#1a73e8"></i><i style="background:#ea4335"></i><i style="background:#fbbc04"></i><i style="background:#34a853"></i></span>
+    Briefing (Google-style)<span class="chk">✓</span>
   </button>
   <button class="theme-opt" data-theme="promptai" onclick="setTheme('promptai')">
-    <span class="sw"><i style="background:#2563eb"></i><i style="background:#f3f6fc"></i><i style="background:#0a1628"></i></span>
+    <span class="sw"><i style="background:#2563eb"></i><i style="background:#1d4ed8"></i><i style="background:#0a1628"></i></span>
     PromptAI blue<span class="chk">✓</span>
   </button>
   <button class="theme-opt" data-theme="slate" onclick="setTheme('slate')">
-    <span class="sw"><i style="background:#0f766e"></i><i style="background:#f7f5f1"></i><i style="background:#1c1917"></i></span>
+    <span class="sw"><i style="background:#0f766e"></i><i style="background:#0d5d57"></i><i style="background:#1c1917"></i></span>
     Slate &amp; teal<span class="chk">✓</span>
-  </button>
-  <button class="theme-opt" data-theme="dark" onclick="setTheme('dark')">
-    <span class="sw"><i style="background:#8ab4f8"></i><i style="background:#17181c"></i><i style="background:#2d2f33"></i></span>
-    Dark<span class="chk">✓</span>
-  </button>
-  <button class="theme-opt" data-theme="auto" onclick="setTheme('auto')">
-    <span class="sw"><i style="background:#ffffff"></i><i style="background:#9aa0a6"></i><i style="background:#17181c"></i></span>
-    Follow system<span class="chk">✓</span>
   </button>
 </div>
 
 <!-- subscribe popover -->
 <div class="sub-menu" id="sub-menu">
   <h5>Get the briefing</h5>
-  <p class="sub-lead">The one story that matters, 5 headlines and the paper everyone's citing — daily or weekly, your call.</p>
+  <p class="sub-lead">The one story that matters, 5 headlines and the paper everyone's citing — every Tuesday.</p>
   <form onsubmit="return doTopSubscribe(event)">
     <input id="top-email" type="email" placeholder="you@example.com" required aria-label="Email"/>
-    <div class="freq-row" role="radiogroup" aria-label="How often">
-      <label><input type="radio" name="sub-freq" value="weekly" checked="checked"/> Weekly · Tue</label>
-      <label><input type="radio" name="sub-freq" value="daily"/> Daily</label>
-    </div>
     <button type="submit">Subscribe free</button>
   </form>
-  <p class="sub-note">No spam. Unsubscribe anytime. · <a href="/issues" style="color:var(--accent)" onclick="window.PAI&&PAI.event&&PAI.event('sample_issue_click')">Read a sample briefing →</a></p>
+  <p class="sub-note">No spam. Unsubscribe anytime.</p>
 </div>
 
 <!-- language popover -->
@@ -657,11 +446,10 @@ if(t!=='default')document.documentElement.setAttribute('data-theme',t);}catch(e)
 <nav class="tabs" id="tabs" aria-label="Sections">
   <button class="tab active" data-nav="home" onclick="go('home')">Home</button>
   <button class="tab" data-nav="news" onclick="go('news')">News</button>
-  <button class="tab" data-nav="deepdives" onclick="go('deepdives')">Deep dives</button>
   <button class="tab" data-nav="research" onclick="go('research')">Research</button>
-  <a class="tab" href="education.html">Learn AI</a>
+  <button class="tab" data-nav="learn" onclick="go('learn')">Blogs</button>
   <button class="tab" data-nav="tools" onclick="go('tools')">Tools</button>
-  <a class="tab" href="prompts.html">Prompts</a>
+  <a class="tab" href="education.html">Learn AI</a>
   <a class="tab" href="archive.html">Archive</a>
 </nav>
 
@@ -669,42 +457,23 @@ if(t!=='default')document.documentElement.setAttribute('data-theme',t);}catch(e)
 <div class="shell">
   <!-- MAIN + RIGHT RAIL -->
   <div class="canvas">
-    <main class="main" id="main">
+    <main class="main">
       <!-- HOME -->
       <section class="view active" id="view-home">
-        <h1 class="sec-title"><span class="bar"></span> Your briefing</h1>
-        <p class="sec-sub">Live AI news, research explained in plain English, and prompts that actually work — free, no paywall.</p>
-        <div id="home-summary"></div>
-        <!--SSR:HOME-->
+        <div class="sec-title"><span class="bar"></span> Your briefing</div>
+        <p class="sec-sub">The AI world right now — top story, latest research, and what to read next.</p>
         <div id="home-lead"></div>
-        <div class="sec-divider"><div class="sec-kick">News</div><div class="sec-row"><h2>Top stories</h2><div class="line"></div><a href="#" onclick="go('news');return false;">Full feed →</a></div></div>
+        <div class="sec-divider"><h3>Top stories</h3><div class="line"></div><a href="#" onclick="go('news');return false;">Full feed →</a></div>
         <div class="stack" id="home-top"></div>
-        <div class="sec-divider"><div class="sec-kick">Papers</div><div class="sec-row"><h2>Fresh from research</h2><div class="line"></div><a href="#" onclick="go('research');return false;">All papers →</a></div></div>
+        <div class="sec-divider"><h3>Fresh from research</h3><div class="line"></div><a href="#" onclick="go('research');return false;">All papers →</a></div>
         <div class="stack" id="home-research"></div>
-        <div class="sec-divider"><div class="sec-kick">Deep dives</div><div class="sec-row"><h2>Worth learning</h2><div class="line"></div><a href="#" onclick="go('deepdives');return false;">All explainers →</a></div></div>
+        <div class="sec-divider"><h3>Worth learning</h3><div class="line"></div><a href="#" onclick="go('learn');return false;">All explainers →</a></div>
         <div class="stack" id="home-learn"></div>
-        <div class="sec-divider"><div class="sec-kick">Tools</div><div class="sec-row"><h2>Tools to try</h2><div class="line"></div><a href="#" onclick="go('tools');return false;">All tools →</a></div></div>
-        <div class="tools-grid" id="home-tools"></div>
-        <div class="sec-divider"><div class="sec-kick">Learn AI</div><div class="sec-row"><h2>Start learning</h2><div class="line"></div><a href="education.html">Open Learn AI →</a></div></div>
-        <div class="stack" id="home-edu">
-          <a class="card" href="education.html#courses" style="display:block">
-            <div class="card-src"><span class="name">🎓 Free courses</span><span class="dot"></span><span class="topic">12 picks</span></div>
-            <div class="card-body"><h4>Learn AI at every level — from Elements of AI to Karpathy's Zero to Hero</h4><p class="excerpt">Vetted courses from top universities and AI labs, filterable by level. Most are free to audit.</p></div>
-          </a>
-          <a class="card" href="education.html#paths" style="display:block">
-            <div class="card-src"><span class="name">🧭 Learning paths</span><span class="dot"></span><span class="topic">3 tracks</span></div>
-            <div class="card-body"><h4>Pick your direction: use AI productively, build apps, or do research</h4><p class="excerpt">Step-by-step sequences with time estimates — from 20-hour starter tracks to deep research prep.</p></div>
-          </a>
-          <a class="card" href="education.html#prompting" style="display:block">
-            <div class="card-src"><span class="name">⌨️ Prompt engineering</span><span class="dot"></span><span class="topic">4 guides</span></div>
-            <div class="card-body"><h4>Get more from Claude, ChatGPT and Gemini with structured prompting</h4><p class="excerpt">Official guides from Anthropic and OpenAI plus the best community resources.</p></div>
-          </a>
-        </div>
       </section>
 
       <!-- NEWS -->
       <section class="view" id="view-news">
-        <h1 class="sec-title"><span class="bar"></span> Top AI news</h1>
+        <div class="sec-title"><span class="bar"></span> Top AI news</div>
         <p class="sec-sub">One continuously-updated feed across Hacker News, TechCrunch, OpenAI, Google, Ars Technica and more.</p>
         <div class="chips" id="news-chips"></div>
         <div id="news-lead"></div>
@@ -713,22 +482,22 @@ if(t!=='default')document.documentElement.setAttribute('data-theme',t);}catch(e)
 
       <!-- RESEARCH -->
       <section class="view" id="view-research">
-        <h1 class="sec-title"><span class="bar"></span> Research papers</h1>
+        <div class="sec-title"><span class="bar"></span> Research papers</div>
         <p class="sec-sub">The latest from arXiv — cs.AI, cs.LG, cs.CL and cs.CV, refreshed through the day.</p>
         <div class="chips" id="research-chips"></div>
         <div class="stack" id="research-list"></div>
       </section>
 
-      <!-- DEEP DIVES (view key renamed from "learn", R34) -->
-      <section class="view" id="view-deepdives">
-        <h1 class="sec-title"><span class="bar"></span> Deep dives &amp; explainers</h1>
+      <!-- LEARN / BLOGS -->
+      <section class="view" id="view-learn">
+        <div class="sec-title"><span class="bar"></span> Blogs &amp; explainers</div>
         <p class="sec-sub">Evergreen deep dives and tutorials — hand-picked from The Gradient, Hugging Face, fast.ai, Distill and more.</p>
-        <div class="stack" id="deepdives-list"></div>
+        <div class="stack" id="learn-list"></div>
       </section>
 
       <!-- TOOLS -->
       <section class="view" id="view-tools">
-        <h1 class="sec-title"><span class="bar"></span> AI tools directory</h1>
+        <div class="sec-title"><span class="bar"></span> AI tools directory</div>
         <p class="sec-sub">Curated, hands-on picks across every domain of AI. Tags show whether a tool is free, paid, or both.</p>
         <div class="chips" id="tools-filter">
           <button class="chip active" onclick="filterTools('all',this)">All tools</button>
@@ -740,111 +509,45 @@ if(t!=='default')document.documentElement.setAttribute('data-theme',t);}catch(e)
         </div>
         <div class="tools-grid" id="tools-grid"></div>
       </section>
-
-      <!-- SEARCH RESULTS -->
-      <section class="view" id="view-search">
-        <h1 class="sec-title"><span class="bar"></span> Search results</h1>
-        <p class="sec-sub">Matches for “<span id="search-q"></span>” across news, research papers, blogs and tools. Refine with <code>topic:agents</code> or <code>source:techcrunch</code>. <a href="#" onclick="clearSearch();return false;" style="color:var(--accent);font-weight:500">Clear search</a></p>
-        <div id="search-list"></div>
-      </section>
     </main>
 
-    <!-- RIGHT RAIL : Subscribe → Trending → Top sources → Live stats → About -->
+    <!-- RIGHT RAIL -->
     <aside class="rightrail">
       <div class="panel news-promo">
         <h4>The Briefing</h4>
-        <p>The one story that matters, 5 headlines and the paper everyone's citing — daily or weekly, your call.</p>
+        <p>The one story that matters, 5 headlines and the paper everyone's citing — every Tuesday.</p>
         <form onsubmit="return doSubscribe(event)">
           <input type="email" id="promo-email" placeholder="you@example.com" required/>
-          <div class="freq-row" role="radiogroup" aria-label="How often">
-            <label><input type="radio" name="promo-freq" value="weekly" checked="checked"/> Weekly · Tue</label>
-            <label><input type="radio" name="promo-freq" value="daily"/> Daily</label>
-          </div>
           <button type="submit">Subscribe free</button>
-          <span class="note" data-social-proof>No spam. Unsubscribe anytime.</span>
-          <span class="note"><a href="/issues" style="color:var(--accent)" onclick="window.PAI&&PAI.event&&PAI.event('sample_issue_click')">Read a sample issue →</a></span>
+          <span class="note">No spam. Unsubscribe anytime.</span>
         </form>
       </div>
-      <!-- Sponsorship slot (R42) — stays hidden until a sponsor exists.
-           To activate: remove `hidden`, drop the sponsor's <a> + copy into #sponsor-slot. -->
-      <div class="panel" id="sponsor-panel" hidden>
-        <div class="panel-h"><svg viewBox="0 0 24 24"><path d="M20 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zm0 14H4V6h16v12z"/></svg> Sponsor</div>
-        <div class="panel-b" id="sponsor-slot">
-          <!-- sponsor creative goes here -->
-          <p style="font-size:0.78rem;color:var(--text-3);margin-top:8px;">Sponsored · <a href="mailto:hello@promptai.in?subject=Sponsoring%20PromptAI" style="color:var(--accent)">Sponsor PromptAI</a></p>
+      <div class="panel">
+        <div class="panel-h"><svg viewBox="0 0 24 24"><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z"/></svg> Live stats</div>
+        <div class="panel-b" id="stats-panel">
+          <div class="stat-row"><span class="k">Total visitors</span><span class="v" id="stat-visitors">—</span></div>
+          <div class="stat-row"><span class="k">Articles read</span><span class="v" id="stat-reads">—</span></div>
+          <div class="stat-row"><span class="k">Sources tracked</span><span class="v">20+</span></div>
         </div>
       </div>
       <div class="panel">
         <div class="panel-h"><svg viewBox="0 0 24 24"><path d="m16 6 2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z"/></svg> Trending now</div>
         <div class="panel-b" id="trend-panel"><div class="empty" style="padding:20px">Loading…</div></div>
       </div>
-      <div class="panel" id="foryou-panel" hidden>
-        <div class="panel-h"><svg viewBox="0 0 24 24"><path d="M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg> For you</div>
-        <div class="panel-b"><p class="foryou-note" id="foryou-topics"></p><div id="foryou-list"></div></div>
-      </div>
       <div class="panel">
         <div class="panel-h"><svg viewBox="0 0 24 24"><path d="M12 2 4 5v6c0 5 3.4 9.7 8 11 4.6-1.3 8-6 8-11V5l-8-3z"/></svg> Top sources</div>
         <div class="panel-b" id="rail-sources"></div>
-      </div>
-      <div class="panel">
-        <div class="panel-h"><svg viewBox="0 0 24 24"><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z"/></svg> This week on PromptAI</div>
-        <div class="panel-b" id="stats-panel">
-          <div class="stat-row"><span class="k">Stories curated</span><span class="v" id="stat-stories">—</span></div>
-          <div class="stat-row"><span class="k">Papers tracked</span><span class="v" id="stat-papers">—</span></div>
-          <div class="stat-row"><span class="k">Sources</span><span class="v" id="stat-sources">20+</span></div>
-        </div>
-      </div>
-      <div class="panel about-panel">
-        <div class="panel-h"><svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg> About PromptAI</div>
-        <div class="panel-b">
-          <p>An independent hub making AI research accessible, understandable and actionable.</p>
-          <ul>
-            <li>Curated paper summaries — no PhD required</li>
-            <li>Honest, hands-on tool reviews</li>
-            <li>Free and open — no paywalls, ever</li>
-          </ul>
-        </div>
       </div>
     </aside>
   </div>
 </div>
 
-<!-- ════ FOOTER ════ -->
-<footer class="site-footer">
-  <div class="foot-in">
-    <span data-no-translate>© 2026 PromptAI · promptai.in</span>
-    <a href="/privacy.html">Privacy</a>
-    <a href="/terms.html">Terms</a>
-    <a href="/prompts.html">Prompts</a>
-    <a href="/education.html">Learn AI</a>
-    <a href="/glossary.html">Glossary</a>
-    <a href="/methodology.html">Editorial standards</a>
-    <a href="/archive.html">Archive</a>
-    <a href="/issues">Issues</a>
-    <a href="/feed.xml">RSS</a>
-    <a href="/unsubscribe">Unsubscribe</a>
-  </div>
-</footer>
-
-<!-- ════ FIRST-RUN INTEREST PICKER ════ -->
-<div class="onb-overlay" id="onboard" role="dialog" aria-modal="true" aria-labelledby="onb-title">
-  <div class="onb-card">
-    <h2 id="onb-title">Welcome to PromptAI</h2>
-    <p>Pick the topics you care about and we’ll tune your <strong>For&nbsp;you</strong> feed. Change these anytime — it’s optional.</p>
-    <div class="onb-topics" id="onb-topics"></div>
-    <div class="onb-actions">
-      <button class="onb-skip" type="button" onclick="paiSkipOnboard()">Skip for now</button>
-      <button class="onb-save" type="button" id="onb-save" onclick="paiSaveOnboard()">Show my feed</button>
-    </div>
-  </div>
-</div>
-
 <!-- ════ MODAL ════ -->
 <div class="modal-overlay" id="modal" onclick="if(event.target===this)closeModal()">
-  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="m-title">
+  <div class="modal">
     <div class="modal-top">
       <div class="src" id="m-src"></div>
-      <button class="modal-x" onclick="closeModal()" aria-label="Close">✕</button>
+      <button class="modal-x" onclick="closeModal()">✕</button>
     </div>
     <div class="modal-body">
       <span class="pill" id="m-pill"></span>
@@ -852,40 +555,27 @@ if(t!=='default')document.documentElement.setAttribute('data-theme',t);}catch(e)
       <div class="modal-meta" id="m-meta"></div>
       <div class="modal-text" id="m-text"></div>
       <div class="modal-note" id="m-note"></div>
-      <div id="m-explain" style="display:none"></div>
-      <a class="modal-read" id="m-read" href="#" target="_blank" rel="noopener">Read full article ↗</a>
+      <a class="modal-read" id="m-read" href="#" target="_blank" rel="noopener" onclick="closeModal()">Read full article →</a>
       <div class="modal-share">
-        <button id="m-save" aria-label="Save this story">🔖 Save</button>
-        <button id="m-like" aria-label="Like this story">❤️ Like</button>
-        <a id="m-x" target="_blank" rel="noopener" aria-label="Share on X">𝕏 Post</a>
-        <a id="m-li" target="_blank" rel="noopener" aria-label="Share on LinkedIn">in Share</a>
-        <button onclick="copyLink()" id="m-copy" aria-label="Copy link to this story">🔗 Copy</button>
+        <a id="m-x" target="_blank" rel="noopener">𝕏 Post</a>
+        <a id="m-li" target="_blank" rel="noopener">in Share</a>
+        <button onclick="copyLink()" id="m-copy">🔗 Copy</button>
       </div>
-      <div class="modal-next" id="m-next"></div>
     </div>
   </div>
 </div>
 
 <!-- ════ SIGN-IN SHEET ════ -->
 <div class="sheet-overlay" id="sheet-overlay" onclick="closeSheet()"></div>
-<aside class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title">
-  <div class="sheet-h"><h3 id="sheet-title">Sign in to PromptAI</h3><button class="modal-x" onclick="closeSheet()" aria-label="Close">✕</button></div>
+<aside class="sheet" id="sheet">
+  <div class="sheet-h"><h3 id="sheet-title">Sign in to PromptAI</h3><button class="modal-x" onclick="closeSheet()">✕</button></div>
   <div class="sheet-b" id="sheet-body"></div>
 </aside>
 
-<div id="toast" role="status" aria-live="polite"></div>
+<div id="toast"></div>
 
 <script src="pai-translate.js"></script>
 <script src="pai-feed-engine.js"></script>
 <script src="pai-google-ui.js"></script>
-<script src="pai-account.js"></script>
-<script src="pai-metrics.js" defer></script>
-<script>
-// PWA (R10): offline shell + faster repeat visits
-if ('serviceWorker' in navigator) {
-  addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
-}
-</script>
-<script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "102dac2624114f988e2e82ab7b7c4045"}'></script>
 </body>
 </html>

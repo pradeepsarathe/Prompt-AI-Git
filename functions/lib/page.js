@@ -28,15 +28,22 @@ export function pageShell({ title, description, canonical, body, breadcrumbs, js
 <meta name="twitter:card" content="summary_large_image"/>
 <link rel="alternate" type="application/rss+xml" title="PromptAI — AI Research Feed" href="/feed.xml"/>
 ${jsonLd ? `<script type="application/ld+json">${JSON.stringify(jsonLd)}</script>` : ''}
+${(breadcrumbs && breadcrumbs.length) ? `<script type="application/ld+json">${JSON.stringify({
+  '@context': 'https://schema.org', '@type': 'BreadcrumbList',
+  itemListElement: breadcrumbs.map((c, i) => Object.assign(
+    { '@type': 'ListItem', position: i + 1, name: c.label },
+    c.href ? { item: (c.href.startsWith('http') ? c.href : 'https://promptai.in' + c.href) } : {}
+  )),
+})}</script>` : ''}
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Roboto+Serif:opsz,wght@8..144,400;8..144,500;8..144,600&display=swap" rel="stylesheet"/>
 <style>
   :root{--accent:#1a73e8;--accent-2:#1967d2;--accent-subtle:#e8f0fe;--bg:#ffffff;--bg-subtle:#f1f3f4;
-    --text:#202124;--text-2:#5f6368;--text-3:#80868b;--border-soft:#e8eaed;--card:#ffffff;
+    --text:#202124;--text-2:#5f6368;--text-3:#6b7177;--border-soft:#e8eaed;--card:#ffffff;
     --serif:'Roboto Serif',Georgia,serif;}
   @media (prefers-color-scheme:dark){:root{--accent:#8ab4f8;--accent-2:#aecbfa;--accent-subtle:#1f3658;
-    --bg:#17181c;--bg-subtle:#222327;--text:#e8eaed;--text-2:#9aa0a6;--text-3:#7d818a;
+    --bg:#17181c;--bg-subtle:#222327;--text:#e8eaed;--text-2:#9aa0a6;--text-3:#969ba2;
     --border-soft:#2d2f33;--card:#1e1f24;}}
   *{margin:0;padding:0;box-sizing:border-box}
   body{font-family:'Roboto',system-ui,sans-serif;background:var(--bg);color:var(--text);line-height:1.6;-webkit-font-smoothing:antialiased}
@@ -107,6 +114,7 @@ ${jsonLd ? `<script type="application/ld+json">${JSON.stringify(jsonLd)}</script
   <span data-no-translate>© 2026 PromptAI · promptai.in</span>
   <a href="/privacy.html">Privacy</a>
   <a href="/terms.html">Terms</a>
+  <a href="/methodology.html">Editorial standards</a>
   <a href="/prompts.html">Prompts</a>
   <a href="/education.html">Learn AI</a>
   <a href="/archive.html">Archive</a>

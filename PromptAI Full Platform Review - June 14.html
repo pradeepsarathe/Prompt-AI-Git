@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>PromptAI — Full Platform Review (June 2026)</title>
+<style>
+  :root{
+    --ink:#1b1a17; --ink-2:#48453e; --ink-3:#76716a;
+    --paper:#f6f3ec; --card:#fffdf8; --line:#e2dccf; --line-2:#d3ccbb;
+    --accent:#b4451f;        /* terracotta */
+    --accent-2:#2f5d50;      /* deep green */
+    --crit:#a8321c; --high:#c2691a; --med:#9a7d22; --low:#5b7553;
+    --good:#2f5d50;
+    --serif:Georgia,'Times New Roman',serif;
+    --sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;
+    --mono:'SF Mono',ui-monospace,Menlo,Consolas,monospace;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html{-webkit-text-size-adjust:100%;}
+  body{background:var(--paper);color:var(--ink);font-family:var(--sans);line-height:1.6;
+    font-size:15px;-webkit-font-smoothing:antialiased;}
+  .page{max-width:880px;margin:0 auto;padding:64px 56px 96px;}
+  /* ── type ── */
+  h1{font-family:var(--serif);font-weight:600;font-size:2.7rem;line-height:1.08;letter-spacing:-0.01em;}
+  h2{font-family:var(--serif);font-weight:600;font-size:1.72rem;line-height:1.15;margin:0 0 4px;letter-spacing:-0.01em;}
+  h3{font-family:var(--serif);font-weight:600;font-size:1.18rem;margin:26px 0 8px;}
+  h4{font-size:0.82rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--accent);margin:0 0 10px;}
+  p{margin:0 0 12px;color:var(--ink-2);text-wrap:pretty;}
+  strong{color:var(--ink);font-weight:600;}
+  a{color:var(--accent);}
+  code{font-family:var(--mono);font-size:0.84em;background:#efe9dc;padding:1px 5px;border-radius:4px;color:#5a4636;}
+  ul,ol{margin:0 0 14px;padding-left:20px;}
+  li{margin:0 0 7px;color:var(--ink-2);}
+  li::marker{color:var(--ink-3);}
+  /* ── cover ── */
+  .kicker{font-size:0.8rem;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:var(--accent);margin-bottom:18px;}
+  .cover-sub{font-size:1.12rem;color:var(--ink-2);margin:18px 0 0;max-width:640px;}
+  .cover-meta{display:flex;flex-wrap:wrap;gap:10px 28px;margin-top:30px;padding-top:22px;border-top:2px solid var(--ink);
+    font-size:0.84rem;color:var(--ink-3);}
+  .cover-meta b{color:var(--ink);font-weight:600;}
+  /* ── section ── */
+  section{margin-top:54px;}
+  .sec-head{display:flex;align-items:baseline;gap:14px;border-bottom:1px solid var(--line-2);padding-bottom:10px;margin-bottom:22px;}
+  .sec-num{font-family:var(--mono);font-size:0.78rem;color:var(--accent);font-weight:700;}
+  /* ── scorecard ── */
+  .scorewrap{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:26px 28px;margin-top:30px;
+    box-shadow:0 1px 0 #fff inset, 0 2px 14px rgba(60,50,30,0.05);}
+  .score-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:2px 34px;}
+  .score-row{display:flex;align-items:center;gap:12px;padding:9px 0;border-bottom:1px dotted var(--line-2);}
+  .score-row:nth-last-child(-n+2){border-bottom:none;}
+  .score-label{flex:1;font-size:0.92rem;color:var(--ink);font-weight:500;}
+  .score-bar{width:96px;height:7px;border-radius:4px;background:#e7e0d2;overflow:hidden;flex:none;}
+  .score-bar i{display:block;height:100%;border-radius:4px;}
+  .score-val{width:42px;text-align:right;font-family:var(--mono);font-weight:700;font-size:0.86rem;flex:none;}
+  .overall{margin-top:18px;padding-top:16px;border-top:2px solid var(--ink);display:flex;align-items:center;gap:14px;}
+  .overall .score-label{font-family:var(--serif);font-size:1.15rem;font-weight:600;}
+  .overall .score-val{width:auto;font-size:1.3rem;}
+  /* ── severity tag ── */
+  .tag{display:inline-block;font-size:0.66rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;
+    padding:2px 8px;border-radius:20px;color:#fff;vertical-align:middle;}
+  .t-crit{background:var(--crit);} .t-high{background:var(--high);} .t-med{background:var(--med);}
+  .t-low{background:var(--low);} .t-good{background:var(--good);}
+  /* ── issue list ── */
+  .issue{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:9px;
+    padding:16px 18px;margin-bottom:12px;}
+  .issue.crit{border-left-color:var(--crit);} .issue.high{border-left-color:var(--high);}
+  .issue.med{border-left-color:var(--med);}
+  .issue-head{display:flex;align-items:center;gap:10px;margin-bottom:5px;}
+  .issue-n{font-family:var(--mono);font-weight:700;color:var(--ink-3);font-size:0.85rem;}
+  .issue-title{font-weight:600;color:var(--ink);font-size:1.02rem;flex:1;}
+  .issue p{margin:0;font-size:0.92rem;}
+  .issue p+p{margin-top:7px;}
+  /* ── callouts ── */
+  .note{border-radius:9px;padding:14px 16px;margin:16px 0;font-size:0.9rem;}
+  .note.win{background:#eef3ec;border:1px solid #cfe0c6;}
+  .note.warn{background:#f7eee2;border:1px solid #e7d2b2;}
+  .note b{display:block;margin-bottom:3px;}
+  /* ── tables ── */
+  table{width:100%;border-collapse:collapse;margin:14px 0 8px;font-size:0.86rem;}
+  th{text-align:left;font-size:0.7rem;letter-spacing:0.07em;text-transform:uppercase;color:var(--ink-3);
+    border-bottom:2px solid var(--line-2);padding:8px 10px;font-weight:700;}
+  td{padding:9px 10px;border-bottom:1px solid var(--line);color:var(--ink-2);vertical-align:top;}
+  tbody tr:nth-child(even){background:rgba(255,253,248,0.6);}
+  td b{color:var(--ink);}
+  .pri{font-family:var(--mono);font-weight:700;font-size:0.78rem;}
+  .pri.p0{color:var(--crit);} .pri.p1{color:var(--high);} .pri.p2{color:var(--med);} .pri.p3{color:var(--low);}
+  .pill{display:inline-block;font-size:0.7rem;font-weight:600;padding:1px 7px;border-radius:5px;background:#ece5d6;color:#6b5d44;}
+  .pill.hi{background:#f2dcc7;color:#9a4e16;} .pill.lo{background:#dfe9d8;color:#46663b;}
+  /* ── two-col cards ── */
+  .cols{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:14px 0;}
+  .mini{background:var(--card);border:1px solid var(--line);border-radius:9px;padding:15px 17px;}
+  .mini h5{font-size:0.95rem;font-weight:600;color:var(--ink);margin-bottom:6px;}
+  .mini ul{margin:0;font-size:0.86rem;}
+  .mini li{margin-bottom:5px;}
+  .rate{font-family:var(--mono);font-weight:700;font-size:0.8rem;color:var(--accent-2);}
+  hr.soft{border:none;border-top:1px solid var(--line);margin:30px 0;}
+  .lead{font-size:1.05rem;color:var(--ink);}
+  .verdict{background:#221f1a;color:#efe7d8;border-radius:14px;padding:30px 32px;margin-top:24px;}
+  .verdict h2{color:#fff;}
+  .verdict p{color:#d9cfbd;}
+  .verdict strong{color:#fff;}
+  .verdict .accent{color:#e9956b;}
+  .footnote{font-size:0.78rem;color:var(--ink-3);margin-top:8px;}
+  @media print{
+    body{background:#fff;font-size:11.5px;}
+    .page{padding:0 0 20px;max-width:none;}
+    section{margin-top:30px;page-break-inside:avoid;}
+    .issue,.mini,.scorewrap,.verdict{page-break-inside:avoid;}
+    .verdict{background:#fff;color:#000;border:2px solid #000;}
+    .verdict h2,.verdict p,.verdict strong{color:#000;}
+    .verdict .accent{color:var(--accent);}
+  }
+  @media(max-width:680px){
+    .page{padding:40px 22px 60px;}
+    h1{font-size:2rem;} .score-grid,.cols{grid-template-columns:1fr;}
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- ════════ COVER ════════ -->
+  <div class="kicker">Independent Platform Audit · June 14, 2026</div>
+  <h1>PromptAI — Full Platform Review</h1>
+  <p class="cover-sub">A brutally honest, end-to-end review of the product, UX/UI, architecture, content strategy, search, SEO, performance, accessibility, security, and growth — graded against the bar set by OpenAI, Anthropic, Perplexity, Hugging Face, Substack and Medium.</p>
+  <div class="cover-meta">
+    <span><b>Scope</b> &nbsp;Home · News · Deep dives · Research · Learn AI · Tools · Prompts · Archive · Search · Account · Newsletter</span>
+    <span><b>Method</b> &nbsp;Source-grounded (frontend engine + 40 Pages Functions read directly)</span>
+    <span><b>Verdict</b> &nbsp;6.5 / 10 — exceptional engineering, commodity product</span>
+  </div>
+
+  <!-- ════════ SCORECARD ════════ -->
+  <div class="scorewrap">
+    <h4 style="margin-bottom:16px">Scorecard &nbsp;<span style="color:var(--ink-3);font-weight:600;text-transform:none;letter-spacing:0">— 1 (poor) to 10 (best-in-class)</span></h4>
+    <div class="score-grid">
+      <div class="score-row"><span class="score-label">Product Strategy</span><span class="score-bar"><i style="width:60%;background:var(--med)"></i></span><span class="score-val">6.0</span></div>
+      <div class="score-row"><span class="score-label">Security</span><span class="score-bar"><i style="width:85%;background:var(--good)"></i></span><span class="score-val">8.5</span></div>
+      <div class="score-row"><span class="score-label">UX</span><span class="score-bar"><i style="width:70%;background:var(--low)"></i></span><span class="score-val">7.0</span></div>
+      <div class="score-row"><span class="score-label">Performance</span><span class="score-bar"><i style="width:70%;background:var(--low)"></i></span><span class="score-val">7.0</span></div>
+      <div class="score-row"><span class="score-label">UI / Visual design</span><span class="score-bar"><i style="width:65%;background:var(--med)"></i></span><span class="score-val">6.5</span></div>
+      <div class="score-row"><span class="score-label">SEO</span><span class="score-bar"><i style="width:65%;background:var(--med)"></i></span><span class="score-val">6.5</span></div>
+      <div class="score-row"><span class="score-label">Accessibility</span><span class="score-bar"><i style="width:60%;background:var(--med)"></i></span><span class="score-val">6.0</span></div>
+      <div class="score-row"><span class="score-label">Content Quality</span><span class="score-bar"><i style="width:50%;background:var(--high)"></i></span><span class="score-val">5.0</span></div>
+      <div class="score-row"><span class="score-label">User Retention</span><span class="score-bar"><i style="width:55%;background:var(--high)"></i></span><span class="score-val">5.5</span></div>
+      <div class="score-row"><span class="score-label">Monetization Potential</span><span class="score-bar"><i style="width:40%;background:var(--crit)"></i></span><span class="score-val">4.0</span></div>
+    </div>
+    <div class="overall">
+      <span class="score-label">Overall Platform Quality</span>
+      <span class="score-bar" style="width:140px;height:10px"><i style="width:65%;background:var(--accent)"></i></span>
+      <span class="score-val">6.5</span>
+    </div>
+  </div>
+
+  <!-- ════════ EXEC SUMMARY ════════ -->
+  <section>
+    <div class="sec-head"><span class="sec-num">01</span><h2>Executive summary — the top 10</h2></div>
+    <p class="lead">PromptAI is, technically, one of the best-built indie sites I've reviewed: server-rendered for crawlers, double-opt-in email, cross-device auth with PBKDF2 + rate limiting, an SSRF-guarded summarizer, a resilient multi-proxy feed engine, PWA, theming, and keyboard-accessible components. The problem is not the build quality. <strong>The problem is that it's a beautifully engineered aggregator with no original voice, no moat, and no real revenue model.</strong> The top 10, ordered by leverage:</p>
+
+    <div class="issue crit"><div class="issue-head"><span class="issue-n">01</span><span class="issue-title">No original content — it's a link-out aggregator</span><span class="tag t-crit">Critical</span></div>
+      <p>Every story ends in <code>Read full article →</code> that sends the user to the source. The on-site value is an AI summary of someone else's work. This caps E-E-A-T, time-on-site, ad/affiliate value, and brand authority simultaneously. Google increasingly demotes thin aggregators; this is the single biggest ceiling on the whole platform.</p></div>
+
+    <div class="issue crit"><div class="issue-head"><span class="issue-n">02</span><span class="issue-title">No viable monetization model</span><span class="tag t-crit">Critical</span></div>
+      <p>The free newsletter is the only funnel. Affiliate links append <code>?ref=promptai</code> generically (most vendors ignore an unknown ref param — that's $0), the sponsor panel ships <code>hidden</code> with no sponsor, and the About copy promises <em>"Free and open — no paywalls, ever."</em> There is no paid tier, so the "paid subscriber" persona reviews as N/A. Pick a model on purpose.</p></div>
+
+    <div class="issue high"><div class="issue-head"><span class="issue-n">03</span><span class="issue-title">CSP is still Report-Only and depends on <code>unsafe-inline</code></span><span class="tag t-high">High</span></div>
+      <p><code>_headers</code> ships <code>Content-Security-Policy-Report-Only</code> with <code>script-src 'unsafe-inline' 'unsafe-eval'</code>. XSS protection is effectively off. It can't be enforced until the dozens of inline <code>onclick=</code> handlers are refactored. This is acknowledged in code comments but unfinished — it's your one real security gap against otherwise excellent hardening.</p></div>
+
+    <div class="issue high"><div class="issue-head"><span class="issue-n">04</span><span class="issue-title">Derivative "Google News" visual identity</span><span class="tag t-high">High</span></div>
+      <p>Default theme is Google blue (<code>#1a73e8</code>) + Roboto + Material iconography + a news-card/right-rail layout. It looks competent but borrowed. A knowledge brand competing with Perplexity and Substack needs a distinct identity — right now nothing about the chrome says "PromptAI," and the resemblance is close enough to be a brand and IP liability.</p></div>
+
+    <div class="issue high"><div class="issue-head"><span class="issue-n">05</span><span class="issue-title">Weak trust / E-E-A-T signals</span><span class="tag t-high">High</span></div>
+      <p>No named authors, no editorial team, no "expertise" or methodology page, contact is a bare <code>mailto:</code>. For an AI <em>knowledge</em> platform, anonymity undercuts both reader trust and Google's people-first ranking signals.</p></div>
+
+    <div class="issue high"><div class="issue-head"><span class="issue-n">06</span><span class="issue-title">Translation is a client-side widget, not localization</span><span class="tag t-high">High</span></div>
+      <p>10 languages are offered via a Google-Translate-style layer (<code>pai-translate.js</code>). Crawlers only ever see English: no <code>hreflang</code> alternates, no translated URLs, no indexable localized pages (aside from one <code>prompts-hindi.html</code>). Machine translation also reads awkwardly. You get the maintenance cost of i18n with none of the SEO or quality upside.</p></div>
+
+    <div class="issue med"><div class="issue-head"><span class="issue-n">07</span><span class="issue-title">Color contrast fails WCAG AA</span><span class="tag t-med">Medium</span></div>
+      <p><code>--text-3:#80868b</code> on white is ≈3.5:1 — below the 4.5:1 minimum for body text — and it's used for timestamps, excerpts, meta and notes throughout. Combined with emoji-as-buttons (🔖/❤️/🔗/𝕏) in the modal, the accessibility base (which is otherwise strong — focus trap, keyboard cards, ARIA) is undermined by avoidable details.</p></div>
+
+    <div class="issue med"><div class="issue-head"><span class="issue-n">08</span><span class="issue-title">Search & personalization are shallow and fragmented</span><span class="tag t-med">Medium</span></div>
+      <p>In-app search only ranks what's already loaded in memory (<code>_news/_papers/_blogs</code>), while the homepage schema's SearchAction points at <code>archive.html?q=</code> — two different search experiences. "For you" and the new "Up next" rail are keyword/topic heuristics with a cold-start gap: new users see nothing personalized until they've read 3+ of a topic.</p></div>
+
+    <div class="issue med"><div class="issue-head"><span class="issue-n">09</span><span class="issue-title">Reliability leans on third-party proxies</span><span class="tag t-med">Medium</span></div>
+      <p>The client feed fallback races <code>api.allorigins.win</code>, <code>corsproxy.io</code> and <code>api.rss2json.com</code>; images route through <code>images.weserv.nl</code>. When <code>/api/feeds</code> is healthy this is invisible, but these are uncontrolled dependencies (and privacy leaks) that will eventually fail or rate-limit you in public.</p></div>
+
+    <div class="issue med"><div class="issue-head"><span class="issue-n">10</span><span class="issue-title">No first-run activation / habit loop</span><span class="tag t-med">Medium</span></div>
+      <p>There's no onboarding to capture interests, no push/web-notification (on the roadmap, needs keys), and the only return cue is a quiet "N new since your last visit" chip. Retention currently rests entirely on the newsletter. A 2-question interest picker on first visit would seed personalization and lift D1/D7 return immediately.</p></div>
+  </section>
+
+  <!-- ════════ WHAT'S GENUINELY STRONG ════════ -->
+  <section>
+    <div class="sec-head"><span class="sec-num">02</span><h2>What's genuinely strong</h2></div>
+    <p>Credibility requires naming what's excellent — and a lot is. These are above the bar for an independent product:</p>
+    <div class="cols">
+      <div class="mini"><h5>Security engineering <span class="tag t-good">8.5</span></h5><ul>
+        <li>SSRF guard in <code>/api/summarize</code> rejects IP-literals, internal hosts & userinfo URLs, and <strong>re-validates every redirect hop</strong>.</li>
+        <li>Auth: PBKDF2-SHA256, per-IP + per-account lockouts, CORS allow-list, transparent hash upgrades, GDPR delete-account.</li>
+        <li>Newsletter: double opt-in, honeypot, KV rate limits, one-click List-Unsubscribe.</li>
+        <li>RSS proxy is domain-allow-listed from a single sources module.</li>
+      </ul></div>
+      <div class="mini"><h5>Crawlability & resilience</h5><ul>
+        <li><code>_middleware.js</code> server-renders today's headlines + summary into <code>/</code> so crawlers don't get an empty shell.</li>
+        <li>Feed engine: proxy race, source-health backoff, layered TTL caches, quality + spam filters, Atom/RSS dual-parse.</li>
+        <li>Per-section URLs, Back-button support, PWA offline shell, light/dark/auto themes.</li>
+        <li>Funnel metrics + CSP-report sink already wired for data-driven iteration.</li>
+      </ul></div>
+    </div>
+    <div class="note win"><b>Bottom line on the build</b>The codebase is not the problem. You could hand this to a developer team tomorrow and they'd be impressed. The gap is entirely at the <strong>product and content-strategy</strong> layer — which is good news, because that's cheaper to change than a rewrite.</div>
+  </section>
+
+  <!-- ════════ PRODUCT ════════ -->
+  <section>
+    <div class="sec-head"><span class="sec-num">03</span><h2>Product review</h2></div>
+    <p>The vision — "make AI research accessible, understandable, actionable" — is clear and worthy. Execution of the <em>aggregation</em> layer is complete. But the value proposition is commoditized: the same arXiv / Hacker News / TechCrunch / lab-blog feeds are available to anyone, and the differentiating layer (AI summaries) is now a free feature inside ChatGPT, Perplexity and Google itself.</p>
+    <h3>Where each competitor beats you — and where you can win</h3>
+    <table>
+      <thead><tr><th>Competitor</th><th>What they do better</th><th>Your opening</th></tr></thead>
+      <tbody>
+        <tr><td><b>Perplexity</b></td><td>Answers questions directly with live citations; keeps the user on-platform.</td><td>Curated daily editorial depth + a trustworthy human POV they don't offer.</td></tr>
+        <tr><td><b>Substack</b></td><td>Named voices, loyalty, paid subscriptions.</td><td>Aggregation breadth + a recommendation layer a single writer can't match.</td></tr>
+        <tr><td><b>Hugging Face</b></td><td>Owns the model/dataset graph and a doing-community.</td><td>The "explain it to me" layer for practitioners who don't live in HF.</td></tr>
+        <tr><td><b>Medium</b></td><td>Massive contributor network & SEO domain authority.</td><td>Focus — 100% AI, faster, less SEO spam, original explainers.</td></tr>
+      </tbody>
+    </table>
+    <p>The strategic question to answer before anything else: <strong>are you a destination people read, or a router that sends them elsewhere?</strong> Right now you're a router. Top-tier knowledge platforms are destinations.</p>
+  </section>
+
+  <!-- ════════ UX / UI ════════ -->
+  <section>
+    <div class="sec-head"><span class="sec-num">04</span><h2>UX & UI review</h2></div>
+    <p>Navigation is clean and intuitive: an 8-item tab bar, per-section URLs, infinite scroll with a manual fallback, a right rail (Subscribe → Trending → For you → Sources → Stats → About), and a modal reading experience that now loops via "Up next." First-time orientation is good; the briefing structure (lead → top stories → papers → deep dives → tools → learn) reads logically.</p>
+    <h3>Friction points found</h3>
+    <ul>
+      <li><strong>Two search surfaces.</strong> The header search filters in-memory results; the schema/SEO search points to <code>archive.html</code>. Unify them or the power user hits dead ends.</li>
+      <li><strong>Cold-start emptiness.</strong> "For you" stays <code>hidden</code> until interest thresholds are met — most sessions never see it. Seed it from a first-run interest picker.</li>
+      <li><strong>Modal CTA pulls users away.</strong> The dominant blue button is "Read full article" (off-site). The on-site actions (save/like/up-next) are visually secondary. If you want retention, rebalance toward staying.</li>
+      <li><strong>Mixed control vocabulary.</strong> Tabs are a mix of <code>&lt;button onclick&gt;</code> (SPA views) and <code>&lt;a href&gt;</code> (separate pages). It works, but the page reloads on Learn/Prompts/Archive feel inconsistent with the instant in-app tabs.</li>
+    </ul>
+    <h3>Per-page UI ratings</h3>
+    <table>
+      <thead><tr><th>Page / View</th><th>Rating</th><th>Note</th></tr></thead>
+      <tbody>
+        <tr><td>Home / Briefing</td><td class="rate">7.5</td><td>Strong rhythm; lead card + summary land well. Right rail slightly dense.</td></tr>
+        <tr><td>News</td><td class="rate">7.5</td><td>Topic chips + lead + paginated feed is clean and fast.</td></tr>
+        <tr><td>Research</td><td class="rate">7.0</td><td>"Explain this paper" is a real differentiator; category chips good.</td></tr>
+        <tr><td>Deep dives</td><td class="rate">7.0</td><td>Visual grid for image stories is the nicest layout on the site.</td></tr>
+        <tr><td>Tools</td><td class="rate">6.5</td><td>Card grid is fine; "Open" CTAs need real affiliate deals to earn.</td></tr>
+        <tr><td>Article modal</td><td class="rate">7.0</td><td>AI summary + Up-next loop is good; off-site CTA dominates; emoji buttons hurt a11y.</td></tr>
+        <tr><td>Overall visual identity</td><td class="rate">6.0</td><td>Polished but derivative — biggest single UI lever is a distinct brand.</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- ════════ CONTENT ════════ -->
+  <section>
+    <div class="sec-head"><span class="sec-num">05</span><h2>AI content platform review</h2></div>
+    <div class="cols">
+      <div class="mini"><h5>News <span class="rate">7/10</span></h5><ul><li>Fresh, well-filtered, classified by topic, de-duped, ranked by reader signal. Genuinely solid.</li><li>But: headlines + AI blurbs only. No editorial "so what."</li></ul></div>
+      <div class="mini"><h5>Research <span class="rate">6.5/10</span></h5><ul><li>arXiv API-first with RSS fallback; "Explain this paper" is the standout feature.</li><li>No citation graph, no "papers citing this," no save-to-library workflow.</li></ul></div>
+      <div class="mini"><h5>Deep dives <span class="rate">6/10</span></h5><ul><li>Good curation from Gradient/HF/fast.ai/Distill.</li><li>Still pure link-out; no original tutorials authored on-site.</li></ul></div>
+      <div class="mini"><h5>Learn AI <span class="rate">6/10</span></h5><ul><li>3 server-rendered learning paths + courses + prompt guides — good SEO surface.</li><li>Beginner→advanced exists but isn't a tracked curriculum (no progress, no completion).</li></ul></div>
+    </div>
+    <p>The missing layer across all four is <strong>a human point of view</strong>: a 150-word original take on why today's top story matters, a weekly "what actually shipped vs. hype" column, opinionated tool verdicts. That's what turns a feed reader into a publication — and what AI summaries can't replicate.</p>
+  </section>
+
+  <!-- ════════ SEARCH ════════ -->
+  <section>
+    <div class="sec-head"><span class="sec-num">06</span><h2>Search & discovery</h2></div>
+    <p>Search v2 is thoughtfully done: <code>source:</code> / <code>topic:</code> operators, title&gt;excerpt scoring, recency and reader-signal boosts, and a suggestions dropdown. The discovery rails (Trending, For you, Up next) are wired. The ceiling is depth:</p>
+    <ul>
+      <li><strong>Index, don't filter.</strong> Search only sees loaded items. Build a lightweight client index over the archive (or a server search endpoint over the KV archive) so results are complete.</li>
+      <li><strong>One search box.</strong> Merge the in-app and archive search into a single experience and point the schema SearchAction at it.</li>
+      <li><strong>Embeddings for "related," eventually.</strong> Topic+keyword overlap is a fine v1 for "Up next." Workers AI embeddings on titles/abstracts would make related-content and semantic search Netflix-tier, and you already have an AI binding.</li>
+    </ul>
+  </section>
+
+  <!-- ════════ SEO ════════ -->
+  <section>
+    <div class="sec-head"><span class="sec-num">07</span><h2>SEO audit</h2></div>
+    <table>
+      <thead><tr><th>Area</th><th>State</th><th>Action</th></tr></thead>
+      <tbody>
+        <tr><td>Technical / crawlability</td><td><span class="pill lo">Strong</span></td><td>SSR homepage, clean <code>robots.txt</code> (incl. AI crawlers), <code>llms.txt</code>, dynamic sitemap, canonical + OG + Twitter cards, JSON-LD graph. Keep it up.</td></tr>
+        <tr><td>Schema markup</td><td><span class="pill lo">Good</span></td><td>Organization/WebSite/WebPage present. Add <code>Article</code>/<code>NewsArticle</code> + <code>BreadcrumbList</code> on issue and learn pages; <code>Course</code> JSON-LD already on learn slugs — extend.</td></tr>
+        <tr><td>Content depth</td><td><span class="pill hi">Weak</span></td><td>Thin aggregated pages risk "low-value" classification. Original editorial is the fix (see §1, §5).</td></tr>
+        <tr><td>International SEO</td><td><span class="pill hi">Missing</span></td><td>No <code>hreflang</code>, no localized URLs. Either commit to real localized pages or drop the i18n claim.</td></tr>
+        <tr><td>Internal linking</td><td><span class="pill">OK</span></td><td>Footer + topic interlinks exist. Add contextual in-content links from issues → learn → prompts to spread authority.</td></tr>
+      </tbody>
+    </table>
+    <p><strong>Quick wins:</strong> add Article schema to issue pages, ship breadcrumbs, and give every issue/learn page a unique meta description. <strong>Long-term:</strong> original content is the only durable SEO moat here.</p>
+  </section>
+
+  <!-- ════════ PERF / A11Y ════════ -->
+  <section>
+    <div class="sec-head"><span class="sec-num">08</span><h2>Performance & accessibility</h2></div>
+    <div class="cols">
+      <div class="mini"><h5>Performance <span class="rate">7/10</span></h5><ul>
+        <li><b>Good:</b> lazy images, IntersectionObserver section loading, KV/edge caching, SSR for first paint, preconnects.</li>
+        <li><b>Fix:</b> self-host Roboto/Roboto&nbsp;Serif (render-blocking Google Fonts; already on your list).</li>
+        <li><b>Fix:</b> set explicit <code>width/height</code> on card thumbnails to kill CLS.</li>
+        <li><b>Watch:</b> <code>images.weserv.nl</code> + proxy fallbacks are off-domain critical-path dependencies.</li>
+      </ul></div>
+      <div class="mini"><h5>Accessibility <span class="rate">6/10</span></h5><ul>
+        <li><b>Good:</b> focus trap in modal/sheet, keyboard-operable cards (role=button, Enter/Space), ARIA labels, reduced-motion-friendly.</li>
+        <li><b>Fix (AA):</b> <code>--text-3 #80868b</code> ≈3.5:1 — darken to ≥4.5:1.</li>
+        <li><b>Fix:</b> emoji-only buttons (🔖/❤️/𝕏/🔗) need real text or aria-labels in the modal share row.</li>
+        <li><b>Fix:</b> set <code>html lang</code> when the translate layer switches language.</li>
+      </ul></div>
+    </div>
+  </section>
+
+  <!-- ════════ SECURITY ════════ -->
+  <section>
+    <div class="sec-head"><span class="sec-num">09</span><h2>Security review</h2></div>
+    <p>This is the platform's strongest dimension and would pass a real pentest's first pass. Verified in source:</p>
+    <ul>
+      <li><strong>AuthN/AuthZ:</strong> PBKDF2-SHA256 (100k, the Workers cap), salted, constant-time compare, 90-day KV sessions, per-IP (30/15min) + per-account (8 fails/15min) limits, password-required account deletion.</li>
+      <li><strong>SSRF:</strong> <code>safeRemoteUrl()</code> blocks IP literals (v4/v6), internal names, userinfo; redirects re-validated each hop, 4-hop cap, 6s timeout, 600KB body cap.</li>
+      <li><strong>Abuse:</strong> honeypot + KV rate limits on subscribe & summarize; allow-listed RSS proxy; enumeration-safe password reset (always 200).</li>
+      <li><strong>Headers:</strong> HSTS, nosniff, X-Frame-Options DENY, Referrer-Policy, Permissions-Policy all set.</li>
+    </ul>
+    <div class="note warn"><b>The one gap (see §1.03)</b>Enforce CSP. Today it's <code>Report-Only</code> with <code>unsafe-inline</code>/<code>unsafe-eval</code>, so an injected script wouldn't be blocked. Refactor inline handlers (or adopt nonces/hashes), then flip the header to <code>Content-Security-Policy</code>. Until then, security is "8.5 with an asterisk."</div>
+  </section>
+
+  <!-- ════════ GROWTH ════════ -->
+  <section>
+    <div class="sec-head"><span class="sec-num">10</span><h2>Growth & monetization</h2></div>
+    <p>The acquisition→activation→retention→revenue funnel is half-built. Acquisition (SEO + shareable issues) and the newsletter capture are solid; activation, retention and revenue are thin.</p>
+    <div class="cols">
+      <div class="mini"><h5>Fix the funnel</h5><ul>
+        <li><b>Activation:</b> first-run interest picker → seed "For you" instantly.</li>
+        <li><b>Retention:</b> ship the next-story loop (done), add weekly streaks / "your week in AI" recap email, web push when keys land.</li>
+        <li><b>Referral:</b> the share buttons exist — add a "forward this issue" + referral credit to the newsletter.</li>
+      </ul></div>
+      <div class="mini"><h5>Pick a revenue model</h5><ul>
+        <li><b>Sponsorship (fastest):</b> the slot already exists — sell the newsletter + rail to AI tool vendors. This fits a free-forever site.</li>
+        <li><b>Real affiliate:</b> join programs for the tools you list; the generic <code>?ref=</code> earns nothing today.</li>
+        <li><b>Optional Pro tier:</b> if you add original content — archives, advanced search, API, no-sponsor — a low-price Pro is defensible without betraying "no paywall on the news."</li>
+      </ul></div>
+    </div>
+  </section>
+
+  <!-- ════════ ROADMAP ════════ -->
+  <section>
+    <div class="sec-head"><span class="sec-num">11</span><h2>Prioritized roadmap</h2></div>
+
+    <h3>Quick wins — within 1 week</h3>
+    <table>
+      <thead><tr><th>Improvement</th><th>Impact</th><th>Effort</th><th>Why</th></tr></thead>
+      <tbody>
+        <tr><td><b>Darken <code>--text-3</code> to AA contrast</b></td><td><span class="pill hi">High</span></td><td><span class="pill lo">XS</span></td><td>One token change fixes site-wide WCAG failures.</td></tr>
+        <tr><td><b>aria-labels/text on modal emoji buttons</b></td><td><span class="pill">Med</span></td><td><span class="pill lo">XS</span></td><td>Screen-reader correctness.</td></tr>
+        <tr><td><b>Explicit width/height on thumbnails</b></td><td><span class="pill">Med</span></td><td><span class="pill lo">S</span></td><td>Kills CLS, improves Core Web Vitals.</td></tr>
+        <tr><td><b>First-run interest picker (2 taps)</b></td><td><span class="pill hi">High</span></td><td><span class="pill">S</span></td><td>Seeds personalization; removes cold-start.</td></tr>
+        <tr><td><b>Self-host fonts</b></td><td><span class="pill">Med</span></td><td><span class="pill">S</span></td><td>Removes render-blocking 3rd-party + a privacy hop.</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Medium-term — 1 to 3 months</h3>
+    <table>
+      <thead><tr><th>Improvement</th><th>Impact</th><th>Effort</th><th>Why</th></tr></thead>
+      <tbody>
+        <tr><td><b>Original daily editorial ("Editor's take")</b></td><td><span class="pill hi">Very high</span></td><td><span class="pill hi">M/L</span></td><td>The single biggest lever on content, SEO, retention and brand.</td></tr>
+        <tr><td><b>Enforce CSP (refactor inline handlers)</b></td><td><span class="pill hi">High</span></td><td><span class="pill hi">M</span></td><td>Closes the only real security gap.</td></tr>
+        <tr><td><b>Unify search + index the archive</b></td><td><span class="pill hi">High</span></td><td><span class="pill">M</span></td><td>Complete results, one mental model.</td></tr>
+        <tr><td><b>Trust pages: authors, methodology, real contact</b></td><td><span class="pill hi">High</span></td><td><span class="pill lo">S</span></td><td>E-E-A-T + reader confidence.</td></tr>
+        <tr><td><b>Sell sponsorship + real affiliate deals</b></td><td><span class="pill hi">High</span></td><td><span class="pill">M</span></td><td>Turns on revenue without a paywall.</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Strategic — 3 months+</h3>
+    <table>
+      <thead><tr><th>Improvement</th><th>Impact</th><th>Effort</th><th>Why</th></tr></thead>
+      <tbody>
+        <tr><td><b>Distinct visual brand (off Google-blue/Roboto)</b></td><td><span class="pill hi">High</span></td><td><span class="pill hi">L</span></td><td>Differentiation + removes IP/brand risk.</td></tr>
+        <tr><td><b>Embeddings-based semantic search & "related"</b></td><td><span class="pill hi">High</span></td><td><span class="pill hi">L</span></td><td>Best-in-class discovery; you already have an AI binding.</td></tr>
+        <tr><td><b>Real localized content + hreflang</b></td><td><span class="pill">Med</span></td><td><span class="pill hi">L</span></td><td>Captures non-English AI search (esp. Hindi).</td></tr>
+        <tr><td><b>Tracked Learn curriculum (progress, completion)</b></td><td><span class="pill">Med</span></td><td><span class="pill hi">L</span></td><td>Turns Learn from links into a product with retention.</td></tr>
+        <tr><td><b>Optional Pro tier on original value</b></td><td><span class="pill">Med</span></td><td><span class="pill hi">L</span></td><td>Sustainable revenue once content justifies it.</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- ════════ VERDICT ════════ -->
+  <section>
+    <div class="sec-head"><span class="sec-num">12</span><h2>Brutally honest verdict</h2></div>
+    <div class="verdict">
+      <h2>Can PromptAI become a top-tier AI knowledge platform?</h2>
+      <p style="margin-top:12px"><strong>Yes — but not on its current strategy.</strong> You have already done the hard, unglamorous 80%: the infrastructure, security, resilience and SEO plumbing are better than most funded startups in this space. What you're missing is the 20% that actually decides whether people care — <span class="accent">an original voice and a reason to stay.</span></p>
+      <p>Today PromptAI is a <strong>router</strong>: it elegantly collects links and hands users off to OpenAI, arXiv and TechCrunch. Routers don't build moats, don't earn backlinks, don't command sponsorship premiums, and don't survive Google's war on thin aggregators. The AI-summary feature that was your edge two years ago is now a free button inside every chatbot.</p>
+      <p>To reach top-tier, three things are non-negotiable: <strong>(1)</strong> publish original, opinionated, human editorial daily — become a destination, not a router; <strong>(2)</strong> attach real names and expertise to it for trust and E-E-A-T; <strong>(3)</strong> turn on a deliberate revenue model (sponsorship first, then affiliate, then maybe Pro). Everything else in this report — CSP enforcement, contrast, search unification, a distinct brand, embeddings — is high-value polish on top of those three.</p>
+      <p style="margin-bottom:0">Verdict: <strong>6.5 / 10 today.</strong> With original content + trust signals + one revenue stream, this is a genuine <span class="accent">8.5+ platform within two quarters</span> — because the foundation it would stand on is already built and, frankly, excellent.</p>
+    </div>
+    <p class="footnote">Prepared as a source-grounded audit of the working-tree build (June 14, 2026). Findings reference actual files: <code>index.html</code>, <code>pai-google-ui.js</code>, <code>pai-feed-engine.js</code>, and <code>functions/*</code> (auth, subscribe, rss-proxy, api/summarize, _middleware, _headers). Scores are comparative against named market leaders, not absolute.</p>
+  </section>
+
+</div>
+</body>
+</html>

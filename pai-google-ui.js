@@ -149,7 +149,7 @@
     opts = opts || {};
     const c = el('article', 'card');
     const img = (s.image && !opts.noThumb)
-      ? `<img class="card-thumb" src="${thumb(s.image)}" alt="" loading="lazy" onerror="this.remove()"/>` : '';
+      ? `<img class="card-thumb" src="${thumb(s.image)}" alt="" width="128" height="96" loading="lazy" onerror="this.remove()"/>` : '';
     const topic = (s.topic && s.topic !== 'General')
       ? `<span class="dot"></span><span class="topic">${esc(s.topic)}</span>` : '';
     const time = P.timeAgo(P.storyMs(s));
@@ -424,17 +424,25 @@
   //    have: topics inferred from saved (×3), liked (×2) and read (×1) titles.
   function topInterests() {
     try {
-      const d = window.paiAccount ? window.paiAccount.getData() : null;
-      if (!d) return [];
       const counts = {};
-      [['saved', 3], ['liked', 2], ['history', 1]].forEach(([k, w]) =>
-        (d[k] || []).slice(0, 60).forEach(x => {
-          const t = P.classifyTopic(x.title || '', '');
-          if (t !== 'General') counts[t] = (counts[t] || 0) + w;
-        }));
+      // Explicit interests chosen in the first-run picker carry the most weight
+      // so "For you" works immediately, before any reading history exists.
+      chosenInterests().forEach(t => { if (t && t !== 'General') counts[t] = (counts[t] || 0) + 4; });
+      const d = window.paiAccount ? window.paiAccount.getData() : null;
+      if (d) {
+        [['saved', 3], ['liked', 2], ['history', 1]].forEach(([k, w]) =>
+          (d[k] || []).slice(0, 60).forEach(x => {
+            const t = P.classifyTopic(x.title || '', '');
+            if (t !== 'General') counts[t] = (counts[t] || 0) + w;
+          }));
+      }
       return Object.entries(counts).filter(([, n]) => n >= 3)
-        .sort((a, b) => b[1] - a[1]).slice(0, 2).map(([t]) => t);
+        .sort((a, b) => b[1] - a[1]).slice(0, 3).map(([t]) => t);
     } catch (e) { return []; }
+  }
+  // Topics chosen in the onboarding picker (localStorage).
+  function chosenInterests() {
+    try { return JSON.parse(localStorage.getItem('pai_interests') || '[]') || []; } catch (e) { return []; }
   }
   function renderForYou() {
     const panel = $('#foryou-panel'); if (!panel) return;
@@ -445,7 +453,7 @@
     if (pool.length < 2) { panel.hidden = true; return; }
     panel.hidden = false;
     const note = $('#foryou-topics');
-    if (note) note.textContent = 'Because you read ' + topics.join(' & ') + ' stories';
+    if (note) note.textContent = 'Tuned to your interests · ' + topics.join(' · ');
     const box = $('#foryou-list'); if (!box) return;
     box.innerHTML = '';
     pool.forEach(s => {
@@ -716,6 +724,68 @@
   let _modalUrl = '';
   let _modalStory = null;
   let _modalOpener = null; // focus returns here on close (a11y)
+  // "Up next" — rank the loaded feeds against the story you're reading so the
+  // modal can offer 2-3 related reads. Scores topic + source + title-keyword
+  // overlap + recency, de-prioritises what you've already opened, and
+  // backfills with the freshest news so the rail is never half-empty.
+  function relatedStories(cur, n) {
+    n = n || 3;
+    const read = new Set((((window.paiAccount && window.paiAccount.getData()) || {}).history || []).map(x => x.url));
+    const tok = t => new Set((t || '').toLowerCase().match(/[a-z]{4,}/g) || []);
+    const curTok = tok(cur.title);
+    const curTopic = cur.topic || cur.cat || '';
+    const pool = _news.concat(_blogs, _papers);
+    const seen = new Set([cur.url]);
+    const scored = [];
+    for (const s of pool) {
+      if (!s.url || seen.has(s.url)) continue;
+      seen.add(s.url);
+      let score = 0;
+      const sTopic = s.topic || s.cat || '';
+      if (curTopic && sTopic && curTopic === sTopic) score += 4;
+      if (cur.src && s.src && cur.src === s.src) score += 2;
+      let overlap = 0; for (const w of tok(s.title)) if (curTok.has(w)) overlap++;
+      score += Math.min(3, overlap);
+      const age = Date.now() - P.storyMs(s);
+      if (age > 0 && age < 24 * 3600e3) score += 1.5;
+      else if (age > 0 && age < 7 * 24 * 3600e3) score += 0.8;
+      score += Math.min(1.5, (_popular[s.url] || 0) * 0.15);
+      if (read.has(s.url)) score -= 1.2;          // seen it — rank lower, don't drop
+      if (score > 0.4) scored.push([score, s]);
+    }
+    scored.sort((a, b) => b[0] - a[0]);
+    const top = scored.slice(0, n).map(x => x[1]);
+    const have = new Set(top.map(x => x.url).concat([cur.url]));
+    // backfill pass 1: freshest UNREAD news. pass 2 (last resort): any fresh
+    // news incl. already-read — a returning reader still gets a full rail.
+    for (const allowRead of [false, true]) {
+      if (top.length >= n) break;
+      for (const s of _news) {
+        if (top.length >= n) break;
+        if (!s.url || have.has(s.url)) continue;
+        if (!allowRead && read.has(s.url)) continue;
+        have.add(s.url); top.push(s);
+      }
+    }
+    return top;
+  }
+  function renderModalNext(cur) {
+    const box = $('#m-next'); if (!box) return;
+    const rel = relatedStories(cur, 3);
+    if (rel.length < 2) { box.style.display = 'none'; box.innerHTML = ''; return; }
+    box.style.display = 'block';
+    box.innerHTML = '<div class="m-next-h">Up next</div>';
+    const list = el('div', 'm-next-list');
+    rel.forEach(s => {
+      const d = el('div', 'm-next-item');
+      const topic = (s.topic && s.topic !== 'General') ? ' · ' + esc(s.topic) : (s.cat ? ' · ' + esc(s.cat) : '');
+      d.innerHTML = '<img src="' + P.srcFavicon(s.src, s.url) + '" alt="" loading="lazy" onerror="this.style.visibility=\'hidden\'"/>' +
+        '<div><h5>' + esc(s.title) + '</h5><span>' + esc(P.srcLabel(s.src)) + topic + '</span></div>';
+      actionable(d, () => { P.event && P.event('next_story'); openModal(s); }, s.title);
+      list.appendChild(d);
+    });
+    box.appendChild(list);
+  }
   window.openModal = function (s) {
     _modalOpener = document.activeElement;
     _modalUrl = s.url;
@@ -755,7 +825,9 @@
       }
     }
     loadModalSummary(s); // ~100-word AI summary for any item (news, research, blogs…)
+    renderModalNext(s);  // "Up next" — related reads to keep the session going
     $('#modal').classList.add('open'); document.body.style.overflow = 'hidden';
+    $('#modal').scrollTop = 0; // switching from an "Up next" pick starts at the top
     const x = document.querySelector('#modal .modal-x'); if (x) x.focus();
   };
   // Auto-load a ~100-word AI summary into the modal. Falls back silently
@@ -932,6 +1004,70 @@
   function toast(msg) { const t = $('#toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(_toastT); _toastT = setTimeout(() => t.classList.remove('show'), 2600); }
   window.toast = toast;
 
+  // ── FIRST-RUN INTEREST PICKER (review #5/#10) ─────────
+  // Shown once. Seeds "For you" instantly so new readers don't face a cold,
+  // un-personalised feed. Choices persist in localStorage ('pai_interests').
+  const ONB_TOPICS = ['LLMs', 'Agents', 'Vision', 'Robotics', 'Research', 'Tools', 'Policy'];
+  let _onbSel = [];
+  function paiMaybeOnboard() {
+    let done = false, has = false;
+    try {
+      done = !!localStorage.getItem('pai_onboarded');
+      has = (JSON.parse(localStorage.getItem('pai_interests') || '[]') || []).length > 0;
+    } catch (e) {}
+    if (done || has) return;
+    const box = $('#onb-topics'); if (!box) return;
+    box.innerHTML = '';
+    _onbSel = [];
+    ONB_TOPICS.forEach(t => {
+      const b = el('button', 'onb-chip'); b.type = 'button'; b.textContent = t;
+      b.setAttribute('aria-pressed', 'false');
+      b.onclick = () => {
+        const on = b.classList.toggle('sel');
+        b.setAttribute('aria-pressed', on ? 'true' : 'false');
+        if (on) _onbSel.push(t); else _onbSel = _onbSel.filter(x => x !== t);
+        const save = $('#onb-save'); if (save) save.disabled = _onbSel.length === 0;
+      };
+      box.appendChild(b);
+    });
+    const save = $('#onb-save'); if (save) save.disabled = true;
+    $('#onboard').classList.add('open');
+  }
+  function paiCloseOnboard() {
+    try { localStorage.setItem('pai_onboarded', '1'); } catch (e) {}
+    const o = $('#onboard'); if (o) o.classList.remove('open');
+  }
+  window.paiSkipOnboard = function () { paiCloseOnboard(); P.event && P.event('onboard_skip'); };
+  window.paiSaveOnboard = function () {
+    try { localStorage.setItem('pai_interests', JSON.stringify(_onbSel)); } catch (e) {}
+    paiCloseOnboard();
+    P.event && P.event('onboard_save');
+    renderForYou();
+    if (_onbSel.length) toast('✨ Your feed is tuned to ' + _onbSel.slice(0, 3).join(', '));
+  };
+
+  // ── READING STREAK (review #10) — a quiet return cue. ─
+  function renderStreak() {
+    try {
+      const today = new Date().toISOString().slice(0, 10);
+      let s = {}; try { s = JSON.parse(localStorage.getItem('pai_streak') || '{}') || {}; } catch (e) {}
+      if (s.last !== today) {
+        const y = new Date(Date.now() - 864e5).toISOString().slice(0, 10);
+        s.n = (s.last === y) ? (s.n || 0) + 1 : 1;
+        s.last = today;
+        try { localStorage.setItem('pai_streak', JSON.stringify(s)); } catch (e) {}
+      }
+      if ((s.n || 0) >= 2) {
+        const panel = $('#stats-panel');
+        if (panel && !panel.querySelector('.streak-row')) {
+          const row = el('div', 'stat-row streak-row');
+          row.innerHTML = '<span class="k">Your reading streak</span><span class="v">' + s.n + ' day' + (s.n === 1 ? '' : 's') + '</span>';
+          panel.insertBefore(row, panel.firstChild);
+        }
+      }
+    } catch (e) {}
+  }
+
   // ── COUNTERS ──────────────────────────────────────────
   function fmt(n) { return n >= 1e6 ? (n / 1e6).toFixed(1) + 'M' : n >= 1e3 ? (n / 1e3).toFixed(1) + 'k' : String(n); }
   // Content stats, not vanity visitor counters (R33).
@@ -1013,6 +1149,8 @@
     renderTools();
     loadToolsJson(); // R35 — tools.json with lastReviewed dates
     renderSummary(); // R30 — "Today in 60 seconds"
+    renderStreak();  // review #10 — return-visit streak cue
+    paiMaybeOnboard(); // review #5/#10 — first-run interest picker
     // honor a #view hash (links from education.html / archive.html land on the right tab)
     let h = (location.hash || '').replace('#', '');
     h = VIEW_ALIASES[h] || h;
@@ -1021,6 +1159,12 @@
     try {
       const pq = sessionStorage.getItem('pai_pending_search');
       if (pq) { sessionStorage.removeItem('pai_pending_search'); const si = $('#pai-search'); if (si) si.value = pq; onSearch(pq); }
+    } catch (e) {}
+    // honour a ?q= query param so the homepage SearchAction (schema.org) and
+    // shared search URLs run search in-app (one unified search surface).
+    try {
+      const qp = new URLSearchParams(location.search).get('q');
+      if (qp) { const si = $('#pai-search'); if (si) si.value = qp; onSearch(qp); }
     } catch (e) {}
     loadNews();
     loadStats();
