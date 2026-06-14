@@ -1,19 +1,9 @@
 # Cloudflare Pages redirects
-
-# Live RSS feed (Pages Function). /feed.xml → /feed
+# Routes /feed.xml to the live Cloudflare Pages Function
 /feed.xml /feed 200
 
-# Dynamic, self-dating sitemap (Pages Function). /sitemap.xml → /sitemap
+# Routes /sitemap.xml to the live (dynamic, self-dating) sitemap Function
 /sitemap.xml /sitemap 200
 
-# www → apex
+# www → apex redirect
 https://www.promptai.in/* https://promptai.in/:splat 301
-
-# NOTE: do NOT add rewrite rules like "/prompts /prompts.html 200".
-# Cloudflare Pages serves clean URLs automatically (prompts.html → /prompts)
-# and auto-strips ".html"; a rewrite back to the .html file creates an
-# infinite redirect loop (ERR_TOO_MANY_REDIRECTS). /prompts and /learn
-# already work on their own.
-
-# /issue (singular, no page) → issues index
-/issue /issues 301

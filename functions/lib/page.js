@@ -104,11 +104,15 @@ ${jsonLd ? `<script type="application/ld+json">${JSON.stringify(jsonLd)}</script
   </div>
 </main>
 <footer>
-  <span>© 2026 PromptAI · promptai.in</span>
+  <span data-no-translate>© 2026 PromptAI · promptai.in</span>
   <a href="/privacy.html">Privacy</a>
   <a href="/terms.html">Terms</a>
+  <a href="/prompts.html">Prompts</a>
+  <a href="/education.html">Learn AI</a>
   <a href="/archive.html">Archive</a>
+  <a href="/issues">Issues</a>
   <a href="/feed.xml">RSS</a>
+  <a href="/unsubscribe">Unsubscribe</a>
 </footer>
 <script src="/pai-metrics.js" defer></script>
 </body>

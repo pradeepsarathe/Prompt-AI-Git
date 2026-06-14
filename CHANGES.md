@@ -45,6 +45,13 @@ plus all of the R-items below). Then do ACTIONS_REQUIRED.md.
 - **R31 — prompt library.** `prompts.html` + `prompts-data.js` — 25 seeded
   prompts across Writing/Coding/Research/Marketing/Learning/Productivity,
   category filters, copy buttons. In the tab bar + footer of every page.
+- **R34 batch (2026-06-13) — funnel + Learn AI + CSP.** First-party funnel
+  beacon `pai-metrics.js` → `/api/event` (STATS KV) + authed `/metrics`
+  dashboard; CSP **Report-Only** in `_headers` → `/api/csp-report`; per-path
+  Learn AI pages `/learn` + `/learn/<slug>` (Course+HowTo JSON-LD) from
+  `lib/learnpaths.js`, wired into sitemap + interlinked from education.html;
+  issue prev/next nav; "Prompt of the week" in the digest. Deploy bundle:
+  `design/2026-06-13-r34-funnel-learn/deploy/`.
 - **R34 — view key renamed** learn → deepdives (`#learn` links still work).
 - **R25 — focus trap** in modal + sign-in sheet (Tab cycles inside).
 - **R35 — tools.json** with `lastReviewed` + per-tool `added` dates; UI loads

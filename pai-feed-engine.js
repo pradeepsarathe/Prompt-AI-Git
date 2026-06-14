@@ -333,11 +333,19 @@
     'cs.RO': { label: 'Robotics',         cls: 'cat-rl' },
     'cs.NE': { label: 'Neural Nets',      cls: 'cat-ai' },
   };
-  async function legacyFetchPapers(cat = 'all') {
-    const cKey = 'papers_' + cat;
-    const cached = cacheGet(cKey, CACHE_TTL_PAPERS);
-    if (cached) return cached;
-    const feedUrl = ARXIV_FEEDS[cat] || ARXIV_FEEDS['all'];
+  // arXiv API endpoint — primary source. The RSS feeds above are empty on
+  // weekends (<skipDays> Sat/Sun), which silently emptied the Research tab;
+  // the API returns the latest papers every day. RSS kept as a fallback.
+  const ARXIV_Q = 'sortBy=submittedDate&sortOrder=descending&max_results=40';
+  const ARXIV_API = {
+    'all':   'https://export.arxiv.org/api/query?search_query=cat:cs.AI+OR+cat:cs.LG+OR+cat:cs.CL+OR+cat:cs.CV&' + ARXIV_Q,
+    'cs.AI': 'https://export.arxiv.org/api/query?search_query=cat:cs.AI&' + ARXIV_Q,
+    'cs.LG': 'https://export.arxiv.org/api/query?search_query=cat:cs.LG&' + ARXIV_Q,
+    'cs.CL': 'https://export.arxiv.org/api/query?search_query=cat:cs.CL&' + ARXIV_Q,
+    'cs.CV': 'https://export.arxiv.org/api/query?search_query=cat:cs.CV&' + ARXIV_Q,
+  };
+  // Fetch + parse one arXiv feed URL (RSS <item> or Atom <entry>). No cache.
+  async function fetchPapersFromUrl(feedUrl) {
     try {
       const ctrl = new AbortController();
       setTimeout(() => ctrl.abort(), 9000);
@@ -357,17 +365,17 @@
             date: (item.pubDate || '').slice(0, 10), src: 'arxiv',
           };
         }).filter(p => p.title && p.url);
-        if (results.length) { cacheSet(cKey, results, CACHE_TTL_PAPERS); return results; }
+        if (results.length) return results;
       }
     } catch (e) {}
     const xml = await fetchWithProxyRace(feedUrl);
     if (!xml) return [];
     const doc = new DOMParser().parseFromString(xml, 'text/xml');
-    // arXiv serves RSS (<item>) but can also return Atom (<entry>) — handle both
+    // arXiv serves RSS (<item>) but the API serves Atom (<entry>) — handle both
     // so a feed-format change never empties the Research tab.
     let nodes = Array.from(doc.querySelectorAll('item'));
     if (!nodes.length) nodes = Array.from(doc.querySelectorAll('entry'));
-    const results = nodes.slice(0, 30).map(item => {
+    return nodes.slice(0, 30).map(item => {
       const title = (item.querySelector('title')?.textContent || '').replace(/\[.*?\]/g, '').replace(/\s+/g, ' ').trim();
       // RSS: <link>url</link>; Atom: <link href="url"/>; fallback to <id>
       let link = (item.querySelector('link')?.textContent || '').trim();
@@ -384,8 +392,17 @@
       const pubDate = (item.querySelector('pubDate')?.textContent || item.querySelector('published')?.textContent || item.querySelector('updated')?.textContent || '').slice(0, 16);
       return { title, url: link, desc, cat: catInfo.label, cls: catInfo.cls, authors: authors || 'arXiv', date: pubDate, src: 'arxiv' };
     }).filter(p => p.title && p.url);
-    if (results.length) cacheSet(cKey, results, CACHE_TTL_PAPERS);
-    return results;
+  }
+  async function legacyFetchPapers(cat = 'all') {
+    const cKey = 'papers_' + cat;
+    const cached = cacheGet(cKey, CACHE_TTL_PAPERS);
+    if (cached) return cached;
+    // API first (every day), RSS feed as fallback only.
+    for (const feedUrl of [ARXIV_API[cat] || ARXIV_API['all'], ARXIV_FEEDS[cat] || ARXIV_FEEDS['all']]) {
+      const results = await fetchPapersFromUrl(feedUrl);
+      if (results.length) { cacheSet(cKey, results, CACHE_TTL_PAPERS); return results; }
+    }
+    return [];
   }
 
   // ── PUBLIC FETCHERS — aggregated payload first, legacy fallback ──

@@ -13,7 +13,7 @@
 // ═══════════════════════════════════════════════════════════════════
 
 import {
-  SRC_META, WEB_NEWS_FEEDS, WEB_BLOG_FEEDS, ARXIV_FEEDS, PAPER_CAT_MAP,
+  SRC_META, WEB_NEWS_FEEDS, WEB_BLOG_FEEDS, ARXIV_FEEDS, ARXIV_API, PAPER_CAT_MAP,
 } from './sources.js';
 
 // ── tiny XML helpers ────────────────────────────────────────────────
@@ -245,8 +245,9 @@ async function fetchKindStories(feeds, perFeed, requireRelevance) {
 }
 
 export async function fetchPapers(cat, max) {
-  const feedUrl = ARXIV_FEEDS[cat] || ARXIV_FEEDS.all;
-  const items = await fetchFeedItems(feedUrl, max || 30);
+  // API first (returns papers every day, incl. weekends), RSS as fallback.
+  let items = await fetchFeedItems(ARXIV_API[cat] || ARXIV_API.all, max || 30);
+  if (!items.length) items = await fetchFeedItems(ARXIV_FEEDS[cat] || ARXIV_FEEDS.all, max || 30);
   return items.map(i => {
     const catMatch = (i.cats || []).find(c => PAPER_CAT_MAP[c]) || (i.cats || [])[0] || 'cs.AI';
     const catInfo = PAPER_CAT_MAP[catMatch] || { label: 'AI', cls: 'cat-llm' };

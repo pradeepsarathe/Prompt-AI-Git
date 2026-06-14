@@ -78,5 +78,23 @@ Each page contains the full prompt text (free to copy), what it's for, and how t
 - [Question bank for an expert interview](https://promptai.in/prompt/question-bank-for-an-expert-interview): Better questions than "tell me about your journey" — built from what only THIS person can answer.
 - [Statistics sanity check](https://promptai.in/prompt/statistics-sanity-check): Checks the number before you repeat it — base rates, denominators, and what the stat conveniently omits.
 
+## AI Glossary — plain-English definitions
+- [What is an LLM?](https://promptai.in/glossary/llm): An LLM — large language model — is an AI system trained on enormous amounts of text to predict the next word, and through that to write, summarize, translate and reason.
+- [What is a token in AI?](https://promptai.in/glossary/token): A token is the small chunk of text — roughly three-quarters of an English word — that an AI model reads and writes, one at a time.
+- [What is a context window?](https://promptai.in/glossary/context-window): The context window is the maximum amount of text — measured in tokens — that an AI model can "see" at once in a conversation.
+- [What is an AI hallucination?](https://promptai.in/glossary/hallucination): A hallucination is when an AI states something false with full confidence — invented facts, fake citations, wrong numbers, non-existent court cases.
+- [What is prompt engineering?](https://promptai.in/glossary/prompt-engineering): Prompt engineering is the craft of writing instructions that get reliably good output from an AI model — by specifying role, context, format and constraints.
+- [What is an AI agent?](https://promptai.in/glossary/ai-agent): An AI agent is a model that doesn’t just answer — it takes actions: browsing the web, running code, calling tools and working toward a goal across multiple steps.
+- [What is RAG?](https://promptai.in/glossary/rag): RAG — retrieval-augmented generation — lets an AI look up relevant documents first and answer from them, instead of relying only on what it memorized during training.
+- [What is fine-tuning?](https://promptai.in/glossary/fine-tuning): Fine-tuning takes an already-trained model and trains it further on your own examples, so it adopts your task, tone or domain by default.
+- [What is an embedding?](https://promptai.in/glossary/embedding): An embedding turns text into a long list of numbers that captures its meaning, so computers can measure how similar two pieces of text are.
+- [What is a transformer in AI?](https://promptai.in/glossary/transformer): The transformer is the neural-network architecture behind modern AI. Its "attention" mechanism lets a model weigh every word against every other word at once.
+- [What is inference in AI?](https://promptai.in/glossary/inference): Inference is when a trained AI model is actually used — every reply it generates. Training builds the model; inference runs it.
+- [What are parameters in an AI model?](https://promptai.in/glossary/parameters): Parameters are the internal numbers a model adjusts during training — its "knowledge dials". More parameters generally means a more capable, more expensive model.
+- [What is temperature in AI?](https://promptai.in/glossary/temperature): Temperature controls how predictable or adventurous a model’s word choices are — low means consistent and safe, high means varied and creative.
+- [What is chain-of-thought reasoning?](https://promptai.in/glossary/chain-of-thought): Chain-of-thought is when a model works through a problem step by step instead of jumping straight to an answer — usually improving accuracy on hard problems.
+- [What does multimodal mean in AI?](https://promptai.in/glossary/multimodal): A multimodal model understands more than text — images, audio, sometimes video — in one system, and can often produce them too.
+- [What is AGI?](https://promptai.in/glossary/agi): AGI — artificial general intelligence — is a hypothetical AI that matches or exceeds humans across most intellectual work, not just one narrow skill. It does not exist yet.
+
 ## Newsletter
 Free email briefing — daily or weekly — sign up at https://promptai.in/ (no spam, one-click unsubscribe).

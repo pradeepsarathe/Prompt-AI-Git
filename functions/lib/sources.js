@@ -80,6 +80,20 @@ export const ARXIV_FEEDS = {
   'cs.CL': 'https://rss.arxiv.org/rss/cs.CL',
   'cs.CV': 'https://rss.arxiv.org/rss/cs.CV',
 };
+// arXiv API query endpoint — the PRIMARY paper source. Unlike the RSS feed
+// at rss.arxiv.org (which carries <skipDays>Saturday Sunday</skipDays> and
+// returns an EMPTY channel on weekends — silently emptying the Research
+// tab every Sat/Sun), the API returns the most-recently-submitted papers
+// EVERY day. Atom format; parseFeed() handles <entry> already. RSS feeds
+// above are kept only as a fallback.
+const ARXIV_Q = 'sortBy=submittedDate&sortOrder=descending&max_results=40';
+export const ARXIV_API = {
+  all:     'https://export.arxiv.org/api/query?search_query=cat:cs.AI+OR+cat:cs.LG+OR+cat:cs.CL+OR+cat:cs.CV&' + ARXIV_Q,
+  'cs.AI': 'https://export.arxiv.org/api/query?search_query=cat:cs.AI&' + ARXIV_Q,
+  'cs.LG': 'https://export.arxiv.org/api/query?search_query=cat:cs.LG&' + ARXIV_Q,
+  'cs.CL': 'https://export.arxiv.org/api/query?search_query=cat:cs.CL&' + ARXIV_Q,
+  'cs.CV': 'https://export.arxiv.org/api/query?search_query=cat:cs.CV&' + ARXIV_Q,
+};
 export const PAPER_CAT_MAP = {
   'cs.AI': { label: 'AI',               cls: 'cat-llm' },
   'cs.LG': { label: 'Machine Learning', cls: 'cat-ml' },

@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>PromptAI — Full Platform Review v2 (June 2026)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&amp;family=Roboto+Serif:opsz,wght@8..144,400;8..144,500;8..144,600;8..144,700&amp;display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --accent:#1a73e8; --accent-dark:#1453ad; --ink:#202124; --ink-2:#5f6368; --ink-3:#80868b;
+    --border:#dadce0; --border-soft:#e8eaed; --paper:#ffffff; --desk:#eef0f3;
+    --crit:#c5221f; --crit-bg:#fce8e6; --high:#b06000; --high-bg:#fef7e0;
+    --med:#1a73e8; --med-bg:#e8f0fe; --low:#5f6368; --low-bg:#f1f3f4;
+    --good:#137333; --good-bg:#e6f4ea;
+    --serif:'Roboto Serif',Georgia,serif;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Roboto',system-ui,sans-serif; background:var(--desk); color:var(--ink); font-size:14.5px; line-height:1.6; }
+  .page { max-width:816px; margin:28px auto; background:var(--paper); padding:64px 68px; box-shadow:0 2px 12px rgba(0,0,0,0.08); border-radius:3px; }
+
+  h1 { font-family:var(--serif); font-size:2.1rem; font-weight:600; line-height:1.2; letter-spacing:-0.4px; margin:10px 0 8px; }
+  h2 { font-family:var(--serif); font-size:1.4rem; font-weight:600; letter-spacing:-0.2px; margin:0 0 4px; }
+  h3 { font-size:1.02rem; font-weight:700; margin:26px 0 8px; }
+  p { margin:0 0 12px; }
+  p.muted, li.muted { color:var(--ink-2); }
+  a { color:var(--accent); text-decoration:none; }
+  code { font-family:ui-monospace,Menlo,Consolas,monospace; font-size:0.86em; background:var(--low-bg); padding:1px 5px; border-radius:4px; }
+  ul, ol { margin:0 0 12px 20px; }
+  li { margin-bottom:5px; }
+
+  .kicker { font-size:0.7rem; font-weight:700; letter-spacing:0.14em; text-transform:uppercase; color:var(--accent); display:flex; align-items:center; gap:9px; }
+  .kicker::before { content:''; width:20px; height:3px; border-radius:2px; background:var(--accent); }
+  .meta-line { font-size:0.82rem; color:var(--ink-2); margin-bottom:26px; }
+  .sec-head { border-bottom:2px solid var(--ink); padding-bottom:10px; margin-bottom:18px; margin-top:30px; }
+  .sec-head:first-of-type { margin-top:0; }
+  .sec-head .sub { font-size:0.85rem; color:var(--ink-2); }
+
+  table { width:100%; border-collapse:collapse; font-size:0.86rem; margin:8px 0 18px; }
+  th { text-align:left; font-size:0.7rem; text-transform:uppercase; letter-spacing:0.07em; color:var(--ink-2); border-bottom:2px solid var(--ink); padding:6px 10px 6px 0; }
+  td { border-bottom:1px solid var(--border-soft); padding:7px 10px 7px 0; vertical-align:top; }
+  tr { break-inside:avoid; }
+
+  .scorebar { display:inline-block; width:80px; height:8px; border-radius:4px; background:var(--border-soft); position:relative; vertical-align:middle; margin-right:7px; }
+  .scorebar i { position:absolute; left:0; top:0; bottom:0; border-radius:4px; background:var(--accent); }
+
+  .badge { display:inline-block; font-size:0.66rem; font-weight:700; letter-spacing:0.05em; text-transform:uppercase; padding:2px 9px; border-radius:20px; white-space:nowrap; print-color-adjust:exact; -webkit-print-color-adjust:exact; }
+  .b-crit { background:var(--crit-bg); color:var(--crit); }
+  .b-high { background:var(--high-bg); color:var(--high); }
+  .b-med  { background:var(--med-bg); color:var(--med); }
+  .b-low  { background:var(--low-bg); color:var(--low); }
+  .b-good { background:var(--good-bg); color:var(--good); }
+
+  .callout { background:var(--med-bg); border-radius:10px; padding:16px 20px; margin:14px 0 18px; font-size:0.9rem; break-inside:avoid; print-color-adjust:exact; -webkit-print-color-adjust:exact; }
+  .callout b { color:var(--accent-dark); }
+  .good-callout { background:var(--good-bg); }
+  .good-callout b { color:var(--good); }
+  .warn-callout { background:var(--high-bg); }
+  .warn-callout b { color:var(--high); }
+
+  .persona { border:1px solid var(--border-soft); border-radius:10px; padding:16px 18px; margin-bottom:12px; break-inside:avoid; }
+  .persona h4 { font-size:0.95rem; margin-bottom:8px; }
+  .persona h4 span { color:var(--ink-3); font-weight:400; font-size:0.85rem; }
+  .persona ul { margin-bottom:0; font-size:0.875rem; }
+
+  .toc { columns:2; column-gap:36px; font-size:0.88rem; margin-bottom:6px; }
+  .toc li { margin-bottom:4px; break-inside:avoid; }
+
+  .vs { display:grid; grid-template-columns:1fr 1fr; gap:0 24px; font-size:0.86rem; }
+  .vs h5 { font-size:0.72rem; text-transform:uppercase; letter-spacing:0.07em; margin:4px 0 6px; }
+  .vs .plus h5 { color:var(--good); } .vs .minus h5 { color:var(--crit); }
+  .vs ul { margin-left:18px; }
+
+  @media (max-width:880px){ .page { margin:0; padding:34px 22px; border-radius:0; } .toc { columns:1; } .vs { grid-template-columns:1fr; } }
+  @media print {
+    body { background:none; font-size:11.5pt; }
+    .page { box-shadow:none; border-radius:0; max-width:none; width:auto; margin:0; padding:0; break-after:page; }
+    .page:last-child { break-after:auto; }
+    @page { margin:0.75in; }
+    h3, .sec-head { break-after:avoid; }
+    a { color:inherit; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ════ PAGE 1 — COVER + EXEC SUMMARY ════ -->
+<div class="page" data-screen-label="Cover + Executive Summary">
+  <div class="kicker">Full platform review · v2</div>
+  <h1>PromptAI — end-to-end review, post-overhaul</h1>
+  <p class="meta-line">Reviewed against <code>pradeepsarathe/Prompt-AI-Git@main</code> after the June 2026 platform overhaul (server-side aggregation, AI layer, SSR, prompt library, security hardening) · June 12, 2026 · Personas: first-time visitor, returning reader, power user, subscriber</p>
+
+  <div class="callout good-callout"><b>Context: this is a very different platform than 48 hours ago.</b> Since the v1 assessment, the team shipped essentially the entire R1–R44 punch list: server-side feed aggregation with a 30-min cron, one-fetch homepage, SSR headlines for crawlers, Workers-AI daily summary + paper explainers + per-item 100-word summaries, a 25-prompt library, daily issue pages, topic hubs, double opt-in, signed unsubscribe links, password reset, auth rate-limiting, locked CORS, security headers, PWA, dark theme, save/like, focus management, privacy/terms, health endpoint and analytics. This review evaluates the platform as it stands <em>now</em> — the findings below are the next mountain, not the old one.</div>
+
+  <h3>Top 10 issues (in priority order)</h3>
+  <table>
+    <thead><tr><th style="width:30px">#</th><th>Issue</th><th style="width:96px">Severity</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td><b>Original content is still ~5% of the product.</b> Almost everything a visitor reads is a third-party headline that links away. Rankable, ownable content = 25 prompts + 4 learning paths + auto-generated issues. That caps SEO, differentiation and time-on-site simultaneously.</td><td><span class="badge b-crit">Critical</span></td></tr>
+      <tr><td>2</td><td><b>Zero distribution loop.</b> No social auto-posting, no directory listings, no backlink program; Search Console / Bing submission unverified. Content compounds only if something carries it off-site.</td><td><span class="badge b-crit">Critical</span></td></tr>
+      <tr><td>3</td><td><b>No habit mechanics.</b> Weekly email is the only return trigger. No daily digest option, no web push (SW already installed — wiring is cheap), no streaks/continuity cues.</td><td><span class="badge b-high">High</span></td></tr>
+      <tr><td>4</td><td><b>Search is shallow.</b> Client-side substring match over the loaded feed; no autocomplete, no typo tolerance, no ranking, no full-archive index. Power users hit the ceiling in one session.</td><td><span class="badge b-high">High</span></td></tr>
+      <tr><td>5</td><td><b>Recommendations don't use the data you have.</b> Saved/liked/history sync cross-device, but "Trending" is just a read counter. No topic follows, no "because you saved X".</td><td><span class="badge b-high">High</span></td></tr>
+      <tr><td>6</td><td><b>Sessions in localStorage + no CSP.</b> One XSS anywhere = account takeover. The inline <code>onclick</code> handlers are the blocker; refactor unlocks both fixes.</td><td><span class="badge b-high">High</span></td></tr>
+      <tr><td>7</td><td><b>Prompt library has no per-prompt URLs.</b> 25 prompts share one page. Individual URLs with HowTo schema are the single cheapest SEO surface the brand name pre-qualifies for.</td><td><span class="badge b-med">Medium</span></td></tr>
+      <tr><td>8</td><td><b>Email program is single-track.</b> One weekly digest. No welcome sequence beyond the first email, no re-engagement for dormant subscribers, no frequency choice at signup.</td><td><span class="badge b-med">Medium</span></td></tr>
+      <tr><td>9</td><td><b>Account = a sheet, not a place.</b> No profile/preferences surface: digest frequency, topic interests, saved-content organization. Sign-in value is real now (save/like/history) but invisible at signup time.</td><td><span class="badge b-med">Medium</span></td></tr>
+      <tr><td>10</td><td><b>Funnel measurement is pageview-level.</b> CF Web Analytics counts visits; it can't answer "what % of story-modal opens lead to subscribe?" — and every issue above needs that number to be managed.</td><td><span class="badge b-med">Medium</span></td></tr>
+    </tbody>
+  </table>
+
+  <h3>Contents</h3>
+  <ol class="toc">
+    <li>Persona walkthroughs</li>
+    <li>Product strategy review</li>
+    <li>UX &amp; UI review (page ratings)</li>
+    <li>Content sections review</li>
+    <li>Search &amp; discovery</li>
+    <li>SEO audit</li>
+    <li>Performance</li>
+    <li>Accessibility</li>
+    <li>Security</li>
+    <li>Growth &amp; monetization</li>
+    <li>Competitive benchmark</li>
+    <li>Quick wins / medium / strategic</li>
+    <li>Prioritized roadmap</li>
+    <li>Scores &amp; the brutally honest verdict</li>
+  </ol>
+</div>
+
+<!-- ════ PAGE 2 — PERSONAS + PRODUCT ════ -->
+<div class="page" data-screen-label="Personas + Product Strategy">
+  <div class="sec-head"><h2>1 · Persona walkthroughs</h2><div class="sub">Four users, four very different experiences</div></div>
+
+  <div class="persona">
+    <h4>👋 First-time visitor <span>— lands from a shared link</span></h4>
+    <ul>
+      <li><b>Works:</b> instant content paint (one cached fetch + SSR fallback), clean Google-News-familiar layout, "Today in 60 seconds" gives immediate orientation, privacy/terms exist, no popups or cookie walls.</li>
+      <li><b>Confusing:</b> nothing explains <em>what PromptAI is</em> above the fold — the value prop ("AI briefing + prompts + learning, free") lives in the About panel. A one-line tagline under "Your briefing" would fix it.</li>
+      <li><b>Trust gap:</b> no social proof anywhere — no subscriber count, no testimonial, no "as seen in". The subscribe popover asks for an email before showing a sample. Link the latest <code>/issue/&lt;date&gt;</code> as "Read a sample briefing →" in every subscribe surface.</li>
+      <li><b>Conversion blocker:</b> the Subscribe CTA explains cadence ("every Tuesday") but not differentiation — why this over TLDR? The AI summary + prompt-of-the-week is the answer; say it.</li>
+    </ul>
+  </div>
+
+  <div class="persona">
+    <h4>🔁 Returning reader <span>— visits 2–3× a week</span></h4>
+    <ul>
+      <li><b>Works:</b> URL hash navigation means bookmarkable tabs; localStorage cache makes repeat loads instant; "recently read" + saved list give continuity; dark theme; PWA installable.</li>
+      <li><b>Friction:</b> no "what's new since your last visit" cue — every visit looks the same shape. A subtle "12 new stories since Tuesday" marker would create a reason to scan.</li>
+      <li><b>Missing habit loop:</b> nothing pulls them back — no push notification for the daily summary, no email-me-daily option, no streak. The product is pull-only.</li>
+    </ul>
+  </div>
+
+  <div class="persona">
+    <h4>⚡ Power user <span>— researcher / developer, wants depth</span></h4>
+    <ul>
+      <li><b>Works:</b> topic chips, source labels, archive with category filters, RSS feed for their own reader, keyboard-accessible cards, paper explainers on arXiv items.</li>
+      <li><b>Hits ceilings fast:</b> search has no operators, no date ranges, no source filter, no autocomplete; archive search scans one KV blob; no way to follow a topic ("agents") and see only that; no export of saved items.</li>
+      <li><b>Underused asset:</b> the archive's "kept forever" papers corpus is a real moat for this audience — but it's only reachable through basic chips.</li>
+    </ul>
+  </div>
+
+  <div class="persona">
+    <h4>💌 Subscriber <span>— gets the Tuesday digest</span></h4>
+    <ul>
+      <li><b>Works:</b> double opt-in, one-click unsubscribe, signed links, plain-text alternative, issues archived as web pages — deliverability craft is genuinely above average.</li>
+      <li><b>Value gap:</b> one email a week with no personalization. Signed-in subscribers who saved 5 agent stories get the same digest as everyone. The "3 stories you saved this week" block exists in code — surface it.</li>
+      <li><b>No premium path:</b> deliberate (no-paywall promise) — fine, but a voluntary supporter tier ("keep PromptAI independent — $3/mo") is compatible with the promise and tests willingness to pay.</li>
+    </ul>
+  </div>
+
+  <div class="sec-head"><h2>2 · Product strategy</h2><div class="sub">Vision, differentiation, and the one strategic question</div></div>
+  <p><b>The platform now has three genuine differentiators</b> versus newsletter-first competitors: (1) a live, always-fresh briefing site rather than a once-a-day email; (2) an AI layer that summarizes and explains rather than just linking; (3) a free, open, no-paywall stance with real privacy hygiene. The brand name adds a fourth waiting to be claimed: prompts.</p>
+  <p><b>The strategic question is focus.</b> PromptAI currently spreads across six surfaces (news, research, deep dives, tools, prompts, learning). Each is decent; none is the best available anywhere. Top-tier outcomes come from being the <em>definitive</em> place for one thing first. The strongest candidates, in order:</p>
+  <ol>
+    <li><b>The prompt library</b> — brand-aligned, an enormous durable search market, every entry is ownable content, and nobody owns "tested, honest prompt reviews" the way this site's tone could.</li>
+    <li><b>"Research, explained"</b> — the paper explainer is the most distinctive feature on the site; one hand-polished explainer per day with its own URL would compound.</li>
+  </ol>
+  <p class="muted">Recommendation: keep the briefing as the engagement engine, but make prompts the growth engine. Every other section feeds the funnel.</p>
+</div>
+
+<!-- ════ PAGE 3 — UX/UI + PAGE RATINGS ════ -->
+<div class="page" data-screen-label="UX + UI Review">
+  <div class="sec-head"><h2>3 · UX &amp; UI review</h2><div class="sub">Design language: Google-News-inspired briefing — coherent and disciplined</div></div>
+
+  <div class="callout good-callout"><b>UI verdict: this is now a genuinely well-designed reading product.</b> Consistent token system across 4 themes (incl. dark), serif/sans hierarchy that scans well, restrained color, real loading skeletons, focus-visible styles, reduced-motion support, and a coherent card vocabulary across all pages. The overhaul removed the v1 inconsistencies. Remaining issues are structural, not visual.</div>
+
+  <h3>Page-by-page ratings</h3>
+  <table>
+    <thead><tr><th>Page / surface</th><th style="width:130px">Rating</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td>Home (briefing)</td><td><span class="scorebar"><i style="width:80%"></i></span>8</td><td>Strong rhythm (lead → sections → rails). Missing: one-line value prop; "new since last visit".</td></tr>
+      <tr><td>Story modal</td><td><span class="scorebar"><i style="width:85%"></i></span>8.5</td><td>Best surface on the site: AI summary, explain-paper, save/like, share, focus-trapped. </td></tr>
+      <tr><td>News / Research tabs</td><td><span class="scorebar"><i style="width:75%"></i></span>7.5</td><td>Clean lists; needs source/date filters for power users.</td></tr>
+      <tr><td>Deep dives</td><td><span class="scorebar"><i style="width:70%"></i></span>7</td><td>Naming fixed (was "Blogs"). Thin section — needs a reason to exist vs News.</td></tr>
+      <tr><td>Tools</td><td><span class="scorebar"><i style="width:70%"></i></span>7</td><td><code>tools.json</code> + lastReviewed is right; grid is flat — no compare, no categories beyond chips, no "new this month".</td></tr>
+      <tr><td>Prompts</td><td><span class="scorebar"><i style="width:75%"></i></span>7.5</td><td>Good cards, copy UX, honest tips. Needs per-prompt pages, usage counts, submission path.</td></tr>
+      <tr><td>Learn AI</td><td><span class="scorebar"><i style="width:80%"></i></span>8</td><td>Learning paths with levels are the best-organized section. Missing: progress tracking for signed-in users.</td></tr>
+      <tr><td>Archive</td><td><span class="scorebar"><i style="width:70%"></i></span>7</td><td>Works; search/filter shallow relative to the corpus value.</td></tr>
+      <tr><td>Issues (/issue, /issues)</td><td><span class="scorebar"><i style="width:70%"></i></span>7</td><td>Right structure; pages are spartan — add prev/next issue nav + subscribe CTA in-page.</td></tr>
+      <tr><td>Auth sheet / account</td><td><span class="scorebar"><i style="width:75%"></i></span>7.5</td><td>Reset flow + saved lists good. Needs a real profile/preferences view.</td></tr>
+      <tr><td>Mobile experience</td><td><span class="scorebar"><i style="width:75%"></i></span>7.5</td><td>Tab strip scrolls, search collapses properly, hit targets ok. PWA installed — but nothing prompts installation.</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Friction points worth fixing</h3>
+  <ul>
+    <li><b>Dead end after the modal:</b> closing a story returns you to the same scroll position with no "next story" affordance. A "next →" in the modal (Netflix-style autoplay logic, gently) would lift stories-per-session meaningfully.</li>
+    <li><b>The 8-tab bar is at capacity.</b> Adding anything else (e.g. Issues) breaks it. Consider folding Deep dives into News as a chip-filter, freeing a slot.</li>
+    <li><b>Cross-page state surprise:</b> tabs that are real pages (Learn AI, Prompts, Archive) cause a full reload and lose the briefing's scroll state — fine, but the home-tabs that are views don't, so behavior is inconsistent. URL-hash views (done) mostly cover this; just keep order/active states consistent (done today).</li>
+    <li><b>No 404 page.</b> Cloudflare serves a default; a branded 404 with search + latest headlines costs 30 minutes.</li>
+  </ul>
+</div>
+
+<!-- ════ PAGE 4 — CONTENT + SEARCH + SEO ════ -->
+<div class="page" data-screen-label="Content + Search + SEO">
+  <div class="sec-head"><h2>4 · Content sections</h2></div>
+  <table>
+    <thead><tr><th style="width:110px">Section</th><th>Assessment</th></tr></thead>
+    <tbody>
+      <tr><td><b>News</b></td><td>Freshness solved (30-min cron). Source quality good (~20 curated outlets + HN with spam filters). Gaps: no per-source filter UI; no "developing story" clustering — three outlets covering one launch appear as three cards.</td></tr>
+      <tr><td><b>Research</b></td><td>arXiv pipeline + AI explainers is the standout. Gaps: no citation/venue context, no "papers everyone cited this week", no semantic grouping by research area beyond chips.</td></tr>
+      <tr><td><b>Deep dives</b></td><td>Weakest section identity. Same card format as News; reader can't tell what makes something a deep dive. Either curate harder (long-form only, reading time shown) or merge into News.</td></tr>
+      <tr><td><b>Learn AI</b></td><td>Beginner/intermediate/advanced paths exist and are honest. Missing: progress tracking, completion states, a capstone ("build your first agent"), and per-guide URLs for SEO (one page holds everything).</td></tr>
+      <tr><td><b>Prompts</b></td><td>25 quality seeds, right format (role→context→format→constraint). Missing: per-prompt pages, categories as URLs, copy-count social proof, "submit a prompt", prompt-of-the-week in digest.</td></tr>
+      <tr><td><b>Tools</b></td><td>16 entries with lastReviewed dates. Missing: changelog ("what we'd pick today"), head-to-head comparisons (high-intent search terms), pricing accuracy checks.</td></tr>
+    </tbody>
+  </table>
+
+  <div class="sec-head"><h2>5 · Search &amp; discovery</h2></div>
+  <p><b>Current:</b> client-side substring match over loaded feed + archive blob; cross-page handoff works; no autocomplete, ranking, typo tolerance, or operators. <b>Trending</b> = raw read counts. <b>Recommendations</b> = none beyond "recently read".</p>
+  <ul>
+    <li><b>Near-term (KV-compatible):</b> prefix-match autocomplete over titles + topics; weight matches by recency × read-count; add <code>source:</code>/<code>topic:</code> operators — all client-side over <code>/api/feeds</code> + archive.</li>
+    <li><b>Right answer (with D1):</b> SQLite FTS5 over the full archive — instant full-text search over every item ever, with date/source facets. This single migration upgrades search, archive, counters and topic pages at once.</li>
+    <li><b>Recommendation v1 (cheap, no ML):</b> users already save/like; compute top topics from their lists, add a "For you" rail filtered to those topics. Netflix-grade is not needed; <em>visible personalization</em> is.</li>
+  </ul>
+
+  <div class="sec-head"><h2>6 · SEO audit</h2></div>
+  <div class="callout"><b>Technical SEO is now ahead of content SEO.</b> Canonicals, OG, JSON-LD, robots, dynamic sitemap, SSR headlines, hourly freshness — the infrastructure outclasses the ~35 indexable URLs it serves. The constraint has inverted: build pages worth ranking.</div>
+  <table>
+    <thead><tr><th>Finding</th><th style="width:90px">Type</th></tr></thead>
+    <tbody>
+      <tr><td>SSR block (<code>_middleware.js</code>) gives crawlers real headlines + daily issue links — verify in GSC's URL inspector that rendered HTML matches.</td><td><span class="badge b-good">Done ✓</span></td></tr>
+      <tr><td>Search Console + Bing Webmaster submission still unverified — without it, all freshness signals go unobserved. Bing also feeds ChatGPT/Copilot answers.</td><td><span class="badge b-crit">Critical</span></td></tr>
+      <tr><td>Per-prompt URLs with <code>HowTo</code>/<code>FAQPage</code> schema: 25 instant pages targeting "prompt for X" queries the domain name pre-qualifies for.</td><td><span class="badge b-high">Quick win</span></td></tr>
+      <tr><td>Split Learn AI into per-path pages (<code>/learn/beginner</code>…): stable, unique, already-written content currently trapped in one URL.</td><td><span class="badge b-high">Quick win</span></td></tr>
+      <tr><td>Issue pages need <code>&lt;link rel="prev/next"&gt;</code>-style internal linking + inclusion in sitemap (verify) so the daily corpus compounds.</td><td><span class="badge b-med">Medium</span></td></tr>
+      <tr><td>Tool-comparison pages ("Claude vs ChatGPT for coding, 2026") target the highest-intent commercial queries in the niche; tools.json already holds the data skeleton.</td><td><span class="badge b-med">Medium</span></td></tr>
+      <tr><td>Backlinks: zero program. Directory submissions, newsletter aggregators, HN Show, AI tool lists — one afternoon, compounding forever.</td><td><span class="badge b-high">High</span></td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ════ PAGE 5 — PERF + A11Y + SECURITY ════ -->
+<div class="page" data-screen-label="Performance + Accessibility + Security">
+  <div class="sec-head"><h2>7 · Performance</h2></div>
+  <table>
+    <thead><tr><th>Item</th><th style="width:120px">Status</th><th>Impact if fixed</th></tr></thead>
+    <tbody>
+      <tr><td>First paint: one edge-cached <code>/api/feeds</code> fetch + SSR fallback (was ~80 requests)</td><td><span class="badge b-good">Solved ✓</span></td><td>—</td></tr>
+      <tr><td>Google Fonts: 2 render-blocking CSS round-trips (Roboto + Serif + Mono). Self-host as WOFF2.</td><td><span class="badge b-med">Open</span></td><td>~200–400ms LCP on high-latency networks (significant for India traffic)</td></tr>
+      <tr><td>Story thumbnails: loading=lazy present; ensure <code>fetchpriority="high"</code> on the lead image only.</td><td><span class="badge b-low">Minor</span></td><td>Small LCP gain</td></tr>
+      <tr><td>Per-item AI summary: first reader waits 2–5s (non-blocking), then cached. Pre-generate top-20 in the cron run.</td><td><span class="badge b-med">Open</span></td><td>Instant summaries for ~90% of opens</td></tr>
+      <tr><td>KV reads per page: feeds + stats + auth session — fine. Watch <code>/stats</code> if traffic 10×es.</td><td><span class="badge b-low">Watch</span></td><td>—</td></tr>
+    </tbody>
+  </table>
+
+  <div class="sec-head"><h2>8 · Accessibility</h2></div>
+  <p><b>Now solid:</b> keyboard-reachable cards (Enter/Space), focus trap + restore in modal and sheet, <code>aria-current</code> on tabs, <code>aria-live</code> toast, reduced-motion, color-scheme meta, focus-visible styles.</p>
+  <ul>
+    <li><b>Verify contrast in non-default themes</b> — pill colors (e.g. amber on tinted backgrounds) and <code>--text-3</code> on <code>--bg-subtle</code> hover states; automate with a Lighthouse CI pass per theme.</li>
+    <li><b>SSR block for screen readers:</b> ensure <code>#ssr-home</code> is removed from the accessibility tree once hydrated (use <code>hidden</code>, not just visual hiding) or content is announced twice.</li>
+    <li><b>Translate widget:</b> Google Translate injects DOM that can confuse SRs; confirm <code>lang</code> attribute updates when translation activates.</li>
+    <li><b>Skip link:</b> none — "skip to content" before the topbar is a 5-line add.</li>
+  </ul>
+
+  <div class="sec-head"><h2>9 · Security</h2></div>
+  <div class="callout good-callout"><b>The June hardening was real:</b> PBKDF2 600k + transparent legacy upgrade, per-IP and per-account login rate limiting, locked CORS with origin allow-list, email-based password reset, account deletion, double opt-in, HMAC-signed unsubscribe, bearer-token cron, security headers, honeypots. This is above the bar for a solo-operated free product.</div>
+  <table>
+    <thead><tr><th>Remaining risk</th><th style="width:90px">Severity</th><th>Fix</th></tr></thead>
+    <tbody>
+      <tr><td>Session tokens in localStorage — any XSS = account takeover</td><td><span class="badge b-high">High</span></td><td>Move to <code>HttpOnly; Secure; SameSite=Lax</code> cookie; requires same-origin auth calls (already true)</td></tr>
+      <tr><td>No CSP — inline <code>onclick</code> handlers block it</td><td><span class="badge b-high">High</span></td><td>Refactor to <code>addEventListener</code> (mechanical, ~1–2 days), then ship CSP in Report-Only → enforce</td></tr>
+      <tr><td><code>/api/summarize</code> fetches arbitrary user-supplied URLs server-side (SSRF-shaped)</td><td><span class="badge b-med">Medium</span></td><td>Constrain to http(s) + public hosts: reject IP-literal/localhost/RFC-1918 hosts before fetching; cap redirects</td></tr>
+      <tr><td>Subscribe endpoint CORS still <code>*</code> (harmless-ish, but inconsistent with auth)</td><td><span class="badge b-low">Low</span></td><td>Reuse <code>corsOrigin()</code> from auth.js</td></tr>
+      <tr><td>KV rate limits are per-colo (eventually consistent) — determined attacker gets N× the budget</td><td><span class="badge b-low">Low</span></td><td>Acceptable; Durable Objects only if abuse appears</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ════ PAGE 6 — GROWTH + BENCHMARK ════ -->
+<div class="page" data-screen-label="Growth + Competitive Benchmark">
+  <div class="sec-head"><h2>10 · Growth &amp; monetization</h2></div>
+  <ul>
+    <li><b>Funnel today:</b> visit → (maybe) subscribe popover → double opt-in → weekly digest. No activation milestone, no referral, no community. Conversion instrumentation: none beyond pageviews.</li>
+    <li><b>Free-tier improvements:</b> sample-issue link on every subscribe surface; subscriber count once proud of it; daily-vs-weekly frequency choice; "forwarded this? subscribe" footer (in code — verify live); prompt-of-the-week as the digest hook.</li>
+    <li><b>Voluntary supporter tier</b> (no-paywall-compatible): $3/mo "keep it independent" — supporters get name in colophon + early features. Tests willingness-to-pay with zero content lockout.</li>
+    <li><b>Sponsorship (primary revenue):</b> machinery exists (<code>SPONSOR_HTML</code>). Gate: audience numbers. Don't sell before ~1k engaged subscribers; do prepare a one-page media kit now.</li>
+    <li><b>Referral:</b> newsletter-standard "share link, unlock the prompt vault" — the prompt library doubles as the referral reward inventory.</li>
+    <li><b>Enterprise/API (later):</b> the aggregated feed + summaries as a JSON API or MCP server for teams; "briefing for your company Slack" is a real wedge.</li>
+  </ul>
+
+  <div class="sec-head"><h2>11 · Competitive benchmark</h2></div>
+  <table>
+    <thead><tr><th style="width:110px">Competitor</th><th>They do better</th><th>PromptAI does better</th></tr></thead>
+    <tbody>
+      <tr><td><b>TLDR AI</b></td><td>Distribution machine (1M+ subs), sponsor pipeline, ruthless brevity</td><td>Live site + archive (TLDR's web presence is thin), AI explainers, tools/learning surfaces</td></tr>
+      <tr><td><b>Ben's Bites</b></td><td>Community, voice/personality, paid courses</td><td>Real-time freshness, research coverage, free-and-open stance</td></tr>
+      <tr><td><b>The Rundown</b></td><td>Social reach, production polish, daily cadence</td><td>Privacy posture (no tracking pixels everywhere), prompt library potential, PWA/offline</td></tr>
+      <tr><td><b>smol.ai news</b></td><td>Depth and dev credibility, Discord recaps</td><td>Accessibility to non-experts, learning paths, broader source net</td></tr>
+      <tr><td><b>HF Papers</b></td><td>Research community gravity, upvote signal</td><td>Plain-English explainers, news+papers in one briefing</td></tr>
+      <tr><td><b>Perplexity Discover</b></td><td>Conversational AI UX, infinite personalization</td><td>Curation/taste, email relationship, no account needed for core value</td></tr>
+    </tbody>
+  </table>
+  <p class="muted"><b>Missing opportunity all competitors share:</b> none owns "prompts that actually work, tested and honest." The brand name is already positioned there. That's the open lane.</p>
+
+  <div class="sec-head"><h2>12 · Quick wins → strategic</h2></div>
+  <div class="vs">
+    <div class="plus">
+      <h5>Quick wins (≤1 week)</h5>
+      <ul>
+        <li>Submit to GSC + Bing; execute DISCOVERABILITY.md checklist</li>
+        <li>Per-prompt pages + HowTo schema (generate from prompts-data.js)</li>
+        <li>"Read a sample briefing →" on every subscribe surface</li>
+        <li>One-line value prop under the homepage title</li>
+        <li>Pre-generate top-20 summaries in the cron run</li>
+        <li>Branded 404; skip link; subscribe-frequency choice</li>
+        <li>Wire feed.xml → Buffer/Zapier auto-posting to X/LinkedIn</li>
+        <li>Self-host fonts (WOFF2)</li>
+      </ul>
+    </div>
+    <div class="minus">
+      <h5>Medium term (1–3 months)</h5>
+      <ul>
+        <li>D1 migration → full-text archive search + honest counters + topic pagination</li>
+        <li>"For you" rail from saved/liked topics; topic follows</li>
+        <li>Web push for the daily summary (SW already shipped)</li>
+        <li>Inline-handler refactor → CSP enforce + cookie sessions</li>
+        <li>Prompt library v2: submissions, copy counts, weekly feature</li>
+        <li>Welcome sequence (3 emails) + dormant-subscriber win-back</li>
+        <li>Per-path Learn AI pages with progress tracking</li>
+        <li>Story clustering (same event, many sources → one card)</li>
+      </ul>
+    </div>
+  </div>
+  <h3 style="margin-top:18px">Strategic (3–12 months)</h3>
+  <ul>
+    <li><b>Own one editorial product:</b> a daily, human-polished "one paper / one story, explained" with its own URL — the compounding content asset everything else links to.</li>
+    <li><b>Prompt exchange:</b> community-submitted, editor-tested prompts with attribution — UGC flywheel that doesn't compromise quality.</li>
+    <li><b>Briefing API / MCP server:</b> the aggregation+summary pipeline as a product for tools, Slack bots and agents — developer distribution channel.</li>
+    <li><b>India-first angle:</b> .in domain, IST-timed sends, INR-relevant tool pricing — an underserved, fast-growing market the global competitors ignore.</li>
+  </ul>
+</div>
+
+<!-- ════ PAGE 7 — ROADMAP + SCORES + VERDICT ════ -->
+<div class="page" data-screen-label="Roadmap + Scores + Verdict">
+  <div class="sec-head"><h2>13 · Prioritized roadmap</h2></div>
+  <table>
+    <thead><tr><th style="width:62px">Priority</th><th>Improvement</th><th style="width:70px">Impact</th><th style="width:64px">Effort</th><th>Recommendation</th></tr></thead>
+    <tbody>
+      <tr><td><span class="badge b-crit">P0</span></td><td>GSC/Bing submission + directory backlinks</td><td>High</td><td>S</td><td>This week — everything else is invisible without it</td></tr>
+      <tr><td><span class="badge b-crit">P0</span></td><td>Per-prompt pages w/ schema</td><td>High</td><td>S</td><td>Cheapest ownable SEO surface; brand-aligned</td></tr>
+      <tr><td><span class="badge b-crit">P0</span></td><td>Sample issue link + value prop + funnel events</td><td>High</td><td>S</td><td>Conversion before traffic-buying of any kind</td></tr>
+      <tr><td><span class="badge b-high">P1</span></td><td>Social auto-posting from feed.xml</td><td>High</td><td>S</td><td>Distribution on autopilot</td></tr>
+      <tr><td><span class="badge b-high">P1</span></td><td>Web push + daily-frequency email option</td><td>High</td><td>M</td><td>The missing habit loop</td></tr>
+      <tr><td><span class="badge b-high">P1</span></td><td>SSRF guard on /api/summarize + cookie sessions + CSP refactor</td><td>Med</td><td>M</td><td>Close the remaining security gaps as one block</td></tr>
+      <tr><td><span class="badge b-med">P2</span></td><td>D1 migration (search, counters, topics)</td><td>High</td><td>M–L</td><td>Unlocks power users + honest metrics</td></tr>
+      <tr><td><span class="badge b-med">P2</span></td><td>"For you" personalization v1</td><td>Med</td><td>M</td><td>Visible personalization from data already collected</td></tr>
+      <tr><td><span class="badge b-med">P2</span></td><td>Daily editorial explainer (own URL)</td><td>High</td><td>Ongoing</td><td>The long-term moat; start 3×/week</td></tr>
+      <tr><td><span class="badge b-low">P3</span></td><td>Supporter tier + media kit + referral</td><td>Med</td><td>M</td><td>After audience metrics exist</td></tr>
+    </tbody>
+  </table>
+
+  <div class="sec-head"><h2>14 · Scores</h2></div>
+  <table>
+    <thead><tr><th>Dimension</th><th style="width:150px">Score</th><th>One-liner</th></tr></thead>
+    <tbody>
+      <tr><td>Product strategy</td><td><span class="scorebar"><i style="width:65%"></i></span>6.5</td><td>Strong features, unresolved focus question</td></tr>
+      <tr><td>UX</td><td><span class="scorebar"><i style="width:75%"></i></span>7.5</td><td>Smooth core loop; discovery + habit gaps</td></tr>
+      <tr><td>UI</td><td><span class="scorebar"><i style="width:80%"></i></span>8</td><td>Coherent, disciplined, production-grade</td></tr>
+      <tr><td>Accessibility</td><td><span class="scorebar"><i style="width:70%"></i></span>7</td><td>Mechanics done; verify contrast + SSR announcement</td></tr>
+      <tr><td>Performance</td><td><span class="scorebar"><i style="width:80%"></i></span>8</td><td>One-fetch architecture; fonts are the last drag</td></tr>
+      <tr><td>SEO</td><td><span class="scorebar"><i style="width:60%"></i></span>6</td><td>Infrastructure ✓ — needs pages + backlinks + time</td></tr>
+      <tr><td>Security</td><td><span class="scorebar"><i style="width:75%"></i></span>7.5</td><td>Hardened well; CSP + cookie sessions remain</td></tr>
+      <tr><td>Content quality</td><td><span class="scorebar"><i style="width:60%"></i></span>6</td><td>Curation good; original content thin</td></tr>
+      <tr><td>User retention</td><td><span class="scorebar"><i style="width:55%"></i></span>5.5</td><td>Weekly email is the only hook</td></tr>
+      <tr><td>Monetization potential</td><td><span class="scorebar"><i style="width:50%"></i></span>5</td><td>Clear paths, zero instrumentation to sell with</td></tr>
+      <tr><td><b>Overall platform quality</b></td><td><span class="scorebar"><i style="width:70%"></i></span><b>7</b></td><td>Engineering outpaces audience — now invert the effort</td></tr>
+    </tbody>
+  </table>
+
+  <div class="sec-head"><h2>15 · The brutally honest verdict</h2></div>
+  <p><b>Can PromptAI realistically become a top-tier AI knowledge platform?</b> As a global top-5 AI briefing competing head-on with TLDR's distribution or Perplexity's product budget — no, not on current trajectory, and that's the wrong target anyway. As <b>the definitive free AI briefing + prompt library for its niche</b> (independent-minded readers, India-first timing, privacy-respecting, genuinely free) — yes, realistically, within 12–18 months. The engineering is no longer the constraint; it's now meaningfully better than several larger competitors' web products.</p>
+  <p><b>What's actually required, in order:</b></p>
+  <ol>
+    <li><b>Stop building features for ~90 days.</b> The punch list is done. Every hour now goes to content and distribution — the platform is a race car parked in a garage.</li>
+    <li><b>Publish original content on a cadence:</b> 3 explainers + 5 new prompts per week, each with its own URL. ~150 ownable pages in 6 months is the difference between ranking and not existing.</li>
+    <li><b>Automate distribution:</b> auto-post every issue, submit everywhere once, and personally share the best explainer weekly. Backlinks decide this category.</li>
+    <li><b>Instrument the funnel, then sell the sponsor slot</b> when you can show open rates and subscriber counts — not before.</li>
+    <li><b>Pick the identity:</b> "PromptAI — the AI briefing with prompts that actually work." Say it on the homepage, in the digest, in the OG description. Every great niche product is a sentence first.</li>
+  </ol>
+  <p class="muted">The uncomfortable truth: the hardest remaining work isn't technical, and no further code review will move the needle. The next assessment that matters is Google Search Console's.</p>
+</div>
+
+</body>
+</html>

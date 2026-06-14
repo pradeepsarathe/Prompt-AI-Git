@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>PromptAI — Platform Assessment &amp; Recommendations</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&amp;family=Roboto+Serif:opsz,wght@8..144,400;8..144,500;8..144,600;8..144,700&amp;display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --accent:#1a73e8; --accent-dark:#1453ad; --ink:#202124; --ink-2:#5f6368; --ink-3:#80868b;
+    --border:#dadce0; --border-soft:#e8eaed; --paper:#ffffff; --desk:#eef0f3;
+    --crit:#c5221f; --crit-bg:#fce8e6; --high:#b06000; --high-bg:#fef7e0;
+    --med:#1a73e8; --med-bg:#e8f0fe; --low:#5f6368; --low-bg:#f1f3f4;
+    --serif:'Roboto Serif',Georgia,serif;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Roboto',system-ui,sans-serif; background:var(--desk); color:var(--ink); font-size:14.5px; line-height:1.6; }
+  .page { max-width:816px; margin:28px auto; background:var(--paper); padding:64px 68px; box-shadow:0 2px 12px rgba(0,0,0,0.08); border-radius:3px; }
+
+  h1 { font-family:var(--serif); font-size:2.1rem; font-weight:600; line-height:1.2; letter-spacing:-0.4px; margin:10px 0 8px; }
+  h2 { font-family:var(--serif); font-size:1.4rem; font-weight:600; letter-spacing:-0.2px; margin:0 0 4px; }
+  h3 { font-size:1.02rem; font-weight:700; margin:26px 0 8px; }
+  p { margin:0 0 12px; color:var(--ink); }
+  p.muted, li.muted { color:var(--ink-2); }
+  a { color:var(--accent); text-decoration:none; }
+  code { font-family:ui-monospace,Menlo,Consolas,monospace; font-size:0.86em; background:var(--low-bg); padding:1px 5px; border-radius:4px; }
+  ul { margin:0 0 12px 20px; }
+  li { margin-bottom:5px; }
+
+  .kicker { font-size:0.7rem; font-weight:700; letter-spacing:0.14em; text-transform:uppercase; color:var(--accent); display:flex; align-items:center; gap:9px; }
+  .kicker::before { content:''; width:20px; height:3px; border-radius:2px; background:var(--accent); }
+  .meta-line { font-size:0.82rem; color:var(--ink-2); margin-bottom:26px; }
+  .sec-head { border-bottom:2px solid var(--ink); padding-bottom:10px; margin-bottom:18px; }
+  .sec-head .sub { font-size:0.85rem; color:var(--ink-2); }
+
+  table { width:100%; border-collapse:collapse; font-size:0.86rem; margin:8px 0 18px; }
+  th { text-align:left; font-size:0.7rem; text-transform:uppercase; letter-spacing:0.07em; color:var(--ink-2); border-bottom:2px solid var(--ink); padding:6px 10px 6px 0; }
+  td { border-bottom:1px solid var(--border-soft); padding:7px 10px 7px 0; vertical-align:top; }
+  tr { break-inside:avoid; }
+
+  .scorebar { display:inline-block; width:90px; height:8px; border-radius:4px; background:var(--border-soft); position:relative; vertical-align:middle; }
+  .scorebar i { position:absolute; left:0; top:0; bottom:0; border-radius:4px; background:var(--accent); }
+
+  .badge { display:inline-block; font-size:0.66rem; font-weight:700; letter-spacing:0.05em; text-transform:uppercase; padding:2px 9px; border-radius:20px; white-space:nowrap; print-color-adjust:exact; -webkit-print-color-adjust:exact; }
+  .b-crit { background:var(--crit-bg); color:var(--crit); }
+  .b-high { background:var(--high-bg); color:var(--high); }
+  .b-med  { background:var(--med-bg); color:var(--med); }
+  .b-low  { background:var(--low-bg); color:var(--low); }
+  .b-eff  { background:#e6f4ea; color:#137333; }
+
+  .rec { border:1px solid var(--border-soft); border-radius:10px; padding:16px 18px 13px; margin-bottom:14px; break-inside:avoid; }
+  .rec-top { display:flex; align-items:baseline; gap:10px; margin-bottom:9px; flex-wrap:wrap; }
+  .rec-top .num { font-family:var(--serif); font-weight:700; color:var(--accent); font-size:0.95rem; flex:none; }
+  .rec-top h4 { font-size:0.98rem; font-weight:700; flex:1; min-width:200px; margin:0; }
+  .rec dl { display:grid; grid-template-columns:78px 1fr; gap:3px 12px; font-size:0.875rem; margin:0; }
+  .rec dt { font-size:0.68rem; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:var(--ink-3); padding-top:3px; }
+  .rec dd { margin:0; color:var(--ink); }
+  .rec dd.imp { color:var(--ink-2); }
+
+  .callout { background:var(--med-bg); border-radius:10px; padding:16px 20px; margin:14px 0 18px; font-size:0.9rem; break-inside:avoid; print-color-adjust:exact; -webkit-print-color-adjust:exact; }
+  .callout b { color:var(--accent-dark); }
+  .good { background:#e6f4ea; }
+  .good b { color:#137333; }
+
+  .arch { font-family:ui-monospace,Menlo,Consolas,monospace; font-size:0.78rem; line-height:1.55; background:#f8f9fa; border:1px solid var(--border-soft); border-radius:10px; padding:16px 20px; white-space:pre; overflow-x:auto; margin:8px 0 18px; }
+
+  .toc { columns:2; column-gap:36px; font-size:0.88rem; margin-bottom:6px; }
+  .toc li { margin-bottom:4px; break-inside:avoid; }
+
+  @media (max-width:880px){ .page { margin:0; padding:34px 22px; border-radius:0; } .toc { columns:1; } }
+  @media print {
+    body { background:none; font-size:11.5pt; }
+    .page { box-shadow:none; border-radius:0; max-width:none; width:auto; margin:0; padding:0; break-after:page; }
+    .page:last-child { break-after:auto; }
+    @page { margin:0.75in; }
+    h3, .sec-head { break-after:avoid; }
+    a { color:inherit; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ════ PAGE 1 — COVER + EXEC SUMMARY ════ -->
+<div class="page">
+  <div class="kicker">Platform assessment</div>
+  <h1>PromptAI — end-to-end review &amp; recommendations</h1>
+  <p class="meta-line">Reviewed against <code>pradeepsarathe/Prompt-AI-Git@main</code> (source of truth) and the live deployment at promptai.in · June 11, 2026 · Perspectives: software architect, product owner, end user</p>
+
+  <h3>What was reviewed</h3>
+  <p class="muted">All three pages (briefing homepage, Learn AI, Archive), the shared front-end layers (<code>pai-feed-engine.js</code>, <code>pai-google-ui.js</code>, <code>pai-account.js</code>, <code>pai-translate.js</code>, <code>pai-chrome.*</code>), all nine Cloudflare Pages Functions (<code>auth</code>, <code>subscribe</code>, <code>unsubscribe</code>, <code>send-digest</code>, <code>stats</code>, <code>feed</code>, <code>rss-proxy</code>, <code>sitemap</code>, <code>archive-data</code>), SEO infrastructure (<code>robots.txt</code>, sitemaps, structured data, <code>_redirects</code>), and the email pipeline (Resend, welcome + digest templates).</p>
+
+  <h3>Executive summary</h3>
+  <p>PromptAI is a genuinely well-crafted, zero-cost AI briefing site. The engineering shows real maturity for a static-hosted product: layered RSS fallback chains, quality/spam filters, source-health tracking, localStorage caching, KV-backed shared counters, honeypot + rate-limited signup, one-click List-Unsubscribe headers, and graceful offline fallbacks nearly everywhere. The new briefing design is clean, fast-feeling, and coherent across all three pages.</p>
+  <p>Three structural ceilings now cap everything else:</p>
+  <ul>
+    <li><b>1. All content is assembled in the visitor's browser.</b> Every visitor's device fans out to ~20 RSS feeds and up to 60 Hacker News item fetches, partly through free third-party proxies. This caps performance, reliability, consistency, privacy and — most importantly — SEO: Google indexes three page shells, not a single story.</li>
+    <li><b>2. The brand promises AI; the platform contains none.</b> The welcome email promises "one paper, explained in plain English," but every item is a raw RSS description. There is no summarization, no explanation, no prompts — despite the name PromptAI.</li>
+    <li><b>3. Trust-layer basics are missing.</b> No privacy policy or terms while collecting emails and passwords; no password reset; no login rate-limiting; no double opt-in; email auth (SPF/DKIM/DMARC) unverified.</li>
+  </ul>
+  <p class="muted">The good news: ceiling #1 has a single, well-scoped fix (a scheduled aggregation Worker) that simultaneously improves performance, SEO, reliability and architecture — it is the highest-leverage change in this report (R1).</p>
+
+  <h3>Scorecard</h3>
+  <table>
+    <thead><tr><th style="width:42%">Area</th><th style="width:24%">Score</th><th>One-line verdict</th></tr></thead>
+    <tbody>
+      <tr><td>Product quality &amp; UX</td><td><span class="scorebar"><i style="width:70%"></i></span> 3.5 / 5</td><td>Polished shell; engagement features missing</td></tr>
+      <tr><td>Architecture &amp; maintainability</td><td><span class="scorebar"><i style="width:60%"></i></span> 3 / 5</td><td>Clean code, but client-side aggregation + 4 duplicated source lists</td></tr>
+      <tr><td>Performance &amp; reliability</td><td><span class="scorebar"><i style="width:50%"></i></span> 2.5 / 5</td><td>Heavy client fan-out; free-proxy dependencies; KV races</td></tr>
+      <tr><td>Security &amp; privacy</td><td><span class="scorebar"><i style="width:50%"></i></span> 2.5 / 5</td><td>Good crypto hygiene; missing reset, rate-limit, policy, headers</td></tr>
+      <tr><td>Accessibility</td><td><span class="scorebar"><i style="width:50%"></i></span> 2.5 / 5</td><td>Reduced-motion handled; cards unreachable by keyboard</td></tr>
+      <tr><td>SEO &amp; discoverability</td><td><span class="scorebar"><i style="width:40%"></i></span> 2 / 5</td><td>Strong meta layer on only 3 indexable URLs; zero item-level content</td></tr>
+      <tr><td>Newsletter &amp; retention</td><td><span class="scorebar"><i style="width:60%"></i></span> 3 / 5</td><td>Deliverability work done in code; domain auth + opt-in pending</td></tr>
+      <tr><td>AI capability &amp; differentiation</td><td><span class="scorebar"><i style="width:30%"></i></span> 1.5 / 5</td><td>No AI features yet — the largest brand/product gap</td></tr>
+      <tr><td>Analytics &amp; observability</td><td><span class="scorebar"><i style="width:30%"></i></span> 1.5 / 5</td><td>Vanity counters only; no traffic, conversion or error visibility</td></tr>
+      <tr><td>Commercial readiness</td><td><span class="scorebar"><i style="width:40%"></i></span> 2 / 5</td><td>Clear sponsor/affiliate paths; needs audience metrics first</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Contents</h3>
+  <ol class="toc">
+    <li>Architecture &amp; technical debt (R1–R5)</li>
+    <li>Performance, scalability &amp; reliability (R6–R10)</li>
+    <li>Security &amp; privacy (R11–R18)</li>
+    <li>SEO &amp; internet visibility (R19–R23)</li>
+    <li>Accessibility &amp; usability (R24–R27)</li>
+    <li>Product, UX &amp; engagement (R28–R33)</li>
+    <li>Content &amp; information architecture (R34–R36)</li>
+    <li>Newsletter — the core product (R37–R39)</li>
+    <li>Analytics &amp; operational excellence (R40–R41)</li>
+    <li>Monetization &amp; business value (R42–R44)</li>
+    <li>Prioritized roadmap</li>
+  </ol>
+</div>
+
+<!-- ════ PAGE 2 — WHAT WORKS + ARCHITECTURE ════ -->
+<div class="page">
+  <div class="sec-head"><h2>Current architecture</h2><div class="sub">How the platform actually works today</div></div>
+  <div class="arch">┌─ Browser (every visitor) ──────────────────────────────────────┐
+│  index.html / education.html / archive.html                   │
+│  pai-feed-engine.js → fans out to ~20 RSS feeds + 60 HN items │
+│     ├─ /rss-proxy (own, allow-listed, edge-cached 30 min)     │
+│     ├─ api.allorigins.win        (free 3rd-party proxy)       │
+│     ├─ corsproxy.io              (free 3rd-party proxy)       │
+│     └─ api.rss2json.com          (free tier, rate-limited)    │
+│  localStorage cache (30 min news / 3 h blogs / 6 h papers)    │
+└──────────────┬────────────────────────────────────────────────┘
+               │ /auth /subscribe /stats /archive-data /feed
+┌─ Cloudflare Pages Functions ──────────────────────────────────┐
+│  KV: USERS (accounts+sessions) · SUBSCRIBERS · STATS          │
+│  Resend API → welcome email + weekly digest (cron via URL)    │
+└───────────────────────────────────────────────────────────────┘</div>
+
+  <div class="callout good"><b>What is already working well</b> — worth protecting through any refactor: the proxy-race + fallback chain design; per-source failure tracking with cooldowns; the quality/spam/AI-relevance filters; honeypot + IP rate-limiting on subscribe; PBKDF2-salted password hashing with constant-time compare; List-Unsubscribe one-click headers and plain-text email alternatives; graceful "offline mode" on every backend dependency; canonical/OG/JSON-LD coverage; the three-theme token system; and disciplined repo docs (CHANGES, DISCOVERABILITY, NEXT_SESSION).</div>
+
+  <div class="sec-head" style="margin-top:30px"><h2>1 · Architecture &amp; technical debt</h2><div class="sub">Software-architect perspective</div></div>
+
+  <div class="rec">
+    <div class="rec-top"><span class="num">R1</span><h4>Move feed aggregation server-side (the keystone change)</h4><span class="badge b-crit">Critical</span><span class="badge b-eff">Effort: M · ~2–4 days</span></div>
+    <dl>
+      <dt>Issue</dt><dd>Content is aggregated per-visitor in the browser via free third-party proxies. Each first visit triggers 80+ requests; two visitors see different "briefings"; allorigins/corsproxy/rss2json can rate-limit or vanish at any time.</dd>
+      <dt>Impact</dt><dd class="imp">Slow content paint, inconsistent product, fragile dependencies, visitor IPs leaked to third parties, and zero indexable content — this one design decision is the root cause of most performance, SEO and reliability findings below.</dd>
+      <dt>Fix</dt><dd>A Cloudflare Worker Cron Trigger (every 15–30 min) fetches all feeds server-side, applies the existing filters (reuse the engine code — it ports cleanly), and writes one JSON blob to KV (<code>feed:latest</code>). Clients fetch a single cached <code>/feed-data</code> endpoint. The same blob then powers <code>/feed.xml</code>, <code>send-digest</code>, the archive, and server-rendered HTML (R19). Stays within Cloudflare's free tier.</dd>
+    </dl>
+  </div>
+
+  <div class="rec">
+    <div class="rec-top"><span class="num">R2</span><h4>One source-of-truth for feed sources</h4><span class="badge b-high">High</span><span class="badge b-eff">Effort: S · hours</span></div>
+    <dl>
+      <dt>Issue</dt><dd>Four divergent source lists: <code>pai-feed-engine.js</code>, <code>functions/feed.js</code>, <code>functions/send-digest.js</code>, and the <code>rss-proxy</code> allow-list. They have already drifted (The Verge is digest-only; several allow-listed domains are no longer fetched).</dd>
+      <dt>Impact</dt><dd class="imp">Silent breakage: adding a source in one place but not the proxy allow-list fails quietly; the digest and the site show different worlds.</dd>
+      <dt>Fix</dt><dd>A single shared <code>sources.js</code> module (url, src key, label, color, domain, category) imported by all functions and used to generate the allow-list. Falls out naturally if R1 is done.</dd>
+    </dl>
+  </div>
+
+  <div class="rec">
+    <div class="rec-top"><span class="num">R3</span><h4>KV read-modify-write races &amp; the single-key archive</h4><span class="badge b-med">Medium</span><span class="badge b-eff">Effort: M</span></div>
+    <dl>
+      <dt>Issue</dt><dd>Counters in <code>stats.js</code> and the merge in <code>archive-data.js</code> are read-then-write on eventually-consistent KV — concurrent requests lose increments and archive items. <code>countDays()</code> also lists an unbounded key prefix on <em>every</em> /stats request. The whole archive lives in one KV value (5,000-item hard cap, "papers kept forever").</dd>
+      <dt>Impact</dt><dd class="imp">Counters silently undercount as traffic grows; /stats latency grows with history; archive writes can clobber each other; the forever-retention promise will hit the cap.</dd>
+      <dt>Fix</dt><dd>Short term: cache the days count, accept counter drift. Right answer: migrate archive + stats to <b>Cloudflare D1</b> (free SQLite). D1 gives atomic increments, real queries for archive search/filtering, removes the 5,000 cap — and becomes the foundation for per-article pages (R21).</dd>
+    </dl>
+  </div>
+
+  <div class="rec">
+    <div class="rec-top"><span class="num">R4</span><h4>Remove dead artifacts shipping to production</h4><span class="badge b-high">High</span><span class="badge b-eff">Effort: S · 1 hour</span></div>
+    <dl>
+      <dt>Issue</dt><dd><code>index_classic_backup.html</code> (198 KB) and <code>promptai_google.html</code> deploy to production as publicly crawlable URLs; a static <code>sitemap.xml</code> coexists with the dynamic <code>/sitemap</code> function it's redirected to; <code>emails/*.html</code> previews show a retired dark design.</dd>
+      <dt>Impact</dt><dd class="imp">Duplicate-content risk for SEO, confusing crawl surface, and exactly the "drifting copies" problem CLAUDE.md warns about — inside the repo itself.</dd>
+      <dt>Fix</dt><dd>Move backups out of the deployed branch (or a <code>/_archive</code> folder excluded via <code>.gitignore</code>/build config), delete the static sitemap.xml so only the dynamic one serves, and regenerate email previews from <code>digestHtml()</code>.</dd>
+    </dl>
+  </div>
+
+  <div class="rec">
+    <div class="rec-top"><span class="num">R5</span><h4>Minimal CI gate before auto-deploy</h4><span class="badge b-med">Medium</span><span class="badge b-eff">Effort: S</span></div>
+    <dl>
+      <dt>Issue</dt><dd>Every push to main deploys straight to production with no checks — no HTML validation, no lint, no smoke test.</dd>
+      <dt>Impact</dt><dd class="imp">A single bad commit takes the live site down until manually noticed (there is no monitoring either — R9/R40).</dd>
+      <dt>Fix</dt><dd>GitHub Action on push: HTML validation + ESLint + a deploy-preview smoke test that curls <code>/</code>, <code>/stats</code>, <code>/feed.xml</code>, <code>/sitemap.xml</code> and fails on non-200. Cloudflare Pages preview deployments make this nearly free.</dd>
+    </dl>
+  </div>
+</div>
+
+<!-- ════ PAGE 3 — PERFORMANCE ════ -->
+<div class="page">
+  <div class="sec-head"><h2>2 · Performance, scalability &amp; reliability</h2><div class="sub">End-user and operator perspective</div></div>
+
+  <div class="rec">
+    <div class="rec-top"><span class="num">R6</span><h4>Cut the first-visit network storm</h4><span class="badge b-high">High</span><span class="badge b-eff">Solved by R1</span></div>
+    <dl>
+      <dt>Issue</dt><dd>An uncached visit issues ~80+ requests (9 news feeds × up to 4 proxy racers, 8 blog feeds, arXiv, 60 individual HN item fetches) before the briefing fills in. Skeletons mask it, but on mobile data this is seconds of spinner and real battery/data cost.</dd>
+      <dt>Impact</dt><dd class="imp">Slowest part of the perceived experience; the #1 thing a first-time mobile visitor feels.</dd>
+      <dt>Fix</dt><dd>With R1, first paint needs exactly one JSON fetch (edge-cached). Target: briefing content visible &lt; 1s on 4G.</dd>
+    </dl>
+  </div>
+
+  <div class="rec">
+    <div class="rec-top"><span class="num">R7</span><h4>Compress og-image.png (565 KB)</h4><span class="badge b-low">Low</span><span class="badge b-eff">Effort: S · minutes</span></div>
+    <dl>
+      <dt>Issue</dt><dd>The social-share image is 565 KB — large for a 1200×630 card.</dd>
+      <dt>Impact</dt><dd class="imp">Slow link previews on WhatsApp/X/LinkedIn; some platforms time out and show no image.</dd>
+      <dt>Fix</dt><dd>Re-export ≤ 100 KB (optimized PNG or JPEG; keep PNG if it has flat brand colors).</dd>
+    </dl>
+  </div>
+
+  <div class="rec">
+    <div class="rec-top"><span class="num">R8</span><h4>Self-host fonts or add preloads</h4><span class="badge b-low">Low</span><span class="badge b-eff">Effort: S</span></div>
+    <dl>
+      <dt>Issue</dt><dd>Roboto + Roboto Serif load render-blocking from Google Fonts (two CSS round-trips before text settles); <code>display=swap</code> is set, which helps.</dd>
+      <dt>Impact</dt><dd class="imp">Minor layout shift and slower LCP, especially on first visit from India/high-latency networks.</dd>
+      <dt>Fix</dt><dd>Self-host the two families as WOFF2 on Pages (also removes a third-party dependency), or at minimum <code>preload</code> the two stylesheet URLs.</dd>
+    </dl>
+  </div>
+
+  <div class="rec">
+    <div class="rec-top"><span class="num">R9</span><h4>Uptime + feed-health monitoring</h4><span class="badge b-high">High</span><span class="badge b-eff">Effort: S</span></div>
+    <dl>
+      <dt>Issue</dt><dd>No alerting exists. A dead source, an expired Resend key, or a failed deploy is only discovered by visiting the site. CHANGES.md already flags "log feeds that return 0 items" as pending.</dd>
+      <dt>Impact</dt><dd class="imp">The weekly digest could silently no-op for weeks (it already returns 200 on "all feeds failed"); subscriber trust is hard to win back.</dd>
+      <dt>Fix</dt><dd>(a) Free uptime monitor (UptimeRobot / Cloudflare Health Checks) on <code>/</code> and <code>/feed.xml</code>. (b) In the digest run, write a <code>lastRun</code> report to KV (per-feed item counts, send count, errors) and expose it at an authenticated <code>/health</code>. (c) Cache the last good digest so a total feed outage sends last week's "best of" rather than nothing.</dd>
+    </dl>
+  </div>
+
+  <div class="rec">
+    <div class="rec-top"><span class="num">R10</span><h4>PWA: offline shell + installability</h4><span class="badge b-med">Medium</span><span class="badge b-eff">Effort: M</span></div>
+    <dl>
+      <dt>Issue</dt><dd>No manifest or service worker; the localStorage cache already holds content, but the shell itself needs a network.</dd>
+      <dt>Impact</dt><dd class="imp">News-reading happens on commutes; an installable, offline-capable briefing meaningfully raises return-visit frequency on mobile.</dd>
+      <dt>Fix</dt><dd>Add <code>manifest.json</code> + a small service worker (cache-first shell, network-first <code>/feed-data</code>). Pairs naturally with R1's single-fetch model.</dd>
+    </dl>
+  </div>
+
+  <div class="sec-head" style="margin-top:30px"><h2>3 · Security &amp; privacy</h2><div class="sub">The account system and email list are the crown jewels</div></div>
+
+  <div class="rec">
+    <div class="rec-top"><span class="num">R11</span><h4>No password reset flow</h4><span class="badge b-crit">Critical</span><span class="badge b-eff">Effort: M · 1–2 days</span></div>
+    <dl>
+      <dt>Issue</dt><dd><code>/auth</code> supports signup/login/session/logout only. A forgotten password permanently locks the user out (and "sign up again" fails with "account already exists").</dd>
+      <dt>Impact</dt><dd class="imp">Guaranteed, unrecoverable churn for every forgotten password; support burden lands on you personally.</dd>
+      <dt>Fix</dt><dd>Add <code>action:'reset-request'</code> (emails a 30-min single-use token via Resend — the pipe already exists) and <code>action:'reset-confirm'</code>. ~80 lines in <code>auth.js</code> + a small sheet UI.</dd>
+    </dl>
+  </div>
+
+  <div class="rec">
+    <div class="rec-top"><span class="num">R12</span><h4>No rate limiting or lockout on /auth</h4><span class="badge b-crit">Critical</span><span class="badge b-eff">Effort: S · hours</span></div>
+    <dl>
+      <dt>Issue</dt><dd><code>subscribe.js</code> has a tidy KV rate-limiter; <code>auth.js</code> has none. Unlimited login attempts enable credential-stuffing and brute force; unlimited signups enable KV pollution.</dd>
+      <dt>Impact</dt><dd class="imp">Account takeover risk and abuse cost; with PBKDF2 at 100k iterations, each guess is also free compute you pay for.</dd>
+      <dt>Fix</dt><dd>Port the same KV limiter (e.g. 10 attempts/IP/15 min + per-account exponential backoff). While there, raise PBKDF2 to 600k iterations (current OWASP guidance for SHA-256) for new hashes, upgrading old ones on successful login.</dd>
+    </dl>
+  </div>
+
+  <div class="rec">
+    <div class="rec-top"><span class="num">R13</span><h4>Tighten CORS and session storage</h4><span class="badge b-high">High</span><span class="badge b-eff">Effort: S</span></div>
+    <dl>
+      <dt>Issue</dt><dd>Every function responds <code>Access-Control-Allow-Origin: *</code> — including <code>/auth</code>. Session tokens live in localStorage, readable by any script that ever gets injected.</dd>
+      <dt>Impact</dt><dd class="imp">Wider attack surface than needed; an XSS anywhere becomes full account compromise.</dd>
+      <dt>Fix</dt><dd>Lock CORS to <code>https://promptai.in</code> on auth/data endpoints (same-origin callers don't need <code>*</code>). Medium-term: move sessions to <code>HttpOnly; Secure; SameSite=Lax</code> cookies.</dd>
+    </dl>
+  </div>
+
+  <div class="rec">
+    <div class="rec-top"><span class="num">R14</span><h4>Cron secret travels in the URL</h4><span class="badge b-med">Medium</span><span class="badge b-eff">Effort: S</span></div>
+    <dl>
+      <dt>Issue</dt><dd><code>/send-digest?key=CRON_SECRET</code> puts the secret in query strings, which land in logs, browser history and any intermediary.</dd>
+      <dt>Impact</dt><dd class="imp">A leaked key lets anyone spam your entire subscriber list from your domain.</dd>
+      <dt>Fix</dt><dd>Accept the key via <code>Authorization: Bearer</code> header (keep query-param support briefly for migration), or move to a real Worker Cron Trigger (R1) and drop the public endpoint entirely.</dd>
+    </dl>
+  </div>
+
+  <div class="rec">
+    <div class="rec-top"><span class="num">R15</span><h4>No security headers</h4><span class="badge b-high">High</span><span class="badge b-eff">Effort: S · hours</span></div>
+    <dl>
+      <dt>Issue</dt><dd>No <code>_headers</code> file: missing Content-Security-Policy, X-Frame-Options, Referrer-Policy, HSTS, Permissions-Policy.</dd>
+      <dt>Impact</dt><dd class="imp">The site renders third-party RSS content; CSP is the safety net if any escaping bug slips through. Clickjacking and referrer leakage are free to fix.</dd>
+      <dt>Fix</dt><dd>Add <code>_headers</code> with HSTS, <code>X-Frame-Options: DENY</code>, <code>Referrer-Policy: strict-origin-when-cross-origin</code>, and a CSP in Report-Only first (the inline <code>onclick</code> handlers need <code>'unsafe-inline'</code> initially — note it as debt to refactor).</dd>
+    </dl>
+  </div>
+
+  <div class="rec">
+    <div class="rec-top"><span class="num">R16</span><h4>No privacy policy or terms</h4><span class="badge b-crit">Critical</span><span class="badge b-eff">Effort: S · half-day</span></div>
+    <dl>
+      <dt>Issue</dt><dd>The platform stores emails, names, password hashes and reading history, and shares data with processors (Resend, Cloudflare, Google Fonts/Translate, image proxy) — with no privacy policy, no terms, anywhere.</dd>
+      <dt>Impact</dt><dd class="imp">Non-compliance with GDPR and India's DPDP Act 2023; blocks future ad networks and sponsor deals; erodes the "independent, trustworthy" brand the About panel claims.</dd>
+      <dt>Fix</dt><dd>Ship <code>privacy.html</code> + <code>terms.html</code> (what's collected, why, processors, retention, deletion contact), link from the About panel, sign-up sheet, and every email footer. Add an account-deletion path (<code>action:'delete-account'</code>).</dd>
+    </dl>
+  </div>
+
+  <div class="rec">
+    <div class="rec-top"><span class="num">R17</span><h4>Unsubscribe accepts a bare email parameter</h4><span class="badge b-low">Low</span><span class="badge b-eff">Effort: S</span></div>
+    <dl>
+      <dt>Issue</dt><dd><code>/unsubscribe?email=…</code> lets anyone unsubscribe anyone whose address they know.</dd>
+      <dt>Impact</dt><dd class="imp">Low-grade abuse vector; a rival or prankster can silently shrink your list.</dd>
+      <dt>Fix</dt><dd>Sign the link: <code>?email=…&amp;sig=HMAC(email, secret)</code> — ~15 lines, no stored state.</dd>
+    </dl>
+  </div>
+
+  <div class="rec">
+    <div class="rec-top"><span class="num">R18</span><h4>No double opt-in on subscribe</h4><span class="badge b-high">High</span><span class="badge b-eff">Effort: M · 1 day</span></div>
+    <dl>
+      <dt>Issue</dt><dd>Any typed email is added to KV and immediately mailed a full briefing. Typos, pranks and bot entries become permanent list members.</dd>
+      <dt>Impact</dt><dd class="imp">Spam-trap hits and complaints damage sender reputation — compounding with unverified domain auth (R37) this is what gets briefings sent to spam. Also a consent requirement under GDPR.</dd>
+      <dt>Fix</dt><dd>Store new emails as <code>pending</code>, send a one-click confirm link (HMAC-signed, reusing the R17 helper), flip to <code>active</code> on click. Digest sends only to active.</dd>
+    </dl>
+  </div>
+</div>
+
+<!-- ════ PAGE 4 — SEO + ACCESSIBILITY ════ -->
+<div class="page">
+  <div class="sec-head"><h2>4 · SEO &amp; internet visibility</h2><div class="sub">The meta layer is excellent; the content layer is invisible</div></div>
+
+  <div class="rec">
+    <div class="rec-top"><span class="num">R19</span><h4>Server-render real headlines into the HTML</h4><span class="badge b-crit">Critical</span><span class="badge b-eff">Effort: M · with R1</span></div>
+    <dl>
+      <dt>Issue</dt><dd>Canonicals, OG cards, JSON-LD, robots and dynamic sitemap are all done well — but they decorate three near-empty shells. Every story, paper and blog arrives via JS from third-party APIs, which Google rarely indexes as your content (DISCOVERABILITY.md already flags this).</dd>
+      <dt>Impact</dt><dd class="imp">PromptAI can rank for its brand name and little else. All the freshness signals (<code>changefreq: hourly</code>) point at content Googlebot can't see.</dd>
+      <dt>Fix</dt><dd>Once R1's feed JSON exists in KV, add a Pages middleware (or scheduled HTML regeneration) that injects the current top ~20 stories as static HTML into <code>index.html</code> (the JS then hydrates over it). Googlebot finally sees real, hourly-fresh content.</dd>
+    </dl>
+  </div>
+
+  <div class="rec">
+    <div class="rec-top"><span class="num">R20</span><h4>No &lt;h1&gt; and weak heading hierarchy</h4><span class="badge b-med">Medium</span><span class="badge b-eff">Effort: S · hours</span></div>
+    <dl>
+      <dt>Issue</dt><dd>Section titles ("Your briefing") are styled <code>&lt;div&gt;</code>s; pages have h3s with no h1/h2 above them.</dd>
+      <dt>Impact</dt><dd class="imp">Search engines and screen readers both lose the page outline — a two-for-one fix with accessibility.</dd>
+      <dt>Fix</dt><dd>Make the active view's title an <code>&lt;h1&gt;</code> (visually identical), section dividers <code>&lt;h2&gt;</code>, card titles <code>&lt;h3&gt;</code>.</dd>
+    </dl>
+  </div>
+
+  <div class="rec">
+    <div class="rec-top"><span class="num">R21</span><h4>Create rankable URLs: topics, guides, issues</h4><span class="badge b-high">High</span><span class="badge b-eff">Effort: L · iterative</span></div>
+    <dl>
+      <dt>Issue</dt><dd>The sitemap contains exactly 3 URLs. There is nothing for long-tail queries ("best free AI courses 2026", "AI agents news") to land on.</dd>
+      <dt>Impact</dt><dd class="imp">Organic growth is structurally capped at ~3 keywords; every competitor newsletter (TLDR AI, Ben's Bites, The Rundown) ranks via issue archives and topic pages.</dd>
+      <dt>Fix</dt><dd>In priority order: (a) split Learn AI into per-guide static pages (<code>/learn/prompt-engineering.html</code> …) — stable, unique, already written; (b) publish each weekly digest as a static issue page (<code>/briefing/2026-06-09.html</code>) — auto-generated from <code>digestHtml()</code>, doubles as the "sample issue" (R32); (c) topic hub pages fed from the D1 archive (R3).</dd>
+    </dl>
+  </div>
+
+  <div class="rec">
+    <div class="rec-top"><span class="num">R22</span><h4>Distribution &amp; backlinks (outside the codebase)</h4><span class="badge b-high">High</span><span class="badge b-eff">Effort: ongoing</span></div>
+    <dl>
+      <dt>Issue</dt><dd>The DISCOVERABILITY.md checklist (Search Console, Bing, rich-results tests, directory listings) appears not yet executed; there is no social auto-posting despite <code>/feed.xml</code> being built for it.</dd>
+      <dt>Impact</dt><dd class="imp">Backlinks move rankings more than any on-page change; right now nothing builds them.</dd>
+      <dt>Fix</dt><dd>Execute the existing checklist (GSC + Bing, ~30 min); wire feed.xml to Buffer/Zapier for auto-posting to X/LinkedIn; submit to AI directories and newsletter aggregators. Bing also feeds ChatGPT/Copilot answers — cheap AI-search visibility.</dd>
+    </dl>
+  </div>
+
+  <div class="rec">
+    <div class="rec-top"><span class="num">R23</span><h4>Noindex what shouldn't rank</h4><span class="badge b-med">Medium</span><span class="badge b-eff">Effort: S</span></div>
+    <dl>
+      <dt>Issue</dt><dd>The classic backup and prototype pages are crawlable (overlaps R4); search-result and archive query URLs aren't excluded beyond robots.txt.</dd>
+      <dt>Impact</dt><dd class="imp">Duplicate/near-duplicate pages dilute the small site's crawl signal.</dd>
+      <dt>Fix</dt><dd>Delete or noindex backups; keep canonical discipline on parameterized URLs.</dd>
+    </dl>
+  </div>
+
+  <div class="sec-head" style="margin-top:30px"><h2>5 · Accessibility &amp; usability</h2><div class="sub">Reduced-motion and focus styles are done; interaction semantics are not</div></div>
+
+  <div class="rec">
+    <div class="rec-top"><span class="num">R24</span><h4>Story cards are unreachable by keyboard</h4><span class="badge b-high">High</span><span class="badge b-eff">Effort: S · hours</span></div>
+    <dl>
+      <dt>Issue</dt><dd>Cards are <code>&lt;article onclick=…&gt;</code> with no link, tabindex or key handler. A keyboard or screen-reader user cannot open a single story — the core action of the product.</dd>
+      <dt>Impact</dt><dd class="imp">WCAG 2.1.1 failure on the primary interaction; excludes assistive-tech users entirely.</dd>
+      <dt>Fix</dt><dd>Make each card title a real <code>&lt;a href&gt;</code> (best: also gives crawlable links once R19 lands), with the modal intercepting click; or add <code>role="link" tabindex="0"</code> + Enter/Space handling in <code>storyCard()</code>.</dd>
+    </dl>
+  </div>
+
+  <div class="rec">
+    <div class="rec-top"><span class="num">R25</span><h4>Modal &amp; sheet focus management</h4><span class="badge b-med">Medium</span><span class="badge b-eff">Effort: S</span></div>
+    <dl>
+      <dt>Issue</dt><dd>The article modal and sign-in sheet don't trap focus, set <code>aria-modal</code>, or return focus on close.</dd>
+      <dt>Impact</dt><dd class="imp">Keyboard users tab into the dimmed page behind the dialog; screen readers don't announce the context switch.</dd>
+      <dt>Fix</dt><dd>Use a shared ~30-line dialog helper: <code>role="dialog" aria-modal="true"</code>, focus trap, Esc to close, restore focus to the opener.</dd>
+    </dl>
+  </div>
+
+  <div class="rec">
+    <div class="rec-top"><span class="num">R26</span><h4>Tab bar semantics</h4><span class="badge b-low">Low</span><span class="badge b-eff">Effort: S</span></div>
+    <dl>
+      <dt>Issue</dt><dd>The Home/News/Research/Blogs/Tools switcher is visually tabs but semantically plain buttons mixed with links; no <code>aria-current</code>/<code>aria-selected</code>.</dd>
+      <dt>Impact</dt><dd class="imp">Screen readers can't tell which section is active.</dd>
+      <dt>Fix</dt><dd>Add <code>aria-current="page"</code> on the active tab (simplest, honest for this hybrid pattern).</dd>
+    </dl>
+  </div>
+
+  <div class="rec">
+    <div class="rec-top"><span class="num">R27</span><h4>Views don't update the URL</h4><span class="badge b-med">Medium</span><span class="badge b-eff">Effort: S</span></div>
+    <dl>
+      <dt>Issue</dt><dd>Switching tabs or opening search changes nothing in the address bar: Back exits the site, sections can't be linked or bookmarked, and analytics will see one page.</dd>
+      <dt>Impact</dt><dd class="imp">Surprising back-button behavior is a top usability irritant; "send someone the Research tab" is impossible.</dd>
+      <dt>Fix</dt><dd><code>history.pushState</code> with <code>#news</code>/<code>?view=news</code> in <code>go()</code>, restore on load and <code>popstate</code> (the cross-page search handoff shows the pattern is already half-built).</dd>
+    </dl>
+  </div>
+</div>
+
+<!-- ════ PAGE 5 — PRODUCT / AI / CONTENT ════ -->
+<div class="page">
+  <div class="sec-head"><h2>6 · Product, UX, AI capability &amp; differentiation</h2><div class="sub">Product-owner perspective: what makes this more than an RSS reader?</div></div>
+
+  <div class="callout"><b>The strategic gap:</b> PromptAI currently competes with TLDR AI, Ben's Bites, The Rundown and smol.ai on curation alone — with no AI in the product, no prompts despite the name, and no per-user value beyond reading history. R30 + R31 are the two changes that create a defensible identity; everything else polishes the funnel around them.</div>
+
+  <div class="rec">
+    <div class="rec-top"><span class="num">R30</span><h4>Add real AI: daily TL;DR + "one paper, explained"</h4><span class="badge b-crit">Critical (differentiation)</span><span class="badge b-eff">Effort: M · 2–3 days</span></div>
+    <dl>
+      <dt>Issue</dt><dd>The welcome email literally promises "One paper, explained — in plain English", but the digest ships the paper's raw abstract. The site offers no summaries, explanations or synthesis — the "AI Research Hub" contains no AI.</dd>
+      <dt>Impact</dt><dd class="imp">Broken product promise + missed differentiation. AI-generated synthesis is exactly what readers of competing briefings pay attention (and money) for.</dd>
+      <dt>Fix</dt><dd>In the aggregation worker (R1), one batched LLM call per cycle — Workers AI (free tier) or the Claude API — producing: a 5-bullet "Today in 60 seconds" for the homepage lead, a plain-English explainer for the day's top paper, and the digest's paper section. Cached in KV; cost is cents/day; clearly labeled as AI-generated with a link to the original.</dd>
+    </dl>
+  </div>
+
+  <div class="rec">
+    <div class="rec-top"><span class="num">R31</span><h4>Ship a prompt library — own the name "PromptAI"</h4><span class="badge b-high">High</span><span class="badge b-eff">Effort: M · iterative</span></div>
+    <dl>
+      <dt>Issue</dt><dd>The domain promises prompts; the closest the product gets is 4 external links in the education page's prompt-engineering section.</dd>
+      <dt>Impact</dt><dd class="imp">"AI prompt" queries are an enormous, durable search market that the brand name is pre-positioned for; each prompt is also a static, rankable URL (compounds R21).</dd>
+      <dt>Fix</dt><dd>A curated prompt library: categories (writing, coding, research, learning), one page per prompt with copy button, "works with Claude / ChatGPT / Gemini" notes, and a weekly "prompt of the week" slot in the digest. Start with 20 hand-written prompts in a JSON data file; quality over volume.</dd>
+    </dl>
+  </div>
+
+  <div class="rec">
+    <div class="rec-top"><span class="num">R28</span><h4>Surface save / like — the backend already exists</h4><span class="badge b-high">High</span><span class="badge b-eff">Effort: M · 1–2 days</span></div>
+    <dl>
+      <dt>Issue</dt><dd><code>auth.js</code> and <code>pai-account.js</code> already store and sync <code>saved</code>/<code>liked</code> lists (capped, merge-synced, cross-device) — but no button in the UI ever writes to them. (Already item 4 on NEXT_SESSION.)</dd>
+      <dt>Impact</dt><dd class="imp">Sign-in currently offers almost no value ("recently read" only), so nobody signs in, so retention features have no audience. Bookmarking is the cheapest reason-to-return available.</dd>
+      <dt>Fix</dt><dd>Bookmark icon on cards + modal; "Saved" section in the account sheet; "3 stories you saved this week" block in the digest for signed-in subscribers.</dd>
+    </dl>
+  </div>
+
+  <div class="rec">
+    <div class="rec-top"><span class="num">R29</span><h4>Add a dark theme</h4><span class="badge b-med">Medium</span><span class="badge b-eff">Effort: S · half-day</span></div>
+    <dl>
+      <dt>Issue</dt><dd>Three appearance options — all light. The token system makes dark a ~30-line addition, plus a <code>prefers-color-scheme</code> default.</dd>
+      <dt>Impact</dt><dd class="imp">Dark mode is the single most expected appearance option for a reading product, especially for the developer audience this site targets.</dd>
+      <dt>Fix</dt><dd>One <code>[data-theme="dark"]</code> token block + an "Auto (system)" option in the appearance menu. Audit the hard-coded pill/access colors while there.</dd>
+    </dl>
+  </div>
+
+  <div class="rec">
+    <div class="rec-top"><span class="num">R32</span><h4>Conversion: social proof + a sample issue</h4><span class="badge b-med">Medium</span><span class="badge b-eff">Effort: S</span></div>
+    <dl>
+      <dt>Issue</dt><dd>Subscribe forms ask for trust without evidence: no subscriber count, no testimonial, no way to see what the briefing looks like before handing over an email.</dd>
+      <dt>Impact</dt><dd class="imp">"Show me first" is the #1 objection for newsletter signups; a sample issue routinely lifts conversion double-digits.</dd>
+      <dt>Fix</dt><dd>"Read a sample briefing →" link under every subscribe form, pointing at the latest static issue page (R21b). Add a subscriber count once it's a number you're proud of.</dd>
+    </dl>
+  </div>
+
+  <div class="rec">
+    <div class="rec-top"><span class="num">R33</span><h4>Rethink the public "Live stats" panel</h4><span class="badge b-low">Low</span><span class="badge b-eff">Effort: S</span></div>
+    <dl>
+      <dt>Issue</dt><dd>"Total visitors / Articles read" are operator metrics shown to users; while numbers are small they undermine rather than build credibility, and the counters are knowably lossy (R3).</dd>
+      <dt>Impact</dt><dd class="imp">A small-number stat panel signals "small site" on every page view.</dd>
+      <dt>Fix</dt><dd>Replace with content stats that are impressive at any scale: "142 stories curated this week · 20+ sources · updated 12 min ago". Keep visitor counts in a private dashboard (R40).</dd>
+    </dl>
+  </div>
+
+  <div class="sec-head" style="margin-top:30px"><h2>7 · Content organization &amp; information architecture</h2></div>
+
+  <div class="rec">
+    <div class="rec-top"><span class="num">R34</span><h4>"Blogs" vs "Learn AI" naming collision</h4><span class="badge b-med">Medium</span><span class="badge b-eff">Effort: S</span></div>
+    <dl>
+      <dt>Issue</dt><dd>The tab labeled <b>Blogs</b> renders a view internally called <code>learn</code> ("Worth learning"), while a separate page is called <b>Learn AI</b>. Users can't predict which holds what; the code's naming reflects the same confusion.</dd>
+      <dt>Impact</dt><dd class="imp">Navigation hesitation on every visit; misfiled mental model of the site.</dd>
+      <dt>Fix</dt><dd>Rename the tab to <b>Deep dives</b> (or "Explainers") and keep <b>Learn AI</b> for courses/paths. Align the internal view key when convenient.</dd>
+    </dl>
+  </div>
+
+  <div class="rec">
+    <div class="rec-top"><span class="num">R35</span><h4>Tools directory: hard-coded and aging</h4><span class="badge b-med">Medium</span><span class="badge b-eff">Effort: S</span></div>
+    <dl>
+      <dt>Issue</dt><dd>16 tools live as a constant inside <code>pai-google-ui.js</code>; entries like "Midjourney v6" and "DALL·E 3" already read dated in mid-2026. No "last reviewed" signal, no way for users to suggest tools.</dd>
+      <dt>Impact</dt><dd class="imp">A stale directory quietly contradicts the "hands-on, honest reviews" brand claim.</dd>
+      <dt>Fix</dt><dd>Move to <code>tools.json</code> with <code>lastReviewed</code> dates rendered on cards; quarterly review pass; optional "suggest a tool" mailto/form. (Also unlocks affiliate tagging — R43.)</dd>
+    </dl>
+  </div>
+
+  <div class="rec">
+    <div class="rec-top"><span class="num">R36</span><h4>Archive retention promise vs the 5,000-item cap</h4><span class="badge b-low">Low</span><span class="badge b-eff">With R3</span></div>
+    <dl>
+      <dt>Issue</dt><dd>Archive policy says papers/blogs are "kept forever", but everything lives in one KV value hard-capped at 5,000 items — forever ends silently.</dd>
+      <dt>Impact</dt><dd class="imp">Future data loss that contradicts a stated guarantee.</dd>
+      <dt>Fix</dt><dd>Covered by the D1 migration in R3; until then, raise visibility by logging when the cap trims items.</dd>
+    </dl>
+  </div>
+</div>
+
+<!-- ════ PAGE 6 — NEWSLETTER / ANALYTICS / MONETIZATION ════ -->
+<div class="page">
+  <div class="sec-head"><h2>8 · Newsletter — the core product</h2><div class="sub">Most of the hard deliverability work is already in code</div></div>
+
+  <div class="rec">
+    <div class="rec-top"><span class="num">R37</span><h4>Verify SPF / DKIM / DMARC for promptai.in</h4><span class="badge b-crit">Critical</span><span class="badge b-eff">Effort: S · 30 min DNS</span></div>
+    <dl>
+      <dt>Issue</dt><dd>CHANGES.md flags domain auth as unverified in Resend. List-Unsubscribe headers and plain-text parts (already shipped — well done) only help <em>alongside</em> verified auth.</dd>
+      <dt>Impact</dt><dd class="imp">This is the single biggest factor in whether the briefing lands in inboxes or spam. Everything else about the newsletter is downstream of it.</dd>
+      <dt>Fix</dt><dd>Add Resend's SPF/DKIM DNS records at Cloudflare, confirm "Verified", then publish a DMARC record (<code>p=none</code> with rua reporting to start). Send Gmail/Outlook/Yahoo test passes after.</dd>
+    </dl>
+  </div>
+
+  <div class="rec">
+    <div class="rec-top"><span class="num">R38</span><h4>One canonical email template + honest previews</h4><span class="badge b-med">Medium</span><span class="badge b-eff">Effort: S</span></div>
+    <dl>
+      <dt>Issue</dt><dd>The digest was restyled to the light briefing brand, but <code>emails/*.html</code> previews still show the retired dark design (NEXT_SESSION item 3), and the welcome email uses its own third style.</dd>
+      <dt>Impact</dt><dd class="imp">Brand inconsistency at the most important touchpoint; previews that lie make future edits error-prone.</dd>
+      <dt>Fix</dt><dd>Generate the static previews from <code>digestHtml()</code> itself; restyle <code>welcomeHtml()</code> with the same tokens.</dd>
+    </dl>
+  </div>
+
+  <div class="rec">
+    <div class="rec-top"><span class="num">R39</span><h4>Build the newsletter growth loop</h4><span class="badge b-med">Medium</span><span class="badge b-eff">Effort: M</span></div>
+    <dl>
+      <dt>Issue</dt><dd>The only acquisition channel for the digest is the site itself; issues vanish after sending.</dd>
+      <dt>Impact</dt><dd class="imp">No compounding: every issue's content is consumed once and discarded.</dd>
+      <dt>Fix</dt><dd>(a) Publish every issue as a web page (R21b) and link "Past briefings" from the rail; (b) add a "Forwarded this? Subscribe here" footer line; (c) auto-share each issue to X/LinkedIn via feed.xml (R22).</dd>
+    </dl>
+  </div>
+
+  <div class="sec-head" style="margin-top:30px"><h2>9 · Analytics, observability &amp; operational excellence</h2></div>
+
+  <div class="rec">
+    <div class="rec-top"><span class="num">R40</span><h4>Install real (privacy-friendly) analytics</h4><span class="badge b-high">High</span><span class="badge b-eff">Effort: S · 1 hour</span></div>
+    <dl>
+      <dt>Issue</dt><dd>The KV counters answer "how many" but never "from where, doing what, converting at what rate". There is no funnel visibility at all: traffic sources, subscribe conversion, tab usage, story CTR, returning-visitor rate are all unknown.</dd>
+      <dt>Impact</dt><dd class="imp">Every growth and monetization decision in this report is currently a guess; sponsors will ask for numbers you can't produce.</dd>
+      <dt>Fix</dt><dd>Cloudflare Web Analytics (free, cookieless, one script — no consent banner needed, consistent with the privacy posture). Define 4 KPIs: visit→subscribe rate, D7 return rate, story CTR, digest open rate (Resend webhooks → a small KV log).</dd>
+    </dl>
+  </div>
+
+  <div class="rec">
+    <div class="rec-top"><span class="num">R41</span><h4>Error visibility &amp; a /health endpoint</h4><span class="badge b-med">Medium</span><span class="badge b-eff">Effort: S</span></div>
+    <dl>
+      <dt>Issue</dt><dd>Client-side failures (a proxy dying, a feed gone 403, JS exceptions) are swallowed by design — silent resilience is good UX but means nobody learns the site degraded. <code>SOURCE_STATUS</code> exists but is never reported anywhere.</dd>
+      <dt>Impact</dt><dd class="imp">"News tab feels emptier lately" is currently undiagnosable.</dd>
+      <dt>Fix</dt><dd>Authenticated <code>/health</code> page: per-source last-success timestamps (from the aggregation worker after R1), digest last-run report (R9), KV binding checks. Optional: a tiny client error beacon counting JS exceptions per page.</dd>
+    </dl>
+  </div>
+
+  <div class="sec-head" style="margin-top:30px"><h2>10 · Monetization &amp; commercial viability</h2><div class="sub">Constraint to honor: the site promises "Free and open — no paywalls, ever"</div></div>
+
+  <div class="rec">
+    <div class="rec-top"><span class="num">R42</span><h4>Newsletter sponsorship (primary path)</h4><span class="badge b-med">Medium</span><span class="badge b-eff">Effort: S when ready</span></div>
+    <dl>
+      <dt>Issue</dt><dd>No revenue model exists. The cleanest one for this product — a single clearly-labeled sponsor slot in the digest — is standard for AI briefings and doesn't violate the no-paywall promise.</dd>
+      <dt>Impact</dt><dd class="imp">At newsletter scale (1k+ engaged subscribers), one weekly classified-style slot is realistic early revenue and forces no product compromise.</dd>
+      <dt>Fix</dt><dd>Prereqs first: analytics (R40), domain auth (R37), double opt-in (R18) and issue archive (R21b) — sponsors check all four. Then a one-page media kit (audience, open rate, geography) and a <code>sponsor</code> field in the digest builder.</dd>
+    </dl>
+  </div>
+
+  <div class="rec">
+    <div class="rec-top"><span class="num">R43</span><h4>Disclosed affiliate links in the tools directory</h4><span class="badge b-low">Low</span><span class="badge b-eff">Effort: S</span></div>
+    <dl>
+      <dt>Issue</dt><dd>The tools directory sends free referral traffic to 16 commercial products.</dd>
+      <dt>Impact</dt><dd class="imp">Modest passive revenue with zero UX change — if disclosure is honest, it also doesn't dent the independent-review claim.</dd>
+      <dt>Fix</dt><dd>Affiliate/partner URLs in <code>tools.json</code> (R35) where programs exist (Notion, Jasper-class tools, hosting), an "affiliate" badge + one-line disclosure on the Tools view.</dd>
+    </dl>
+  </div>
+
+  <div class="rec">
+    <div class="rec-top"><span class="num">R44</span><h4>Later: a personal AI briefing (email-only premium)</h4><span class="badge b-low">Low · later</span><span class="badge b-eff">Effort: L</span></div>
+    <dl>
+      <dt>Issue</dt><dd>Once R1 (server feeds) + R30 (AI summaries) + accounts exist, a per-user daily briefing on chosen topics becomes a few days' work — and is genuinely differentiated.</dd>
+      <dt>Impact</dt><dd class="imp">A paid tier scoped to <em>email</em> ("your topics, daily, AI-summarized") monetizes power users while the website stays fully free — consistent with the brand promise.</dd>
+      <dt>Fix</dt><dd>Hold until: 1k+ subscribers, open rate known, AI summaries proven on the free product. Then: topic picker in the account sheet → per-user digest variant → Stripe payment link. Validate willingness-to-pay with a waitlist first.</dd>
+    </dl>
+  </div>
+</div>
+
+<!-- ════ PAGE 7 — ROADMAP ════ -->
+<div class="page">
+  <div class="sec-head"><h2>Prioritized roadmap</h2><div class="sub">Sequenced for dependency and leverage, not just severity</div></div>
+
+  <h3>Now — this week (mostly hours each)</h3>
+  <table>
+    <thead><tr><th style="width:8%">Ref</th><th>Action</th><th style="width:16%">Priority</th><th style="width:14%">Effort</th></tr></thead>
+    <tbody>
+      <tr><td>R37</td><td>Verify SPF/DKIM/DMARC in Resend + Cloudflare DNS</td><td><span class="badge b-crit">Critical</span></td><td>30 min</td></tr>
+      <tr><td>R16</td><td>Privacy policy + terms pages, linked everywhere</td><td><span class="badge b-crit">Critical</span></td><td>Half-day</td></tr>
+      <tr><td>R12</td><td>Rate-limit /auth; raise PBKDF2 iterations</td><td><span class="badge b-crit">Critical</span></td><td>Hours</td></tr>
+      <tr><td>R22</td><td>Execute GSC/Bing checklist from DISCOVERABILITY.md</td><td><span class="badge b-high">High</span></td><td>1 hour</td></tr>
+      <tr><td>R40</td><td>Cloudflare Web Analytics + 4 KPIs</td><td><span class="badge b-high">High</span></td><td>1 hour</td></tr>
+      <tr><td>R4/R23</td><td>Remove backup/prototype pages + static sitemap from deploy</td><td><span class="badge b-high">High</span></td><td>1 hour</td></tr>
+      <tr><td>R24</td><td>Keyboard-accessible story cards</td><td><span class="badge b-high">High</span></td><td>Hours</td></tr>
+      <tr><td>R15</td><td><code>_headers</code>: HSTS, XFO, Referrer-Policy, CSP report-only</td><td><span class="badge b-high">High</span></td><td>Hours</td></tr>
+      <tr><td>R9</td><td>Uptime monitor + digest last-run report</td><td><span class="badge b-high">High</span></td><td>Hours</td></tr>
+      <tr><td>R20, R7</td><td>Real h1/h2 hierarchy; compress og-image</td><td><span class="badge b-med">Medium</span></td><td>Hours</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Next — this month (the structural fixes)</h3>
+  <table>
+    <thead><tr><th style="width:8%">Ref</th><th>Action</th><th style="width:16%">Priority</th><th style="width:14%">Effort</th></tr></thead>
+    <tbody>
+      <tr><td>R1</td><td><b>Server-side aggregation worker</b> → single /feed-data fetch</td><td><span class="badge b-crit">Critical</span></td><td>2–4 days</td></tr>
+      <tr><td>R19</td><td>Server-render headlines into index.html (rides on R1)</td><td><span class="badge b-crit">Critical</span></td><td>1–2 days</td></tr>
+      <tr><td>R11</td><td>Password reset flow via Resend</td><td><span class="badge b-crit">Critical</span></td><td>1–2 days</td></tr>
+      <tr><td>R18</td><td>Double opt-in for subscriptions</td><td><span class="badge b-high">High</span></td><td>1 day</td></tr>
+      <tr><td>R28</td><td>Save/like UI on cards + account sheet + digest block</td><td><span class="badge b-high">High</span></td><td>1–2 days</td></tr>
+      <tr><td>R2</td><td>Consolidate the 4 source lists into sources.js</td><td><span class="badge b-high">High</span></td><td>Hours</td></tr>
+      <tr><td>R27, R34</td><td>URL state for tabs; rename Blogs → Deep dives</td><td><span class="badge b-med">Medium</span></td><td>Hours</td></tr>
+      <tr><td>R29</td><td>Dark theme + system auto</td><td><span class="badge b-med">Medium</span></td><td>Half-day</td></tr>
+      <tr><td>R13/R14</td><td>CORS lockdown; cron secret to header</td><td><span class="badge b-high">High</span></td><td>Hours</td></tr>
+      <tr><td>R25, R26</td><td>Dialog focus management; tab aria</td><td><span class="badge b-med">Medium</span></td><td>Half-day</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Later — this quarter (differentiation &amp; growth)</h3>
+  <table>
+    <thead><tr><th style="width:8%">Ref</th><th>Action</th><th style="width:16%">Priority</th><th style="width:14%">Effort</th></tr></thead>
+    <tbody>
+      <tr><td>R30</td><td><b>AI layer:</b> daily TL;DR + plain-English paper explainer</td><td><span class="badge b-crit">Critical</span></td><td>2–3 days</td></tr>
+      <tr><td>R31</td><td><b>Prompt library</b> — own the brand name</td><td><span class="badge b-high">High</span></td><td>Iterative</td></tr>
+      <tr><td>R21</td><td>Rankable URLs: guide pages, issue archive, topic hubs</td><td><span class="badge b-high">High</span></td><td>Iterative</td></tr>
+      <tr><td>R3/R36</td><td>D1 migration for archive + stats</td><td><span class="badge b-med">Medium</span></td><td>2–3 days</td></tr>
+      <tr><td>R39, R32</td><td>Issue pages as growth loop; sample-issue links</td><td><span class="badge b-med">Medium</span></td><td>Days</td></tr>
+      <tr><td>R10</td><td>PWA: manifest + service worker</td><td><span class="badge b-med">Medium</span></td><td>1–2 days</td></tr>
+      <tr><td>R5, R41</td><td>CI smoke tests; /health endpoint</td><td><span class="badge b-med">Medium</span></td><td>Days</td></tr>
+      <tr><td>R35, R38</td><td>tools.json with review dates; canonical email previews</td><td><span class="badge b-med">Medium</span></td><td>Hours</td></tr>
+      <tr><td>R42–R44</td><td>Media kit → sponsor slot → affiliates → premium waitlist</td><td><span class="badge b-med">When metrics exist</span></td><td>Staged</td></tr>
+      <tr><td>R8, R17, R33</td><td>Self-host fonts; signed unsubscribe; content-stats panel</td><td><span class="badge b-low">Low</span></td><td>Hours</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Closing perspective</h3>
+  <p><b>Architect:</b> the codebase is clean and disciplined for its size; the one structural decision to reverse is client-side aggregation. R1 is the keystone — half this report's findings collapse into it.</p>
+  <p><b>Product owner:</b> the funnel is built but unmeasured, and sign-in offers no value yet. Measure first (R40), then give accounts a reason to exist (R28), then differentiate (R30/R31).</p>
+  <p><b>End user:</b> the site reads beautifully and respects me (no popups, no paywall, honest unsubscribe). What I'm missing: opening stories with my keyboard, a dark theme, a back button that works, saving things — and the "explained in plain English" the welcome email promised me.</p>
+  <p class="muted" style="margin-top:18px">All file references point at <code>pradeepsarathe/Prompt-AI-Git@main</code> as of June 11, 2026. Happy to turn any single recommendation into an implementation plan or working code next — R1 (aggregation worker), R11/R12 (auth hardening) and R16 (privacy policy) are natural first picks.</p>
+</div>
+
+</body>
+</html>
