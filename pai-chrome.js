@@ -166,10 +166,32 @@
   });
   document.addEventListener('keydown', e => { if (e.key === 'Escape') { window.closeSheet && window.closeSheet(); ['#theme-menu','#sub-menu','#lang-menu'].forEach(s => $(s) && $(s).classList.remove('open')); } });
 
+  // ── A11Y + POWER-USER (parity with the home app) ───────
+  // Inject a "Skip to content" link (targets the page's main region) so every
+  // secondary page gets the same keyboard-first affordance index.html has.
+  function ensureSkipLink() {
+    if (document.querySelector('.skip-link')) return;
+    let target = document.querySelector('main') || document.querySelector('h1');
+    if (target && target.tagName !== 'MAIN') target = target.closest('section, .wrap, .canvas, main') || target;
+    if (!target) return;
+    if (!target.id) target.id = 'main';
+    const a = document.createElement('a');
+    a.className = 'skip-link'; a.href = '#' + target.id; a.textContent = 'Skip to content';
+    document.body.insertBefore(a, document.body.firstChild);
+  }
+  // "/" focuses search from anywhere (ignored while typing in a field).
+  document.addEventListener('keydown', e => {
+    if (e.key !== '/' || e.metaKey || e.ctrlKey || e.altKey) return;
+    const t = e.target, tag = t && t.tagName;
+    if (tag === 'INPUT' || tag === 'TEXTAREA' || (t && t.isContentEditable)) return;
+    const s = document.getElementById('pai-search');
+    if (s) { e.preventDefault(); s.focus(); s.select && s.select(); }
+  });
+
   // ── BOOT ───────────────────────────────────────────────
   function boot() {
     let saved = 'auto'; try { saved = localStorage.getItem('pai_theme') || 'auto'; } catch (e) {}
-    ensureThemeOptions(); ensureSubMenu(); ensureRailFreq(); applyTheme(saved); markActiveLang();
+    ensureThemeOptions(); ensureSubMenu(); ensureRailFreq(); ensureSkipLink(); applyTheme(saved); markActiveLang();
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
 })();

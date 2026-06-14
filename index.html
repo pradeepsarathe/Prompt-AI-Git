@@ -518,6 +518,9 @@ if(t!=='default')document.documentElement.setAttribute('data-theme',t);}catch(e)
   .search-suggest .sg-op { color:var(--accent); font-weight:500; }
   .search-suggest .sg-item span { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
   .foryou-note { font-size:0.74rem; color:var(--text-3); margin:0 0 4px; }
+  .panel-h .fy-refresh { margin-left:auto; width:26px; height:26px; border:none; background:none; color:var(--text-3); font-size:1.05rem; cursor:pointer; border-radius:50%; line-height:1; display:flex; align-items:center; justify-content:center; }
+  .panel-h .fy-refresh:hover { background:var(--bg-subtle); color:var(--text); }
+  .panel-h .fy-refresh:active { transform:rotate(90deg); }
 
   /* ════ RESPONSIVE ════ */
   @media (max-width:1120px){ .canvas{ grid-template-columns:minmax(0,1fr); } .rightrail{ display:none; } }
@@ -779,8 +782,12 @@ if(t!=='default')document.documentElement.setAttribute('data-theme',t);}catch(e)
         <div class="panel-b" id="trend-panel"><div class="empty" style="padding:20px">Loading…</div></div>
       </div>
       <div class="panel" id="foryou-panel" hidden>
-        <div class="panel-h"><svg viewBox="0 0 24 24"><path d="M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg> For you</div>
+        <div class="panel-h"><svg viewBox="0 0 24 24"><path d="M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg> For you<button class="fy-refresh" id="fy-refresh" onclick="paiRefreshForYou()" aria-label="Refresh suggestions" title="Show different picks">↻</button></div>
         <div class="panel-b"><p class="foryou-note" id="foryou-topics"></p><div id="foryou-list"></div></div>
+      </div>
+      <div class="panel" id="continue-panel" hidden>
+        <div class="panel-h"><svg viewBox="0 0 24 24"><path d="M13 3a9 9 0 0 0-9 9H1l3.89 3.89.07.14L9 12H6a7 7 0 1 1 2.05 4.95l-1.42 1.42A9 9 0 1 0 13 3zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8z"/></svg> Recently read</div>
+        <div class="panel-b"><div id="continue-list"></div></div>
       </div>
       <div class="panel">
         <div class="panel-h"><svg viewBox="0 0 24 24"><path d="M12 2 4 5v6c0 5 3.4 9.7 8 11 4.6-1.3 8-6 8-11V5l-8-3z"/></svg> Top sources</div>

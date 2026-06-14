@@ -339,7 +339,7 @@
     _news = P.rankStories(stories, _popular);
     _loaded.news = true;
     archiveStories(_news, 'news');
-    renderNews(); renderHome(); renderTrending(); renderForYou();
+    renderNews(); renderHome(); renderTrending(); renderForYou(); renderContinue();
     if (_query) renderSearch();
   }
   function newsTopics() {
@@ -444,22 +444,57 @@
   function chosenInterests() {
     try { return JSON.parse(localStorage.getItem('pai_interests') || '[]') || []; } catch (e) { return []; }
   }
+  // Deterministic shuffle so the "refresh" control gives a different, stable
+  // ordering each press (rather than re-rendering the same first 5).
+  function shuffleSeeded(arr, seed) {
+    let s = seed * 9301 + 49297; const rnd = () => { s = (s * 9301 + 49297) % 233280; return s / 233280; };
+    for (let m = arr.length; m;) { const i = Math.floor(rnd() * m--); const t = arr[m]; arr[m] = arr[i]; arr[i] = t; }
+    return arr;
+  }
+  let _fyShuffle = 0;
+  window.paiRefreshForYou = function () { _fyShuffle++; renderForYou(); };
   function renderForYou() {
     const panel = $('#foryou-panel'); if (!panel) return;
     const topics = topInterests();
     if (!topics.length) { panel.hidden = true; return; }
     const read = new Set((((window.paiAccount && window.paiAccount.getData()) || {}).history || []).map(x => x.url));
-    const pool = _news.concat(_blogs).filter(s => topics.includes(s.topic) && !read.has(s.url)).slice(0, 5);
+    let pool = _news.concat(_blogs).filter(s => topics.includes(s.topic) && !read.has(s.url));
     if (pool.length < 2) { panel.hidden = true; return; }
     panel.hidden = false;
+    if (_fyShuffle > 0) pool = shuffleSeeded(pool.slice(), _fyShuffle);
+    const show = pool.slice(0, 5);
+    const refresh = $('#fy-refresh'); if (refresh) refresh.style.display = pool.length > 5 ? 'flex' : 'none';
     const note = $('#foryou-topics');
     if (note) note.textContent = 'Tuned to your interests · ' + topics.join(' · ');
     const box = $('#foryou-list'); if (!box) return;
     box.innerHTML = '';
-    pool.forEach(s => {
+    show.forEach(s => {
       const d = el('div', 'trend-item');
       d.innerHTML = '<div><h5>' + esc(s.title) + '</h5><span>' + esc(P.srcLabel(s.src)) + ' · ' + esc(s.topic || '') + '</span></div>';
       actionable(d, () => openModal(s), s.title);
+      box.appendChild(d);
+    });
+  }
+
+  // ── "RECENTLY READ" (retention) — re-open anything from your reading
+  //    history. When the story is still in a loaded feed we reopen the full
+  //    record (rich modal); otherwise a lightweight one. ──
+  function findLoaded(url) {
+    return _news.find(s => s.url === url) || _blogs.find(s => s.url === url) || _papers.find(p => p.url === url) || null;
+  }
+  function renderContinue() {
+    const panel = $('#continue-panel'); if (!panel) return;
+    const hist = (((window.paiAccount && window.paiAccount.getData()) || {}).history) || [];
+    const seen = new Set(); const items = [];
+    for (const h of hist) { if (!h || !h.url || seen.has(h.url)) continue; seen.add(h.url); items.push(h); if (items.length >= 4) break; }
+    if (items.length < 2) { panel.hidden = true; return; }
+    panel.hidden = false;
+    const box = $('#continue-list'); if (!box) return;
+    box.innerHTML = '';
+    items.forEach(h => {
+      const d = el('div', 'trend-item');
+      d.innerHTML = '<div><h5>' + esc(h.title) + '</h5><span>' + esc(h.src || '') + '</span></div>';
+      actionable(d, () => openModal(findLoaded(h.url) || { url: h.url, title: h.title, src: '', desc: '' }), h.title);
       box.appendChild(d);
     });
   }
@@ -826,6 +861,7 @@
     }
     loadModalSummary(s); // ~100-word AI summary for any item (news, research, blogs…)
     renderModalNext(s);  // "Up next" — related reads to keep the session going
+    renderContinue();    // reflect this open in the "Recently read" rail
     $('#modal').classList.add('open'); document.body.style.overflow = 'hidden';
     $('#modal').scrollTop = 0; // switching from an "Up next" pick starts at the top
     const x = document.querySelector('#modal .modal-x'); if (x) x.focus();
@@ -884,6 +920,14 @@
     navigator.clipboard.writeText(_modalUrl).then(() => { $('#m-copy').textContent = '✓ Copied'; setTimeout(() => $('#m-copy').textContent = '🔗 Copy', 1800); }).catch(() => toast('Copy failed'));
   };
   document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeModal(); window.closeSheet && window.closeSheet(); $('#theme-menu').classList.remove('open'); $('#sub-menu').classList.remove('open'); $('#lang-menu').classList.remove('open'); const sg = $('#search-suggest'); if (sg) sg.classList.remove('open'); } });
+  // "/" focuses the search box from anywhere (power-user shortcut). Ignored
+  // while typing in a field, and won't fire with a modifier held.
+  document.addEventListener('keydown', e => {
+    if (e.key !== '/' || e.metaKey || e.ctrlKey || e.altKey) return;
+    const t = e.target, tag = t && t.tagName;
+    if (tag === 'INPUT' || tag === 'TEXTAREA' || (t && t.isContentEditable)) return;
+    const s = $('#pai-search'); if (s) { e.preventDefault(); s.focus(); s.select && s.select(); }
+  });
 
   // ── NEWSLETTER ────────────────────────────────────────
   // ── FOCUS TRAP (R25) — Tab cycles inside open modal / sheet ──
@@ -1150,6 +1194,7 @@
     loadToolsJson(); // R35 — tools.json with lastReviewed dates
     renderSummary(); // R30 — "Today in 60 seconds"
     renderStreak();  // review #10 — return-visit streak cue
+    renderContinue(); // "Recently read" rail
     paiMaybeOnboard(); // review #5/#10 — first-run interest picker
     // honor a #view hash (links from education.html / archive.html land on the right tab)
     let h = (location.hash || '').replace('#', '');
