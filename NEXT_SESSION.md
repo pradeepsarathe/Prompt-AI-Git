@@ -2,6 +2,25 @@
 
 # NEXT SESSION
 
+## State (2026-06-15) — Subscribe popover/rail consistency (one-file fix)
+Reported bug: the subscribe/briefing UI differed across pages — some showed the
+weekly/daily choice, some only a bare "Subscribe". Root cause: each page hardcodes
+its own `#sub-menu` popover, so any page deployed before the "universal subscribe"
+change still shows the old bare form (and stale-while-revalidate keeps it around).
+**Fix is in `pai-chrome.js` only** (loaded on every non-home page) — no need to edit
+60+ HTML files:
+- `ensureSubMenu()` — rebuilds `#sub-menu` to the canonical popover (weekly/daily
+  segmented control + standard copy) whenever the frequency control is missing.
+  Idempotent: pages that already have it are untouched. Runs on boot + on open.
+- `ensureRailFreq()` — injects the weekly/daily control into the right-rail promo
+  form (`#rail-email`) if absent, before the submit button.
+- `index.html` is unaffected (it has its own inline chrome and already correct).
+- **Bumped `sw.js` VERSION → `pai-v6`** so the new chrome ships promptly (cached
+  static asset changed). Verified in preview: stale popover/rail both normalise,
+  no console errors.
+NOTE: every canonical page in the working tree ALREADY has the control, so a full
+push also fixes it — but the JS net guarantees consistency even against drift.
+
 ## State (2026-06-14, latest 2) — Review action pack: 15 changes shipped (front-end + SEO)
 Implemented 15 self-contained items from `PromptAI Full Platform Review - June 14.html`
 (no keys/binaries/accounts needed). Working tree only — push to repo to deploy.

@@ -48,9 +48,47 @@
   window.toggleThemeMenu = function (e) { e.stopPropagation(); ensureThemeOptions(); $('#theme-menu').classList.toggle('open'); $('#sub-menu') && $('#sub-menu').classList.remove('open'); $('#lang-menu') && $('#lang-menu').classList.remove('open'); };
 
   // ── SUBSCRIBE ──────────────────────────────────────────
+  // Canonical popover markup — kept in ONE place so every page that loads the
+  // chrome shows the identical "weekly / daily" briefing choice. Older pages
+  // shipped a bare "Subscribe" popover (no frequency); we normalise them here
+  // instead of editing dozens of HTML files. Only rebuilds when the frequency
+  // control is missing, so up-to-date pages are left untouched.
+  const SUB_MENU_HTML =
+    '<h5>Get the briefing</h5>' +
+    '<p class="sub-lead">The one story that matters, 5 headlines and the paper everyone\u2019s citing \u2014 daily or weekly, your call.</p>' +
+    '<form onsubmit="return doTopSubscribe(event)">' +
+      '<input id="top-email" type="email" placeholder="you@example.com" required aria-label="Email"/>' +
+      '<div class="freq-row" role="radiogroup" aria-label="How often">' +
+        '<label><input type="radio" name="sub-freq" value="weekly" checked="checked"/> Weekly \u00b7 Tue</label>' +
+        '<label><input type="radio" name="sub-freq" value="daily"/> Daily</label>' +
+      '</div>' +
+      '<button type="submit">Subscribe free</button>' +
+    '</form>' +
+    '<p class="sub-note">No spam. Unsubscribe anytime. \u00b7 <a href="/issues">Read a sample briefing \u2192</a></p>';
+  function ensureSubMenu() {
+    const m = document.getElementById('sub-menu');
+    if (!m) return;
+    if (m.querySelector('input[name="sub-freq"]')) return; // already has the choice
+    m.innerHTML = SUB_MENU_HTML;
+  }
+  // Same idea for the right-rail promo (Learn AI / Archive). We only INJECT the
+  // missing frequency control rather than rebuilding, since the rail markup is
+  // page-specific.
+  function ensureRailFreq() {
+    const input = document.getElementById('rail-email'); if (!input) return;
+    const form = input.closest('form'); if (!form) return;
+    if (form.querySelector('input[name="rail-freq"]')) return;
+    const row = document.createElement('div');
+    row.className = 'freq-row'; row.setAttribute('role', 'radiogroup'); row.setAttribute('aria-label', 'How often');
+    row.innerHTML = '<label><input type="radio" name="rail-freq" value="weekly" checked="checked"/> Weekly \u00b7 Tue</label>' +
+                    '<label><input type="radio" name="rail-freq" value="daily"/> Daily</label>';
+    const btn = form.querySelector('button[type="submit"]') || form.querySelector('button');
+    if (btn) form.insertBefore(row, btn); else form.appendChild(row);
+  }
   window.toggleSubscribe = function (e) {
     e.stopPropagation();
-    const m = $('#sub-menu'); m.classList.toggle('open'); $('#theme-menu').classList.remove('open'); $('#lang-menu').classList.remove('open');
+    ensureSubMenu();
+    const m = $('#sub-menu'); m.classList.toggle('open'); $('#theme-menu') && $('#theme-menu').classList.remove('open'); $('#lang-menu') && $('#lang-menu').classList.remove('open');
     if (m.classList.contains('open')) { const i = $('#top-email'); if (i) setTimeout(() => i.focus(), 30); }
   };
   function subscribe(email, freq) {
@@ -131,7 +169,7 @@
   // ── BOOT ───────────────────────────────────────────────
   function boot() {
     let saved = 'auto'; try { saved = localStorage.getItem('pai_theme') || 'auto'; } catch (e) {}
-    ensureThemeOptions(); applyTheme(saved); markActiveLang();
+    ensureThemeOptions(); ensureSubMenu(); ensureRailFreq(); applyTheme(saved); markActiveLang();
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
 })();
