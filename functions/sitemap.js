@@ -11,8 +11,17 @@ import { LEARN_PATHS } from './lib/learnpaths.js';
 const EDU_LASTMOD = '2026-06-13';   // ← update when education.html changes
 const LEGAL_LASTMOD = '2026-06-11'; // privacy.html / terms.html
 const PROMPTS_LASTMOD = '2026-06-13'; // ← update when prompts.html changes
+const GLOSSARY_LASTMOD = '2026-06-13'; // ← update when glossary pages change
 
 const TOPICS = ['llms', 'agents', 'vision', 'robotics', 'policy', 'research', 'tools'];
+
+// Evergreen glossary term pages (/glossary/<slug>) — high-value, stable,
+// keyword-rich SEO landing pages. Keep in sync with the glossary/ folder.
+const GLOSSARY_SLUGS = [
+  'agi', 'ai-agent', 'chain-of-thought', 'context-window', 'embedding',
+  'fine-tuning', 'hallucination', 'inference', 'llm', 'multimodal',
+  'parameters', 'prompt-engineering', 'rag', 'temperature', 'token', 'transformer',
+];
 
 export async function onRequest(context) {
   const { env } = context;
@@ -26,9 +35,15 @@ export async function onRequest(context) {
     { loc: 'https://promptai.in/archive.html',   lastmod: today,           changefreq: 'daily',   priority: '0.8' },
     { loc: 'https://promptai.in/education.html', lastmod: EDU_LASTMOD,     changefreq: 'weekly',  priority: '0.7' },
     { loc: 'https://promptai.in/learn',          lastmod: EDU_LASTMOD,     changefreq: 'weekly',  priority: '0.7' },
+    { loc: 'https://promptai.in/glossary.html',  lastmod: GLOSSARY_LASTMOD, changefreq: 'monthly', priority: '0.7' },
     { loc: 'https://promptai.in/privacy.html',   lastmod: LEGAL_LASTMOD,   changefreq: 'yearly',  priority: '0.2' },
     { loc: 'https://promptai.in/terms.html',     lastmod: LEGAL_LASTMOD,   changefreq: 'yearly',  priority: '0.2' },
   ];
+
+  // Per-term glossary pages (/glossary/<slug>) — generated from the list above
+  GLOSSARY_SLUGS.forEach(slug => urls.push({
+    loc: 'https://promptai.in/glossary/' + slug, lastmod: GLOSSARY_LASTMOD, changefreq: 'monthly', priority: '0.6',
+  }));
 
   TOPICS.forEach(t => urls.push({
     loc: 'https://promptai.in/topic/' + t, lastmod: today, changefreq: 'daily', priority: '0.7',
