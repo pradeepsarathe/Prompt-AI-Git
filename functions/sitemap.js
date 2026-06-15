@@ -8,10 +8,10 @@
 import { PROMPT_PAGES } from './lib/promptslugs.js';
 import { LEARN_PATHS } from './lib/learnpaths.js';
 
-const EDU_LASTMOD = '2026-06-13';   // ← update when education.html changes
-const LEGAL_LASTMOD = '2026-06-11'; // privacy.html / terms.html
-const PROMPTS_LASTMOD = '2026-06-13'; // ← update when prompts.html changes
-const GLOSSARY_LASTMOD = '2026-06-13'; // ← update when glossary pages change
+const EDU_LASTMOD = '2026-06-16';   // ← update when education.html changes
+const LEGAL_LASTMOD = '2026-06-15'; // privacy.html / terms.html
+const PROMPTS_LASTMOD = '2026-06-15'; // ← update when prompts.html changes
+const GLOSSARY_LASTMOD = '2026-06-15'; // ← update when glossary pages change
 
 const TOPICS = ['llms', 'agents', 'vision', 'robotics', 'policy', 'research', 'tools'];
 
@@ -38,7 +38,7 @@ export async function onRequest(context) {
     { loc: 'https://promptai.in/glossary.html',  lastmod: GLOSSARY_LASTMOD, changefreq: 'monthly', priority: '0.7' },
     { loc: 'https://promptai.in/privacy.html',   lastmod: LEGAL_LASTMOD,   changefreq: 'yearly',  priority: '0.2' },
     { loc: 'https://promptai.in/terms.html',     lastmod: LEGAL_LASTMOD,   changefreq: 'yearly',  priority: '0.2' },
-    { loc: 'https://promptai.in/methodology.html', lastmod: '2026-06-14',  changefreq: 'monthly', priority: '0.4' },
+    { loc: 'https://promptai.in/methodology.html', lastmod: '2026-06-15',  changefreq: 'monthly', priority: '0.4' },
   ];
 
   // Per-term glossary pages (/glossary/<slug>) — generated from the list above

@@ -459,6 +459,23 @@ if(t!=='default')document.documentElement.setAttribute('data-theme',t);}catch(e)
   .modal-share { display:flex; gap:8px; margin-top:10px; }
   .modal-share a, .modal-share button { flex:1; display:flex; align-items:center; justify-content:center; gap:6px; padding:10px; border-radius:10px; border:1px solid var(--border-soft); background:var(--bg); font-size:0.8rem; font-weight:500; color:var(--text-2); transition:background .15s; }
   .modal-share a:hover, .modal-share button:hover { background:var(--bg-subtle); }
+  .modal-share .ico { width:16px; height:16px; fill:currentColor; flex:none; }
+  /* ── R-next: modal reading progress + reading-time + kbd help ── */
+  #m-progress { position:fixed; top:0; left:0; right:0; height:3px; z-index:210; background:transparent; pointer-events:none; }
+  #m-progress i { display:block; height:100%; width:0; background:var(--accent); border-radius:0 2px 2px 0; transition:width .08s linear; }
+  .m-readtime { font-size:0.76rem; font-weight:600; color:var(--text-3); margin:-6px 0 14px; }
+  html { scroll-padding-top:120px; }
+  #kbd-help { display:none; position:fixed; inset:0; z-index:400; background:rgba(32,33,36,0.55); backdrop-filter:blur(2px); align-items:center; justify-content:center; padding:24px; }
+  #kbd-help.open { display:flex; }
+  #kbd-help .kbd-card { background:var(--bg); border:1px solid var(--border-soft); border-radius:16px; padding:24px 26px; max-width:340px; width:100%; box-shadow:0 24px 80px rgba(0,0,0,0.35); }
+  #kbd-help h3 { font-family:var(--serif); font-size:1.2rem; font-weight:600; margin-bottom:14px; }
+  #kbd-help dl { display:flex; flex-direction:column; gap:10px; margin-bottom:18px; }
+  #kbd-help dl > div { display:flex; align-items:center; justify-content:space-between; gap:16px; }
+  #kbd-help dt { display:flex; gap:5px; }
+  #kbd-help dd { color:var(--text-2); font-size:0.9rem; }
+  #kbd-help kbd { font-family:'Roboto Mono',ui-monospace,monospace; font-size:0.78rem; background:var(--bg-subtle); border:1px solid var(--border-soft); border-bottom-width:2px; border-radius:6px; padding:2px 7px; color:var(--text); }
+  #kbd-help .kbd-close { width:100%; padding:10px; border:none; border-radius:10px; background:var(--accent); color:#fff; font-weight:600; font-size:0.9rem; cursor:pointer; }
+  @media (prefers-reduced-motion:reduce){ #m-progress i { transition:none; } }
   /* "Up next" — keeps the read going without leaving the modal */
   .modal-next { display:none; margin-top:22px; padding-top:18px; border-top:1px solid var(--border-soft); }
   .m-next-h { font-size:0.74rem; font-weight:600; letter-spacing:0.05em; text-transform:uppercase; color:var(--text-3); margin-bottom:6px; }
@@ -878,6 +895,7 @@ if(t!=='default')document.documentElement.setAttribute('data-theme',t);}catch(e)
 
 <!-- ════ MODAL ════ -->
 <div class="modal-overlay" id="modal" onclick="if(event.target===this)closeModal()">
+  <div class="m-progress" id="m-progress" aria-hidden="true"><i></i></div>
   <div class="modal" role="dialog" aria-modal="true" aria-labelledby="m-title">
     <div class="modal-top">
       <div class="src" id="m-src"></div>
@@ -887,16 +905,17 @@ if(t!=='default')document.documentElement.setAttribute('data-theme',t);}catch(e)
       <span class="pill" id="m-pill"></span>
       <h2 id="m-title"></h2>
       <div class="modal-meta" id="m-meta"></div>
+      <div class="m-readtime" id="m-time" hidden></div>
       <div class="modal-text" id="m-text"></div>
       <div class="modal-note" id="m-note"></div>
       <div id="m-explain" style="display:none"></div>
       <a class="modal-read" id="m-read" href="#" target="_blank" rel="noopener">Read full article ↗</a>
       <div class="modal-share">
-        <button id="m-save" aria-label="Save this story">🔖 Save</button>
-        <button id="m-like" aria-label="Like this story">❤️ Like</button>
-        <a id="m-x" target="_blank" rel="noopener" aria-label="Share on X">𝕏 Post</a>
-        <a id="m-li" target="_blank" rel="noopener" aria-label="Share on LinkedIn">in Share</a>
-        <button onclick="copyLink()" id="m-copy" aria-label="Copy link to this story">🔗 Copy</button>
+        <button id="m-save" aria-label="Save this story" aria-pressed="false"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12a1 1 0 0 1 1 1v17l-7-4-7 4V4a1 1 0 0 1 1-1z"/></svg><span class="lbl">Save</span></button>
+        <button id="m-like" aria-label="Like this story" aria-pressed="false"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7.5-4.64-10-9.3C.62 8.45 2 5 5.3 5c2 0 3.31 1.12 4.2 2.4l.5.72.5-.72C11.39 6.12 12.7 5 14.7 5 18 5 19.38 8.45 22 11.7 19.5 16.36 12 21 12 21z"/></svg><span class="lbl">Like</span></button>
+        <a id="m-x" target="_blank" rel="noopener" aria-label="Share on X"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M17.53 3H20.5l-6.5 7.43L21.75 21h-6.02l-4.71-6.16L5.6 21H2.63l6.96-7.95L2.5 3h6.17l4.26 5.63L17.53 3zm-1.06 16h1.65L7.6 4.7H5.83l10.64 14.3z"/></svg><span class="lbl">Post</span></a>
+        <a id="m-li" target="_blank" rel="noopener" aria-label="Share on LinkedIn"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4.98 3.5A2.5 2.5 0 1 1 5 8.5a2.5 2.5 0 0 1-.02-5zM3 9h4v12H3zm6 0h3.8v1.7h.05c.53-1 1.83-2.06 3.77-2.06 4.03 0 4.78 2.65 4.78 6.1V21h-4v-5.4c0-1.29-.02-2.95-1.8-2.95-1.8 0-2.07 1.4-2.07 2.85V21H9z"/></svg><span class="lbl">Share</span></a>
+        <button onclick="copyLink()" id="m-copy" aria-label="Copy or share link to this story"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M16 1H4a2 2 0 0 0-2 2v12h2V3h12V1zm3 4H8a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2zm0 16H8V7h11v14z"/></svg><span class="lbl">Copy</span></button>
       </div>
       <div class="modal-next" id="m-next"></div>
     </div>
@@ -934,6 +953,48 @@ if ('serviceWorker' in navigator) {
   });
   var onScroll = function () { b.classList.toggle('show', window.pageYOffset > 480); };
   window.addEventListener('scroll', onScroll, { passive: true }); onScroll();
+})();
+</script>
+<script>
+/* R-next: modal reading-progress, reading-time estimate, keyboard-help overlay */
+(function () {
+  var modal = document.getElementById('modal');
+  var bar = document.querySelector('#m-progress i');
+  if (modal && bar) {
+    var upd = function () {
+      var max = modal.scrollHeight - modal.clientHeight;
+      bar.style.width = (max > 0 ? Math.min(1, modal.scrollTop / max) * 100 : 0).toFixed(1) + '%';
+    };
+    modal.addEventListener('scroll', upd, { passive: true });
+  }
+  var tx = document.getElementById('m-text'), tEl = document.getElementById('m-time');
+  if (tx && tEl && 'MutationObserver' in window) {
+    var calc = function () {
+      var words = (tx.textContent || '').trim().split(/\s+/).filter(Boolean).length;
+      if (words > 12) { tEl.hidden = false; tEl.textContent = '\u23F1 ' + Math.max(1, Math.round(words / 220)) + ' min read'; }
+      else { tEl.hidden = true; }
+    };
+    new MutationObserver(calc).observe(tx, { childList: true, characterData: true, subtree: true });
+  }
+  function buildKbd() {
+    var ex = document.getElementById('kbd-help'); if (ex) return ex;
+    var o = document.createElement('div');
+    o.id = 'kbd-help'; o.setAttribute('role', 'dialog'); o.setAttribute('aria-modal', 'true'); o.setAttribute('aria-label', 'Keyboard shortcuts');
+    o.innerHTML = '<div class="kbd-card"><h3>Keyboard shortcuts</h3><dl>' +
+      '<div><dt><kbd>/</kbd></dt><dd>Focus search</dd></div>' +
+      '<div><dt><kbd>?</kbd></dt><dd>Show / hide this help</dd></div>' +
+      '<div><dt><kbd>Esc</kbd></dt><dd>Close dialogs &amp; menus</dd></div>' +
+      '</dl><button type="button" class="kbd-close">Got it</button></div>';
+    o.addEventListener('click', function (e) { if (e.target === o || e.target.classList.contains('kbd-close')) o.classList.remove('open'); });
+    document.body.appendChild(o); return o;
+  }
+  document.addEventListener('keydown', function (e) {
+    if (e.key === '?' && !e.metaKey && !e.ctrlKey && !e.altKey) {
+      var t = e.target, tag = t && t.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || (t && t.isContentEditable)) return;
+      e.preventDefault(); buildKbd().classList.toggle('open');
+    } else if (e.key === 'Escape') { var k = document.getElementById('kbd-help'); if (k) k.classList.remove('open'); }
+  });
 })();
 </script>
 <script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "102dac2624114f988e2e82ab7b7c4045"}'></script>

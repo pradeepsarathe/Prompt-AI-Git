@@ -382,3 +382,20 @@ body { top:0 !important; position:static !important; }
   a { color:#000 !important; text-decoration:underline; }
   @page { margin:1.4cm; }
 }
+
+/* ── anchor offset so deep links land below the sticky chrome ── */
+html { scroll-padding-top:90px; }
+
+/* ── keyboard help overlay (press ?) ──────────────────────────── */
+#kbd-help { display:none; position:fixed; inset:0; z-index:400; background:rgba(32,33,36,0.55); backdrop-filter:blur(2px); align-items:center; justify-content:center; padding:24px; }
+#kbd-help.open { display:flex; }
+#kbd-help .kbd-card { background:var(--bg); border:1px solid var(--border-soft); border-radius:16px; padding:24px 26px; max-width:340px; width:100%; box-shadow:var(--shadow-hover); }
+#kbd-help h3 { font-family:var(--serif); font-size:1.2rem; font-weight:600; margin-bottom:14px; }
+#kbd-help dl { display:flex; flex-direction:column; gap:10px; margin-bottom:18px; }
+#kbd-help dl > div { display:flex; align-items:center; justify-content:space-between; gap:16px; }
+#kbd-help dt { display:flex; gap:5px; }
+#kbd-help dd { color:var(--text-2); font-size:0.9rem; }
+#kbd-help kbd { font-family:'Roboto Mono',ui-monospace,monospace; font-size:0.78rem; background:var(--bg-subtle); border:1px solid var(--border-soft); border-bottom-width:2px; border-radius:6px; padding:2px 7px; color:var(--text); }
+#kbd-help .kbd-close { width:100%; padding:10px; border:none; border-radius:10px; background:var(--accent); color:#fff; font-weight:600; font-size:0.9rem; cursor:pointer; }
+:root[data-theme="dark"] #kbd-help .kbd-close { color:#17181c; }
+@media print { #kbd-help { display:none !important; } }

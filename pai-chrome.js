@@ -215,6 +215,27 @@
     const onScroll = () => b.classList.toggle('show', window.pageYOffset > 480);
     window.addEventListener('scroll', onScroll, { passive: true }); onScroll();
   }
+  // ── KEYBOARD HELP (press ? for shortcuts) ─────────────
+  function buildKbd() {
+    var ex = document.getElementById('kbd-help'); if (ex) return ex;
+    var o = document.createElement('div');
+    o.id = 'kbd-help'; o.setAttribute('role', 'dialog'); o.setAttribute('aria-modal', 'true'); o.setAttribute('aria-label', 'Keyboard shortcuts');
+    o.innerHTML = '<div class="kbd-card"><h3>Keyboard shortcuts</h3><dl>' +
+      '<div><dt><kbd>/</kbd></dt><dd>Focus search</dd></div>' +
+      '<div><dt><kbd>?</kbd></dt><dd>Show / hide this help</dd></div>' +
+      '<div><dt><kbd>Esc</kbd></dt><dd>Close dialogs &amp; menus</dd></div>' +
+      '</dl><button type="button" class="kbd-close">Got it</button></div>';
+    o.addEventListener('click', function (e) { if (e.target === o || e.target.classList.contains('kbd-close')) o.classList.remove('open'); });
+    document.body.appendChild(o); return o;
+  }
+  document.addEventListener('keydown', function (e) {
+    if (e.key === '?' && !e.metaKey && !e.ctrlKey && !e.altKey) {
+      var t = e.target, tag = t && t.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || (t && t.isContentEditable)) return;
+      e.preventDefault(); buildKbd().classList.toggle('open');
+    } else if (e.key === 'Escape') { var k = document.getElementById('kbd-help'); if (k) k.classList.remove('open'); }
+  });
+
   // a11y: flag the current page's nav tab for assistive tech
   function markActiveTab() {
     document.querySelectorAll('.tab.active').forEach(el => el.setAttribute('aria-current', 'page'));
