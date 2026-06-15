@@ -41,7 +41,7 @@
   .g-grid { display:grid; gap:14px; margin:22px 0 30px; }
   .g-search { position:relative; display:flex; align-items:center; margin:18px 0 10px; }
   .g-search svg { position:absolute; left:15px; width:18px; height:18px; fill:var(--text-3); pointer-events:none; }
-  .g-search input { width:100%; height:44px; border:1px solid var(--border); border-radius:22px; background:var(--card); padding:0 16px 0 44px; font-size:0.9rem; color:var(--text); font-family:inherit; }
+  .g-search input { width:100%; height:44px; border:1px solid var(--border); border-radius:22px; background:var(--card); padding:0 44px 0 44px; font-size:0.9rem; color:var(--text); font-family:inherit; }
   .g-search input::placeholder { color:var(--text-3); }
   .g-search input:focus { outline:none; border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-subtle); }
   .g-count { font-size:0.82rem; color:var(--text-2); margin:0; }
@@ -108,8 +108,12 @@
     <div class="g-search">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 1 0-.7.7l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0A4.5 4.5 0 1 1 14 9.5 4.49 4.49 0 0 1 9.5 14z"/></svg>
       <input id="pai-search" type="search" placeholder="Filter 16 terms…" autocomplete="off" aria-label="Filter glossary terms"/>
+      <button class="search-clear" id="search-clear" type="button" aria-label="Clear filter" hidden>✕</button>
     </div>
-    <div class="g-count" id="g-count"></div>
+    <div class="count-row">
+      <div class="g-count" id="g-count"></div>
+      <button class="ghost-btn" type="button" onclick="window.print()" title="Print or save the glossary as PDF">⎙ Save as PDF</button>
+    </div>
     <div class="g-grid">
       <a class="g-card" href="glossary/llm.html"><h2>What is an LLM?</h2><p>An LLM — large language model — is an AI system trained on enormous amounts of text to predict the next word, and through that to write, summarize, translate and reason.</p></a>
       <a class="g-card" href="glossary/token.html"><h2>What is a token in AI?</h2><p>A token is the small chunk of text — roughly three-quarters of an English word — that an AI model reads and writes, one at a time.</p></a>
@@ -156,7 +160,11 @@
   var cards = [].slice.call(document.querySelectorAll('.g-grid .g-card'));
   var count = document.getElementById('g-count');
   var empty = document.getElementById('g-empty');
+  var clear = document.getElementById('search-clear');
   var total = cards.length;
+  function syncUrl(q) {
+    try { history.replaceState(null, '', q ? location.pathname + '?q=' + encodeURIComponent(q) : location.pathname); } catch (e) {}
+  }
   function apply() {
     var q = (input.value || '').trim().toLowerCase();
     var shown = 0;
@@ -168,8 +176,12 @@
     if (count) count.innerHTML = '<b>' + shown + '</b> of ' + total + ' terms' +
       (q ? ' matching \u201c' + q.replace(/</g, '&lt;') + '\u201d' : '');
     if (empty) empty.hidden = shown > 0;
+    if (clear) clear.hidden = !q;
   }
-  if (input) { input.addEventListener('input', apply); apply(); }
+  // ?q= deep-link (e.g. /glossary.html?q=token)
+  try { var q0 = (new URLSearchParams(location.search).get('q') || '').trim(); if (q0 && input) input.value = q0; } catch (e) {}
+  if (input) { input.addEventListener('input', function () { apply(); syncUrl((input.value || '').trim()); }); apply(); }
+  if (clear) clear.addEventListener('click', function () { input.value = ''; input.focus(); apply(); syncUrl(''); });
 })();
 </script>
 </body>

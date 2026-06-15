@@ -4,7 +4,7 @@
 //     cache fallback so the briefing still opens offline.
 //   • Static assets (js/css/images/fonts) → stale-while-revalidate.
 // Bump VERSION whenever cached assets change shape.
-const VERSION = 'pai-v10';
+const VERSION = 'pai-v11';
 const STATIC = [
   '/', '/index.html',
   '/pai-feed-engine.js', '/pai-google-ui.js', '/pai-account.js', '/pai-translate.js',

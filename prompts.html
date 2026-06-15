@@ -72,10 +72,15 @@
   .empty-lib { color:var(--text-3); padding:30px 0; text-align:center; }
   .lib-search { position:relative; display:flex; align-items:center; margin:0 0 12px; }
   .lib-search svg { position:absolute; left:15px; width:18px; height:18px; fill:var(--text-3); pointer-events:none; }
-  .lib-search input { width:100%; height:44px; border:1px solid var(--border); border-radius:22px; background:var(--card); padding:0 16px 0 44px; font-size:0.9rem; color:var(--text); font-family:inherit; }
+  .lib-search input { width:100%; height:44px; border:1px solid var(--border); border-radius:22px; background:var(--card); padding:0 44px 0 44px; font-size:0.9rem; color:var(--text); font-family:inherit; }
   .lib-search input::placeholder { color:var(--text-3); }
   .lib-search input:focus { outline:none; border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-subtle); }
-  .lib-count { font-size:0.82rem; color:var(--text-2); margin:0 0 14px; }
+  .search-clear { position:absolute; right:8px; width:30px; height:30px; border:none; background:transparent; color:var(--text-3); font-size:0.95rem; border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer; }
+  .search-clear:hover { background:var(--bg-subtle); color:var(--text); }
+  .count-row { display:flex; align-items:center; justify-content:space-between; gap:12px; margin:0 0 14px; }
+  .ghost-btn { display:inline-flex; align-items:center; gap:6px; height:34px; padding:0 14px; border:1px solid var(--border); border-radius:17px; background:var(--card); color:var(--text-2); font-size:0.8rem; font-weight:500; font-family:inherit; cursor:pointer; white-space:nowrap; }
+  .ghost-btn:hover { border-color:var(--accent); color:var(--accent); }
+  .lib-count { font-size:0.82rem; color:var(--text-2); margin:0; }
   .lib-count b { color:var(--text); font-weight:600; }
   @media (min-width:980px){ .prompt-grid { grid-template-columns:1fr 1fr; } .prompt-card.wide { grid-column:1 / -1; } }
 </style>
@@ -156,10 +161,14 @@
     <div class="lib-search">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 1 0-.7.7l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0A4.5 4.5 0 1 1 14 9.5 4.49 4.49 0 0 1 9.5 14z"/></svg>
       <input id="pai-search" type="search" placeholder="Search 50 prompts by name, use case or text…" autocomplete="off" aria-label="Search prompts"/>
+      <button class="search-clear" id="search-clear" type="button" aria-label="Clear search" hidden>✕</button>
     </div>
 
     <div class="chips" id="cat-filters"></div>
-    <div class="lib-count" id="lib-count"></div>
+    <div class="count-row">
+      <div class="lib-count" id="lib-count"></div>
+      <button class="ghost-btn" type="button" onclick="window.print()" title="Print or save these prompts as PDF">⎙ Save as PDF</button>
+    </div>
     <div class="prompt-grid" id="prompt-grid"></div>
     <div class="empty-lib" id="empty-lib" style="display:none">No prompts match — try another word or category.</div>
   </main>
@@ -197,11 +206,20 @@
   let _cat = 'All';
   let _q = '';
 
-  // ?cat= deep-link (shareable category)
+  // ?q= + ?cat= deep-links (shareable search & category)
   try {
-    const c = (new URLSearchParams(location.search).get('cat') || '').trim();
+    const sp = new URLSearchParams(location.search);
+    const c = (sp.get('cat') || '').trim();
     if (c) { const hit = CATS.find(x => x.toLowerCase() === c.toLowerCase()); if (hit) _cat = hit; }
+    const q = (sp.get('q') || '').trim();
+    if (q) _q = q.toLowerCase();
   } catch (e) {}
+  function syncUrl() {
+    const parts = [];
+    if (_q) parts.push('q=' + encodeURIComponent(_q));
+    if (_cat !== 'All') parts.push('cat=' + encodeURIComponent(_cat));
+    try { history.replaceState(null, '', parts.length ? location.pathname + '?' + parts.join('&') : location.pathname); } catch (e) {}
+  }
 
   function matches(p) {
     if (_cat !== 'All' && p.cat !== _cat) return false;
@@ -216,10 +234,7 @@
       const b = document.createElement('button');
       b.className = 'chip' + (c === _cat ? ' active' : '');
       b.textContent = c === 'All' ? `All (${PROMPTS.length})` : `${c} (${PROMPTS.filter(p => p.cat === c).length})`;
-      b.onclick = () => {
-        _cat = c; chips(); render();
-        try { history.replaceState(null, '', c === 'All' ? location.pathname : location.pathname + '?cat=' + encodeURIComponent(c)); } catch (e) {}
-      };
+      b.onclick = () => { _cat = c; chips(); render(); syncUrl(); };
       box.appendChild(b);
     });
   }
@@ -232,6 +247,7 @@
     if (cnt) cnt.innerHTML = '<b>' + list.length + '</b> of ' + PROMPTS.length + ' prompts' +
       (_q ? ' matching “' + _q.replace(/</g, '&lt;') + '”' : '') +
       (_cat !== 'All' ? ' in ' + _cat : '');
+    const clr = $('#search-clear'); if (clr) clr.hidden = !_q;
     list.forEach(p => {
       const card = document.createElement('article');
       card.className = 'prompt-card';
@@ -257,7 +273,12 @@
   }
 
   const search = $('#pai-search');
-  if (search) search.addEventListener('input', () => { _q = search.value.trim().toLowerCase(); render(); });
+  if (search) {
+    if (_q) search.value = _q;
+    search.addEventListener('input', () => { _q = search.value.trim().toLowerCase(); render(); syncUrl(); });
+  }
+  const clearBtn = $('#search-clear');
+  if (clearBtn) clearBtn.addEventListener('click', () => { _q = ''; if (search) { search.value = ''; search.focus(); } render(); syncUrl(); });
   chips(); render();
 })();
 </script>
