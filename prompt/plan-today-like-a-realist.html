@@ -20,6 +20,7 @@
 <meta name="twitter:card" content="summary_large_image"/>
 <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"HowTo","name":"Plan today like a realist — AI prompt","description":"A day plan that survives contact with reality, because it budgets for interruptions.","step":[{"@type":"HowToStep","name":"Copy the prompt","text":"Copy the tested prompt template on this page."},{"@type":"HowToStep","name":"Customize it","text":"Replace the [bracketed] placeholders with your own details."},{"@type":"HowToStep","name":"Run it","text":"Paste into Claude, ChatGPT or Gemini and iterate on the result."}],"isPartOf":{"@type":"CollectionPage","name":"PromptAI Prompt Library","url":"https://promptai.in/prompts.html"}},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Prompt library","item":"https://promptai.in/prompts.html"},{"@type":"ListItem","position":2,"name":"Productivity","item":"https://promptai.in/prompts.html"},{"@type":"ListItem","position":3,"name":"Plan today like a realist","item":"https://promptai.in/prompt/plan-today-like-a-realist"}]}]}</script>
 <meta name="color-scheme" content="light dark"/>
+<meta name="theme-color" content="#ffffff"/>
 <link rel="manifest" href="../manifest.webmanifest"/>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
@@ -112,7 +113,7 @@
 </nav>
 <div class="canvas" data-screen-label="Prompt: Plan today like a realist">
   <main class="main">
-    <nav class="crumbs" aria-label="Breadcrumb"><a href="../prompts.html">Prompt library</a> <span>›</span> <span>Productivity</span></nav>
+    <nav class="crumbs" aria-label="Breadcrumb"><a href="../prompts.html">Prompt library</a> <span>›</span> <span aria-current="page">Productivity</span></nav>
     <div class="p-head">
       <span class="cat-pill">Productivity</span>
       <h1>Plan today like a realist</h1>
@@ -133,6 +134,12 @@ If the must-dos don't fit, tell me what to drop — don't compress everything.</
         <button class="copy-btn" id="copy-btn">📋 Copy prompt</button>
         
       </div>
+    </div>
+        <div class="open-row" aria-label="Open this prompt in an AI assistant">
+      <span class="open-lbl">Open in</span>
+      <a class="open-ic" id="open-chatgpt" target="_blank" rel="noopener">ChatGPT</a>
+      <a class="open-ic" id="open-claude" target="_blank" rel="noopener">Claude</a>
+      <button class="open-ic" id="open-gemini" type="button">Gemini</button>
     </div>
     <p class="works">Works with <b>Claude</b> · <b>ChatGPT</b> · <b>Gemini</b> — replace the <code>[bracketed]</code> parts with your own details, keep the structure.</p>
     <div class="share-row" aria-label="Share this prompt">
@@ -159,6 +166,8 @@ If the must-dos don't fit, tell me what to drop — don't compress everything.</
     <a href="/terms.html">Terms</a>
     <a href="/prompts.html">Prompts</a>
     <a href="/education.html">Learn AI</a>
+    <a href="/glossary.html">Glossary</a>
+    <a href="/methodology.html">Editorial standards</a>
     <a href="/archive.html">Archive</a>
     <a href="/issues">Issues</a>
     <a href="/feed.xml">RSS</a>
@@ -180,5 +189,6 @@ document.getElementById('copy-btn').addEventListener('click', function () {
 <script>
 (function(){var b=document.getElementById('share-link');if(!b)return;b.addEventListener('click',function(){var u='https://promptai.in/prompt/plan-today-like-a-realist';(navigator.clipboard&&navigator.clipboard.writeText?navigator.clipboard.writeText(u):Promise.reject()).then(function(){if(window.toast)toast('Link copied — share it anywhere');b.classList.add('ok');setTimeout(function(){b.classList.remove('ok');},1500);},function(){if(window.toast)toast('Copy failed — copy the address bar URL');});});})();
 </script>
+<script>(function(){var t=document.getElementById("prompt-text");if(!t)return;var p=t.textContent.trim(),q=encodeURIComponent(p);var cg=document.getElementById("open-chatgpt");if(cg)cg.href="https://chatgpt.com/?q="+q;var cl=document.getElementById("open-claude");if(cl)cl.href="https://claude.ai/new?q="+q;var gm=document.getElementById("open-gemini");if(gm)gm.addEventListener("click",function(){var done=function(){window.open("https://gemini.google.com/app","_blank","noopener");};if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(p).then(function(){if(window.toast)toast("Prompt copied \u2014 paste it into Gemini");done();},done);}else{done();}});})();</script>
 </body>
 </html>

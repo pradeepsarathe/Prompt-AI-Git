@@ -236,6 +236,19 @@
     } else if (e.key === 'Escape') { var k = document.getElementById('kbd-help'); if (k) k.classList.remove('open'); }
   });
 
+  // ── OFFLINE BANNER (shows when the network drops) ─────
+  function ensureOfflineBar() {
+    var b = document.getElementById('offline-bar');
+    if (!b) {
+      b = document.createElement('div');
+      b.id = 'offline-bar'; b.setAttribute('role', 'status'); b.setAttribute('aria-live', 'polite');
+      b.textContent = 'You\u2019re offline — showing saved content';
+      document.body.appendChild(b);
+    }
+    var sync = function () { b.classList.toggle('show', !navigator.onLine); };
+    window.addEventListener('online', sync); window.addEventListener('offline', sync); sync();
+  }
+
   // a11y: flag the current page's nav tab for assistive tech
   function markActiveTab() {
     document.querySelectorAll('.tab.active').forEach(el => el.setAttribute('aria-current', 'page'));
@@ -244,7 +257,7 @@
   // ── BOOT ───────────────────────────────────────────────
   function boot() {
     let saved = 'auto'; try { saved = localStorage.getItem('pai_theme') || 'auto'; } catch (e) {}
-    ensureThemeOptions(); ensureSubMenu(); ensureRailFreq(); ensureSkipLink(); ensureBackToTop(); markActiveTab(); applyTheme(saved); markActiveLang();
+    ensureThemeOptions(); ensureSubMenu(); ensureRailFreq(); ensureSkipLink(); ensureBackToTop(); ensureOfflineBar(); markActiveTab(); applyTheme(saved); markActiveLang();
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
 })();

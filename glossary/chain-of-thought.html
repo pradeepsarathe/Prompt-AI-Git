@@ -20,6 +20,7 @@
 <meta name="twitter:card" content="summary_large_image"/>
 <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"FAQPage","mainEntity":[{"@type":"Question","name":"What is chain-of-thought reasoning?","acceptedAnswer":{"@type":"Answer","text":"Chain-of-thought is when a model works through a problem step by step instead of jumping straight to an answer — usually improving accuracy on hard problems."}}]},{"@type":"DefinedTerm","name":"Chain of thought","description":"Chain-of-thought is when a model works through a problem step by step instead of jumping straight to an answer — usually improving accuracy on hard problems.","url":"https://promptai.in/glossary/chain-of-thought","inDefinedTermSet":{"@type":"DefinedTermSet","name":"PromptAI AI Glossary","url":"https://promptai.in/glossary.html"}},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Learn AI","item":"https://promptai.in/education.html"},{"@type":"ListItem","position":2,"name":"AI Glossary","item":"https://promptai.in/glossary.html"},{"@type":"ListItem","position":3,"name":"Chain of thought","item":"https://promptai.in/glossary/chain-of-thought"}]}]}</script>
 <meta name="color-scheme" content="light dark"/>
+<meta name="theme-color" content="#ffffff"/>
 <link rel="manifest" href="../manifest.webmanifest"/>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
@@ -99,7 +100,7 @@
 </nav>
 <div class="canvas" data-screen-label="Glossary: Chain of thought">
   <main class="main">
-    <nav class="crumbs" aria-label="Breadcrumb"><a href="../education.html">Learn AI</a> <span>›</span> <a href="../glossary.html">AI Glossary</a> <span>›</span> <span>Chain of thought</span></nav>
+    <nav class="crumbs" aria-label="Breadcrumb"><a href="../education.html">Learn AI</a> <span>›</span> <a href="../glossary.html">AI Glossary</a> <span>›</span> <span aria-current="page">Chain of thought</span></nav>
     <div class="g-head">
       <span class="cat-pill">AI Glossary</span>
       <h1>What is chain-of-thought reasoning?</h1>
@@ -121,7 +122,13 @@
       <a class="chip" href="llm.html">LLM (large language model)</a>
       <a class="chip" href="ai-agent.html">AI agent</a>
     </div>
+        <div class="ask-row"><a class="ask-ai" id="ask-ai" target="_blank" rel="noopener">✨ Ask ChatGPT to explain this further</a></div>
     <div class="cta"><b>Learning AI from scratch?</b> Start with the free <a href="../education.html">Learn AI</a> course picks, then put it to work with <a href="../prompts.html">50 tested prompts</a> — or get the daily 2-minute briefing, <a href="../index.html">free →</a></div>
+
+    <nav class="term-nav" aria-label="Glossary navigation">
+      <a class="prev" href="temperature.html"><span class="lbl">← Previous</span><span class="nm">Temperature</span></a>
+      <a class="next" href="multimodal.html"><span class="lbl">Next →</span><span class="nm">Multimodal</span></a>
+    </nav>
   </main>
 </div>
 <footer class="site-footer">
@@ -131,6 +138,8 @@
     <a href="/terms.html">Terms</a>
     <a href="/prompts.html">Prompts</a>
     <a href="/education.html">Learn AI</a>
+    <a href="/glossary.html">Glossary</a>
+    <a href="/methodology.html">Editorial standards</a>
     <a href="/archive.html">Archive</a>
     <a href="/issues">Issues</a>
     <a href="/feed.xml">RSS</a>
@@ -139,5 +148,6 @@
 </footer>
 <div id="toast" role="status" aria-live="polite"></div>
 <script src="../pai-chrome.js"></script>
+<script>(function(){var a=document.getElementById("ask-ai");if(!a)return;var h=document.querySelector("h1");var term=(h?h.textContent:document.title).replace(/^What is |^What are |^What does /,"").replace(/\?\s*$/,"").trim();a.href="https://chatgpt.com/?q="+encodeURIComponent("Explain in simple terms, with one concrete example: "+term);})();</script>
 </body>
 </html>

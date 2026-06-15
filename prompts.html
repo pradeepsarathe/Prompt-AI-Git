@@ -79,6 +79,9 @@
   .search-clear { position:absolute; right:8px; width:30px; height:30px; border:none; background:transparent; color:var(--text-3); font-size:0.95rem; border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer; }
   .search-clear:hover { background:var(--bg-subtle); color:var(--text); }
   .count-row { display:flex; align-items:center; justify-content:space-between; gap:12px; margin:0 0 14px; }
+  .count-actions { display:flex; gap:8px; flex-wrap:wrap; }
+  .open-mini { display:inline-flex; align-items:center; gap:5px; padding:9px 14px; border-radius:18px; border:1px solid var(--border-soft); background:var(--card); color:var(--text-2); font-weight:600; font-size:0.8rem; text-decoration:none; }
+  .open-mini:hover { color:var(--accent); border-color:var(--accent); }
   .ghost-btn { display:inline-flex; align-items:center; gap:6px; height:34px; padding:0 14px; border:1px solid var(--border); border-radius:17px; background:var(--card); color:var(--text-2); font-size:0.8rem; font-weight:500; font-family:inherit; cursor:pointer; white-space:nowrap; }
   .ghost-btn:hover { border-color:var(--accent); color:var(--accent); }
   .lib-count { font-size:0.82rem; color:var(--text-2); margin:0; }
@@ -168,7 +171,10 @@
     <div class="chips" id="cat-filters"></div>
     <div class="count-row">
       <div class="lib-count" id="lib-count"></div>
-      <button class="ghost-btn" type="button" onclick="window.print()" title="Print or save these prompts as PDF">⎙ Save as PDF</button>
+      <div class="count-actions">
+        <button class="ghost-btn" type="button" id="surprise-btn" title="Open a random prompt">🎲 Surprise me</button>
+        <button class="ghost-btn" type="button" onclick="window.print()" title="Print or save these prompts as PDF">⎙ Save as PDF</button>
+      </div>
     </div>
     <div class="prompt-grid" id="prompt-grid"></div>
     <div class="empty-lib" id="empty-lib" style="display:none">No prompts match — try another word or category.</div>
@@ -267,7 +273,8 @@
           () => { if (window.toast) toast('Copy failed — select the text manually'); });
       };
       const hint = document.createElement('span'); hint.className = 'hint'; hint.textContent = p.hint || '';
-      f.appendChild(btn); if (p.hint) f.appendChild(hint);
+      const open = document.createElement('a'); open.className = 'open-mini'; open.target = '_blank'; open.rel = 'noopener'; open.href = 'https://chatgpt.com/?q=' + encodeURIComponent(p.prompt); open.textContent = '↗ Open in ChatGPT';
+      f.appendChild(btn); f.appendChild(open); if (p.hint) f.appendChild(hint);
       card.appendChild(h); card.appendChild(why); card.appendChild(pre); card.appendChild(f);
       grid.appendChild(card);
     });
@@ -280,6 +287,11 @@
   }
   const clearBtn = $('#search-clear');
   if (clearBtn) clearBtn.addEventListener('click', () => { _q = ''; if (search) { search.value = ''; search.focus(); } render(); syncUrl(); });
+  const surprise = $('#surprise-btn');
+  if (surprise) surprise.addEventListener('click', () => {
+    const pick = PROMPTS[Math.floor(Math.random() * PROMPTS.length)];
+    if (pick) window.location = 'prompt/' + slugOf(pick.title) + '.html';
+  });
   chips(); render();
 })();
 </script>

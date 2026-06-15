@@ -31,11 +31,12 @@
 if(t==='auto')t=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'default';
 if(t!=='default')document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
 <script type="application/ld+json">
-{"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://promptai.in/#org","name":"PromptAI","url":"https://promptai.in/","logo":"https://promptai.in/og-image.jpg","description":"Independent hub for AI research, papers, tools and insights.","sameAs":["https://twitter.com/promptai_in","https://www.linkedin.com/company/promptai-in","https://www.instagram.com/promptai.in"]},{"@type":"WebSite","@id":"https://promptai.in/#website","url":"https://promptai.in/","name":"PromptAI","publisher":{"@id":"https://promptai.in/#org"},"potentialAction":{"@type":"SearchAction","target":"https://promptai.in/?q={search_term_string}","query-input":"required name=search_term_string"}},{"@type":"WebPage","@id":"https://promptai.in/#webpage","url":"https://promptai.in/","name":"PromptAI — AI Research Hub","description":"Curated AI papers, breaking research news, tool reviews and expert analysis — all in one place. Updated daily.","isPartOf":{"@id":"https://promptai.in/#website"},"about":{"@id":"https://promptai.in/#org"},"primaryImageOfPage":"https://promptai.in/og-image.jpg","inLanguage":"en"}]}
+{"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://promptai.in/#org","name":"PromptAI","url":"https://promptai.in/","logo":"https://promptai.in/og-image.jpg","description":"Independent hub for AI research, papers, tools and insights.","foundingDate":"2025","contactPoint":{"@type":"ContactPoint","email":"hello@promptai.in","contactType":"editorial"},"sameAs":["https://twitter.com/promptai_in","https://www.linkedin.com/company/promptai-in","https://www.instagram.com/promptai.in"]},{"@type":"WebSite","@id":"https://promptai.in/#website","url":"https://promptai.in/","name":"PromptAI","publisher":{"@id":"https://promptai.in/#org"},"potentialAction":{"@type":"SearchAction","target":"https://promptai.in/?q={search_term_string}","query-input":"required name=search_term_string"}},{"@type":"WebPage","@id":"https://promptai.in/#webpage","url":"https://promptai.in/","name":"PromptAI — AI Research Hub","description":"Curated AI papers, breaking research news, tool reviews and expert analysis — all in one place. Updated daily.","isPartOf":{"@id":"https://promptai.in/#website"},"about":{"@id":"https://promptai.in/#org"},"primaryImageOfPage":"https://promptai.in/og-image.jpg","inLanguage":"en"}]}
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,300;0,400;0,500;0,700;1,400&family=Roboto+Serif:opsz,wght@8..144,400;8..144,500;8..144,600&display=swap" rel="stylesheet"/>
+<link rel="preconnect" href="https://images.weserv.nl"/>
 <link rel="preconnect" href="https://api.rss2json.com"/>
 <link rel="preconnect" href="https://hacker-news.firebaseio.com"/>
 <link rel="preconnect" href="https://images.weserv.nl"/>
@@ -460,6 +461,15 @@ if(t!=='default')document.documentElement.setAttribute('data-theme',t);}catch(e)
   .modal-share a, .modal-share button { flex:1; display:flex; align-items:center; justify-content:center; gap:6px; padding:10px; border-radius:10px; border:1px solid var(--border-soft); background:var(--bg); font-size:0.8rem; font-weight:500; color:var(--text-2); transition:background .15s; }
   .modal-share a:hover, .modal-share button:hover { background:var(--bg-subtle); }
   .modal-share .ico { width:16px; height:16px; fill:currentColor; flex:none; }
+  .modal-social { display:flex; align-items:center; gap:8px; margin-top:10px; flex-wrap:wrap; }
+  .modal-social .ms-lbl { font-size:0.78rem; color:var(--text-3); font-weight:500; margin-right:2px; }
+  .modal-social .ms-ic { width:38px; height:38px; flex:none; display:inline-flex; align-items:center; justify-content:center; border-radius:50%; border:1px solid var(--border-soft); background:var(--bg); color:var(--text-2); transition:color .15s, border-color .15s; }
+  .modal-social .ms-ic:hover { color:var(--accent); border-color:var(--accent); }
+  .modal-social .ms-ic svg { width:17px; height:17px; fill:currentColor; }
+  #m-listen.on { border-color:var(--accent); color:var(--accent); }
+  #offline-bar { position:fixed; left:50%; bottom:18px; transform:translate(-50%,28px); z-index:350; display:flex; align-items:center; gap:8px; max-width:calc(100vw - 32px); padding:9px 16px; border-radius:22px; background:var(--text); color:var(--bg); font-size:0.82rem; font-weight:500; box-shadow:0 8px 28px rgba(0,0,0,0.28); opacity:0; pointer-events:none; transition:opacity .25s, transform .25s; }
+  #offline-bar.show { opacity:1; transform:translate(-50%,0); }
+  #offline-bar::before { content:''; width:8px; height:8px; border-radius:50%; background:#e8a33d; flex:none; }
   /* ── R-next: modal reading progress + reading-time + kbd help ── */
   #m-progress { position:fixed; top:0; left:0; right:0; height:3px; z-index:210; background:transparent; pointer-events:none; }
   #m-progress i { display:block; height:100%; width:0; background:var(--accent); border-radius:0 2px 2px 0; transition:width .08s linear; }
@@ -911,11 +921,17 @@ if(t!=='default')document.documentElement.setAttribute('data-theme',t);}catch(e)
       <div id="m-explain" style="display:none"></div>
       <a class="modal-read" id="m-read" href="#" target="_blank" rel="noopener">Read full article ↗</a>
       <div class="modal-share">
+        <button id="m-listen" type="button" aria-label="Listen to the summary"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10v4h4l5 5V5L7 10H3zm13.5 2a4.5 4.5 0 0 0-2.5-4.03v8.05A4.5 4.5 0 0 0 16.5 12z"/></svg><span class="lbl">Listen</span></button>
         <button id="m-save" aria-label="Save this story" aria-pressed="false"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12a1 1 0 0 1 1 1v17l-7-4-7 4V4a1 1 0 0 1 1-1z"/></svg><span class="lbl">Save</span></button>
         <button id="m-like" aria-label="Like this story" aria-pressed="false"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7.5-4.64-10-9.3C.62 8.45 2 5 5.3 5c2 0 3.31 1.12 4.2 2.4l.5.72.5-.72C11.39 6.12 12.7 5 14.7 5 18 5 19.38 8.45 22 11.7 19.5 16.36 12 21 12 21z"/></svg><span class="lbl">Like</span></button>
-        <a id="m-x" target="_blank" rel="noopener" aria-label="Share on X"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M17.53 3H20.5l-6.5 7.43L21.75 21h-6.02l-4.71-6.16L5.6 21H2.63l6.96-7.95L2.5 3h6.17l4.26 5.63L17.53 3zm-1.06 16h1.65L7.6 4.7H5.83l10.64 14.3z"/></svg><span class="lbl">Post</span></a>
-        <a id="m-li" target="_blank" rel="noopener" aria-label="Share on LinkedIn"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4.98 3.5A2.5 2.5 0 1 1 5 8.5a2.5 2.5 0 0 1-.02-5zM3 9h4v12H3zm6 0h3.8v1.7h.05c.53-1 1.83-2.06 3.77-2.06 4.03 0 4.78 2.65 4.78 6.1V21h-4v-5.4c0-1.29-.02-2.95-1.8-2.95-1.8 0-2.07 1.4-2.07 2.85V21H9z"/></svg><span class="lbl">Share</span></a>
         <button onclick="copyLink()" id="m-copy" aria-label="Copy or share link to this story"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M16 1H4a2 2 0 0 0-2 2v12h2V3h12V1zm3 4H8a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2zm0 16H8V7h11v14z"/></svg><span class="lbl">Copy</span></button>
+      </div>
+      <div class="modal-social" aria-label="Share this story">
+        <span class="ms-lbl">Share</span>
+        <a id="m-x" target="_blank" rel="noopener" aria-label="Share on X" class="ms-ic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24h-6.657l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231 5.451-6.231z"/></svg></a>
+        <a id="m-li" target="_blank" rel="noopener" aria-label="Share on LinkedIn" class="ms-ic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.45 20.45h-3.55v-5.57c0-1.33-.03-3.04-1.85-3.04-1.86 0-2.14 1.45-2.14 2.94v5.67H9.36V9h3.41v1.56h.05c.47-.9 1.63-1.85 3.36-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28zM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12zM7.12 20.45H3.55V9h3.57v11.45z"/></svg></a>
+        <a id="m-wa" target="_blank" rel="noopener" aria-label="Share on WhatsApp" class="ms-ic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17.47 14.38c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.17-.17.2-.35.22-.65.07-.3-.15-1.25-.46-2.39-1.47-.88-.79-1.48-1.76-1.65-2.06-.17-.3-.02-.46.13-.61.13-.13.3-.35.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.02-.52-.07-.15-.67-1.62-.92-2.22-.24-.58-.49-.5-.67-.51l-.57-.01c-.2 0-.52.07-.8.37-.27.3-1.04 1.02-1.04 2.5 0 1.47 1.07 2.89 1.22 3.09.15.2 2.11 3.22 5.1 4.51.71.31 1.27.49 1.7.63.72.23 1.37.2 1.88.12.57-.09 1.76-.72 2.01-1.41.25-.7.25-1.29.17-1.41-.07-.12-.27-.2-.57-.35m-5.42 7.4h-.01a9.87 9.87 0 0 1-5.03-1.38l-.36-.21-3.74.98 1-3.65-.24-.37a9.86 9.86 0 0 1-1.51-5.26c0-5.45 4.44-9.88 9.9-9.88a9.83 9.83 0 0 1 7 2.9 9.83 9.83 0 0 1 2.89 7c0 5.45-4.44 9.88-9.9 9.88m8.42-18.3A11.82 11.82 0 0 0 12.05 0C5.5 0 .16 5.34.16 11.89c0 2.1.55 4.14 1.59 5.94L.06 24l6.33-1.66a11.88 11.88 0 0 0 5.66 1.44h.01c6.55 0 11.89-5.34 11.89-11.89 0-3.18-1.24-6.16-3.48-8.41z"/></svg></a>
+        <a id="m-tg" target="_blank" rel="noopener" aria-label="Share on Telegram" class="ms-ic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11.94 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.06 0zm4.96 7.22c.1 0 .32.02.46.14a.5.5 0 0 1 .17.33c.02.1.04.32.02.5-.18 1.9-.96 6.5-1.36 8.63-.17.9-.5 1.2-.82 1.23-.7.06-1.23-.46-1.9-.9-1.06-.7-1.66-1.13-2.69-1.81-1.19-.78-.42-1.21.26-1.91.18-.18 3.25-2.98 3.31-3.23a.24.24 0 0 0-.06-.21c-.07-.06-.17-.04-.25-.02-.1.02-1.79 1.14-5.06 3.35-.48.33-.91.49-1.3.48-.43-.01-1.25-.24-1.86-.44-.75-.24-1.34-.37-1.29-.79.03-.22.33-.44.9-.68 3.55-1.55 5.91-2.57 7.1-3.06 3.38-1.41 4.08-1.65 4.54-1.66z"/></svg></a>
       </div>
       <div class="modal-next" id="m-next"></div>
     </div>
@@ -984,6 +1000,7 @@ if ('serviceWorker' in navigator) {
       '<div><dt><kbd>/</kbd></dt><dd>Focus search</dd></div>' +
       '<div><dt><kbd>?</kbd></dt><dd>Show / hide this help</dd></div>' +
       '<div><dt><kbd>Esc</kbd></dt><dd>Close dialogs &amp; menus</dd></div>' +
+      '<div><dt><kbd>n</kbd></dt><dd>Open the next related read</dd></div>' +
       '</dl><button type="button" class="kbd-close">Got it</button></div>';
     o.addEventListener('click', function (e) { if (e.target === o || e.target.classList.contains('kbd-close')) o.classList.remove('open'); });
     document.body.appendChild(o); return o;
@@ -995,6 +1012,41 @@ if ('serviceWorker' in navigator) {
       e.preventDefault(); buildKbd().classList.toggle('open');
     } else if (e.key === 'Escape') { var k = document.getElementById('kbd-help'); if (k) k.classList.remove('open'); }
   });
+})();
+</script>
+<script>
+/* R-next-2: TTS Listen, modal focus-trap, offline banner */
+(function () {
+  var listen = document.getElementById('m-listen');
+  if (listen && 'speechSynthesis' in window) {
+    var speaking = false;
+    var setLbl = function (txt) { var l = listen.querySelector('.lbl'); if (l) l.textContent = txt; };
+    var stop = function () { try { speechSynthesis.cancel(); } catch (e) {} speaking = false; setLbl('Listen'); listen.classList.remove('on'); };
+    listen.addEventListener('click', function () {
+      if (speaking) { stop(); return; }
+      var txt = ((document.getElementById('m-text') || {}).textContent || '').trim();
+      if (!txt) return;
+      var u = new SpeechSynthesisUtterance(txt); u.rate = 1.03; u.onend = stop; u.onerror = stop;
+      try { speechSynthesis.cancel(); speechSynthesis.speak(u); speaking = true; setLbl('Stop'); listen.classList.add('on'); } catch (e) {}
+    });
+    var mo = document.getElementById('modal');
+    if (mo) new MutationObserver(function () { if (!mo.classList.contains('open')) stop(); }).observe(mo, { attributes: true, attributeFilter: ['class'] });
+  } else if (listen) { listen.style.display = 'none'; }
+  var modalEl = document.getElementById('modal');
+  if (modalEl) modalEl.addEventListener('keydown', function (e) {
+    if (e.key !== 'Tab') return;
+    var f = Array.prototype.slice.call(modalEl.querySelectorAll('a[href],button:not([disabled]),input,[tabindex]:not([tabindex="-1"])')).filter(function (el) { return el.offsetParent !== null; });
+    if (!f.length) return;
+    var first = f[0], last = f[f.length - 1];
+    if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+  });
+  var bar = document.createElement('div');
+  bar.id = 'offline-bar'; bar.setAttribute('role', 'status'); bar.setAttribute('aria-live', 'polite');
+  bar.textContent = 'You\u2019re offline \u2014 showing saved content';
+  document.body.appendChild(bar);
+  var sync = function () { bar.classList.toggle('show', !navigator.onLine); };
+  window.addEventListener('online', sync); window.addEventListener('offline', sync); sync();
 })();
 </script>
 <script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "102dac2624114f988e2e82ab7b7c4045"}'></script>

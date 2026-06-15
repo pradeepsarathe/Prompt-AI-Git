@@ -20,6 +20,7 @@
 <meta name="twitter:card" content="summary_large_image"/>
 <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"FAQPage","mainEntity":[{"@type":"Question","name":"What is inference in AI?","acceptedAnswer":{"@type":"Answer","text":"Inference is when a trained AI model is actually used — every reply it generates. Training builds the model; inference runs it."}}]},{"@type":"DefinedTerm","name":"Inference","description":"Inference is when a trained AI model is actually used — every reply it generates. Training builds the model; inference runs it.","url":"https://promptai.in/glossary/inference","inDefinedTermSet":{"@type":"DefinedTermSet","name":"PromptAI AI Glossary","url":"https://promptai.in/glossary.html"}},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Learn AI","item":"https://promptai.in/education.html"},{"@type":"ListItem","position":2,"name":"AI Glossary","item":"https://promptai.in/glossary.html"},{"@type":"ListItem","position":3,"name":"Inference","item":"https://promptai.in/glossary/inference"}]}]}</script>
 <meta name="color-scheme" content="light dark"/>
+<meta name="theme-color" content="#ffffff"/>
 <link rel="manifest" href="../manifest.webmanifest"/>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
@@ -99,7 +100,7 @@
 </nav>
 <div class="canvas" data-screen-label="Glossary: Inference">
   <main class="main">
-    <nav class="crumbs" aria-label="Breadcrumb"><a href="../education.html">Learn AI</a> <span>›</span> <a href="../glossary.html">AI Glossary</a> <span>›</span> <span>Inference</span></nav>
+    <nav class="crumbs" aria-label="Breadcrumb"><a href="../education.html">Learn AI</a> <span>›</span> <a href="../glossary.html">AI Glossary</a> <span>›</span> <span aria-current="page">Inference</span></nav>
     <div class="g-head">
       <span class="cat-pill">AI Glossary</span>
       <h1>What is inference in AI?</h1>
@@ -121,7 +122,13 @@
       <a class="chip" href="token.html">Token</a>
       <a class="chip" href="parameters.html">Parameters</a>
     </div>
+        <div class="ask-row"><a class="ask-ai" id="ask-ai" target="_blank" rel="noopener">✨ Ask ChatGPT to explain this further</a></div>
     <div class="cta"><b>Learning AI from scratch?</b> Start with the free <a href="../education.html">Learn AI</a> course picks, then put it to work with <a href="../prompts.html">50 tested prompts</a> — or get the daily 2-minute briefing, <a href="../index.html">free →</a></div>
+
+    <nav class="term-nav" aria-label="Glossary navigation">
+      <a class="prev" href="transformer.html"><span class="lbl">← Previous</span><span class="nm">Transformer</span></a>
+      <a class="next" href="parameters.html"><span class="lbl">Next →</span><span class="nm">Parameters</span></a>
+    </nav>
   </main>
 </div>
 <footer class="site-footer">
@@ -131,6 +138,8 @@
     <a href="/terms.html">Terms</a>
     <a href="/prompts.html">Prompts</a>
     <a href="/education.html">Learn AI</a>
+    <a href="/glossary.html">Glossary</a>
+    <a href="/methodology.html">Editorial standards</a>
     <a href="/archive.html">Archive</a>
     <a href="/issues">Issues</a>
     <a href="/feed.xml">RSS</a>
@@ -139,5 +148,6 @@
 </footer>
 <div id="toast" role="status" aria-live="polite"></div>
 <script src="../pai-chrome.js"></script>
+<script>(function(){var a=document.getElementById("ask-ai");if(!a)return;var h=document.querySelector("h1");var term=(h?h.textContent:document.title).replace(/^What is |^What are |^What does /,"").replace(/\?\s*$/,"").trim();a.href="https://chatgpt.com/?q="+encodeURIComponent("Explain in simple terms, with one concrete example: "+term);})();</script>
 </body>
 </html>
