@@ -4,6 +4,7 @@
 <meta charset="UTF-8"/>
 <script>/* pre-paint theme */(function(){try{var t=localStorage.getItem('pai_theme')||'auto';if(t==='auto')t=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'default';if(t!=='default')document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="theme-color" content="#ffffff"/>
 <title>AI Glossary — 16 AI terms explained in plain English | PromptAI</title>
 <meta name="description" content="What is an LLM? A token? RAG? Hallucination? 16 AI terms explained in plain English, with analogies and concrete examples. Free, no sign-up."/>
 <link rel="canonical" href="https://promptai.in/glossary.html"/>
@@ -38,6 +39,14 @@
   .sec-title .bar { width:5px; height:26px; border-radius:3px; background:var(--accent); }
   .sec-sub { font-size:0.95rem; color:var(--text-2); margin:10px 0 4px; max-width:680px; }
   .g-grid { display:grid; gap:14px; margin:22px 0 30px; }
+  .g-search { position:relative; display:flex; align-items:center; margin:18px 0 10px; }
+  .g-search svg { position:absolute; left:15px; width:18px; height:18px; fill:var(--text-3); pointer-events:none; }
+  .g-search input { width:100%; height:44px; border:1px solid var(--border); border-radius:22px; background:var(--card); padding:0 16px 0 44px; font-size:0.9rem; color:var(--text); font-family:inherit; }
+  .g-search input::placeholder { color:var(--text-3); }
+  .g-search input:focus { outline:none; border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-subtle); }
+  .g-count { font-size:0.82rem; color:var(--text-2); margin:0; }
+  .g-count b { color:var(--text); font-weight:600; }
+  .g-empty { color:var(--text-3); padding:24px 0; }
   .g-card { display:block; background:var(--card); border:1px solid var(--border-soft); border-radius:14px; padding:18px 20px; box-shadow:var(--shadow); transition:box-shadow .15s; }
   .g-card:hover { box-shadow:var(--shadow-hover); }
   .g-card h2 { font-family:var(--serif); font-size:1.08rem; font-weight:600; color:var(--text); margin-bottom:6px; }
@@ -96,6 +105,11 @@
       <h1 class="sec-title"><span class="bar"></span> AI Glossary</h1>
       <p class="sec-sub">16 AI terms in plain English — one analogy, three reasons it matters, one concrete example. No jargon explaining jargon.</p>
     </div>
+    <div class="g-search">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 1 0-.7.7l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0A4.5 4.5 0 1 1 14 9.5 4.49 4.49 0 0 1 9.5 14z"/></svg>
+      <input id="pai-search" type="search" placeholder="Filter 16 terms…" autocomplete="off" aria-label="Filter glossary terms"/>
+    </div>
+    <div class="g-count" id="g-count"></div>
     <div class="g-grid">
       <a class="g-card" href="glossary/llm.html"><h2>What is an LLM?</h2><p>An LLM — large language model — is an AI system trained on enormous amounts of text to predict the next word, and through that to write, summarize, translate and reason.</p></a>
       <a class="g-card" href="glossary/token.html"><h2>What is a token in AI?</h2><p>A token is the small chunk of text — roughly three-quarters of an English word — that an AI model reads and writes, one at a time.</p></a>
@@ -114,6 +128,7 @@
       <a class="g-card" href="glossary/multimodal.html"><h2>What does multimodal mean in AI?</h2><p>A multimodal model understands more than text — images, audio, sometimes video — in one system, and can often produce them too.</p></a>
       <a class="g-card" href="glossary/agi.html"><h2>What is AGI?</h2><p>AGI — artificial general intelligence — is a hypothetical AI that matches or exceeds humans across most intellectual work, not just one narrow skill. It does not exist yet.</p></a>
     </div>
+    <p class="g-empty" id="g-empty" hidden>No terms match — try another word.</p>
     <div class="cta"><b>Now put the vocabulary to work:</b> the <a href="prompts.html">prompt library</a> has 50 tested prompts, and the free <a href="index.html">daily briefing</a> keeps you current in 2 minutes.</div>
   </main>
 </div>
@@ -124,6 +139,8 @@
     <a href="/terms.html">Terms</a>
     <a href="/prompts.html">Prompts</a>
     <a href="/education.html">Learn AI</a>
+    <a href="/glossary.html">Glossary</a>
+    <a href="/methodology.html">Editorial standards</a>
     <a href="/archive.html">Archive</a>
     <a href="/issues">Issues</a>
     <a href="/feed.xml">RSS</a>
@@ -132,5 +149,28 @@
 </footer>
 <div id="toast" role="status" aria-live="polite"></div>
 <script src="pai-chrome.js"></script>
+<script>
+// Live filter for the glossary grid (term + definition text)
+(function () {
+  var input = document.getElementById('pai-search');
+  var cards = [].slice.call(document.querySelectorAll('.g-grid .g-card'));
+  var count = document.getElementById('g-count');
+  var empty = document.getElementById('g-empty');
+  var total = cards.length;
+  function apply() {
+    var q = (input.value || '').trim().toLowerCase();
+    var shown = 0;
+    cards.forEach(function (c) {
+      var hit = !q || c.textContent.toLowerCase().indexOf(q) !== -1;
+      c.style.display = hit ? '' : 'none';
+      if (hit) shown++;
+    });
+    if (count) count.innerHTML = '<b>' + shown + '</b> of ' + total + ' terms' +
+      (q ? ' matching \u201c' + q.replace(/</g, '&lt;') + '\u201d' : '');
+    if (empty) empty.hidden = shown > 0;
+  }
+  if (input) { input.addEventListener('input', apply); apply(); }
+})();
+</script>
 </body>
 </html>

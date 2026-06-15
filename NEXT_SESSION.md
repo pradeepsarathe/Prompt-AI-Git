@@ -2,6 +2,69 @@
 
 # NEXT SESSION
 
+## State (2026-06-15, latest 3) — Daily-default subscribe + 15-task front-end batch
+Two pieces this session, all client-side (working tree only — push to deploy).
+
+### A. Subscribe = Daily-first, identical on every page
+Reported: subscribe control looked different across pages; wanted Daily default,
+Weekly optional. Fixes:
+- `index.html` (home top popover + "The Briefing" rail) reordered to **Daily
+  checked first**, Weekly second; `pai-google-ui.js` submit fallbacks → `daily`.
+- `pai-chrome.css` gained the missing `.news-promo .freq-row` white-on-blue
+  treatment (was making the Weekly pill look broken on the blue rail panel).
+- `education.html`/`archive.html` rail forms carry the Daily/Weekly control inline.
+- `pai-chrome.js` `ensureSubMenu()` now **rebuilds ANY legacy popover** (weekly-first
+  or no-frequency) to the canonical daily-first markup unless Daily is already the
+  checked default — normalises glossary/prompts/methodology/prompt-*/glossary-* with
+  no per-file edits. Rail inject + fallbacks default to daily.
+
+### B. 15 self-contained improvements (verified in preview)
+1. Daily-first popover normalisation (above).
+2. **Archive `?q=`/`?type=` deep-links** — `/archive.html?q=openai&type=news` prefills
+   + filters; fixes the 404 search box (was posting `?q=` archive never read).
+3. **Back-to-top** floating button — injected by `pai-chrome.js` on every chrome page,
+   inline on `index.html`; shows >480px scroll, reduced-motion aware.
+4. **`theme-color` meta synced to theme** — `applyTheme` (chrome + home) updates it;
+   static tags added to secondary pages for first-paint.
+5. **Print stylesheet** — `@media print` drops chrome, prints content clean (PDF).
+6. **Prompts live search** — filters 50 by name/use-case/text, count + empty state.
+7. **Glossary live filter** — 16 terms, count + empty state.
+8. **Footer unified** — Glossary + Editorial standards everywhere, home order.
+9. **`aria-current="page"`** on active nav tab (chrome pages).
+10. **Archive result count + Clear-filters** affordance.
+11. **Prompts `?cat=`** shareable category deep-link (history.replaceState).
+12. **sw.js precache** += glossary.html, methodology.html, pai-metrics.js.
+13. **Site-wide smooth scroll** with reduced-motion guard.
+14. **PWA `theme-color`** tags on chrome pages.
+15. **404 quick-links** += Glossary; footer += Glossary + Editorial standards.
+- **Bumped `sw.js` → `pai-v10`** (JS/CSS/HTML changed; static assets are
+  stale-while-revalidate so the bump is required for returning users).
+Files: index.html, archive.html, education.html, glossary.html, prompts.html,
+methodology.html, 404.html, pai-chrome.js, pai-chrome.css, pai-google-ui.js, sw.js.
+Verified: daily-first on all popovers, archive deep-link (14 "openai" news results),
+prompts/glossary search, archive count+clear, back-to-top + aria-current via the real
+JS, unified footer. NOTE: preview serves stale static assets until the v10 SW reinstalls
+— HTML is network-first so page changes show immediately.
+
+## State (2026-06-15, latest 2) — Retention & a11y batch (client-side); repo verified in sync
+Confirmed against the live repo (`pradeepsarathe/Prompt-AI-Git@main`): everything from
+the prior sessions IS deployed (sw `pai-v6`, BreadcrumbList in page.js, methodology.html,
+contrast fix, Up-next, onboarding, etc.). **Nothing was missing.** Built the next set on top:
+1. **"Recently read" rail** (`#continue-panel`) — re-open from reading history; reopens the
+   full loaded record when still in a feed, else a lightweight modal. `index.html` +
+   `renderContinue()`/`findLoaded()` in `pai-google-ui.js`. Wired into loadNews/openModal/boot.
+2. **"For you" refresh** — `↻` button reshuffles suggestions (deterministic `shuffleSeeded`);
+   button auto-hides when the pool is ≤5. `paiRefreshForYou()`.
+3. **`/` focuses search** from anywhere (ignored while typing) — home (`pai-google-ui.js`)
+   and all chrome pages (`pai-chrome.js`).
+4. **A11y parity for secondary pages** — `pai-chrome.css` gains `:focus-visible` ring +
+   `.skip-link`; `pai-chrome.js` `ensureSkipLink()` injects a "Skip to content" link
+   targeting the page's `<main>` (adds `#main` if absent). index.html already had both.
+- **Bumped `sw.js` → `pai-v7`** (cached JS/CSS changed).
+Files: `index.html`, `pai-google-ui.js`, `pai-chrome.js`, `pai-chrome.css`, `sw.js`.
+Verified in preview: rail shows 4 recent reads, reshuffle changes order, `/` focuses
+search on home + education.html, skip link injected on chrome pages, no console errors.
+
 ## State (2026-06-15) — Subscribe popover/rail consistency (one-file fix)
 Reported bug: the subscribe/briefing UI differed across pages — some showed the
 weekly/daily choice, some only a bare "Subscribe". Root cause: each page hardcodes

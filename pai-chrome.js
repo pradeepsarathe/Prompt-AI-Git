@@ -16,10 +16,18 @@
   // ── THEME ──────────────────────────────────────────────
   // R29: light themes + dark + follow-system (default = follow system)
   function systemDark() { try { return matchMedia('(prefers-color-scheme: dark)').matches; } catch (e) { return false; } }
+  // Map each theme to the canvas colour used for the mobile browser chrome bar.
+  const THEME_BG = { 'default':'#ffffff', 'promptai':'#f3f6fc', 'slate':'#f7f5f1', 'dark':'#17181c' };
+  function setMetaThemeColor(eff) {
+    let m = document.querySelector('meta[name="theme-color"]');
+    if (!m) { m = document.createElement('meta'); m.setAttribute('name', 'theme-color'); document.head.appendChild(m); }
+    m.setAttribute('content', THEME_BG[eff] || '#ffffff');
+  }
   function applyTheme(t) {
     const eff = (!t || t === 'auto') ? (systemDark() ? 'dark' : 'default') : t;
     if (eff === 'default') document.documentElement.removeAttribute('data-theme');
     else document.documentElement.setAttribute('data-theme', eff);
+    setMetaThemeColor(eff);
     document.querySelectorAll('.theme-opt').forEach(o => o.classList.toggle('active', (o.dataset.theme || '') === t));
   }
   window.setTheme = function (t) {
@@ -68,7 +76,11 @@
   function ensureSubMenu() {
     const m = document.getElementById('sub-menu');
     if (!m) return;
-    if (m.querySelector('input[name="sub-freq"]')) return; // already has the choice
+    // Normalise legacy popovers to the canonical daily-first markup. Older pages
+    // shipped weekly-first (or no frequency choice at all); rebuild unless THIS
+    // page already has Daily as the checked default. Idempotent.
+    const daily = m.querySelector('input[name="sub-freq"][value="daily"]');
+    if (daily && daily.checked) return;
     m.innerHTML = SUB_MENU_HTML;
   }
   // Same idea for the right-rail promo (Learn AI / Archive). We only INJECT the
@@ -188,10 +200,30 @@
     if (s) { e.preventDefault(); s.focus(); s.select && s.select(); }
   });
 
+  // ── BACK TO TOP (universal floating button) ────────────
+  function ensureBackToTop() {
+    if (document.getElementById('to-top')) return;
+    const b = document.createElement('button');
+    b.id = 'to-top'; b.type = 'button';
+    b.setAttribute('aria-label', 'Back to top'); b.title = 'Back to top';
+    b.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 8.3l-6 6 1.4 1.4 4.6-4.6 4.6 4.6 1.4-1.4z"/></svg>';
+    b.addEventListener('click', () => {
+      const rm = matchMedia('(prefers-reduced-motion: reduce)').matches;
+      window.scrollTo({ top: 0, behavior: rm ? 'auto' : 'smooth' });
+    });
+    document.body.appendChild(b);
+    const onScroll = () => b.classList.toggle('show', window.pageYOffset > 480);
+    window.addEventListener('scroll', onScroll, { passive: true }); onScroll();
+  }
+  // a11y: flag the current page's nav tab for assistive tech
+  function markActiveTab() {
+    document.querySelectorAll('.tab.active').forEach(el => el.setAttribute('aria-current', 'page'));
+  }
+
   // ── BOOT ───────────────────────────────────────────────
   function boot() {
     let saved = 'auto'; try { saved = localStorage.getItem('pai_theme') || 'auto'; } catch (e) {}
-    ensureThemeOptions(); ensureSubMenu(); ensureRailFreq(); ensureSkipLink(); applyTheme(saved); markActiveLang();
+    ensureThemeOptions(); ensureSubMenu(); ensureRailFreq(); ensureSkipLink(); ensureBackToTop(); markActiveTab(); applyTheme(saved); markActiveLang();
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
 })();

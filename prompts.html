@@ -4,6 +4,7 @@
 <meta charset="UTF-8"/>
 <script>/* pre-paint theme (R29) */(function(){try{var t=localStorage.getItem('pai_theme')||'auto';if(t==='auto')t=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'default';if(t!=='default')document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="theme-color" content="#ffffff"/>
 <title>Prompt Library — 50 battle-tested AI prompts | PromptAI</title>
 <meta name="description" content="50 copy-paste prompts that actually work — for writing, coding, research, marketing and learning. Tested with Claude, ChatGPT and Gemini. Free, no sign-up."/>
 <link rel="canonical" href="https://promptai.in/prompts.html"/>
@@ -69,6 +70,13 @@
   .prompt-card h3 a { color:inherit; }
   .prompt-card h3 a:hover { color:var(--accent); }
   .empty-lib { color:var(--text-3); padding:30px 0; text-align:center; }
+  .lib-search { position:relative; display:flex; align-items:center; margin:0 0 12px; }
+  .lib-search svg { position:absolute; left:15px; width:18px; height:18px; fill:var(--text-3); pointer-events:none; }
+  .lib-search input { width:100%; height:44px; border:1px solid var(--border); border-radius:22px; background:var(--card); padding:0 16px 0 44px; font-size:0.9rem; color:var(--text); font-family:inherit; }
+  .lib-search input::placeholder { color:var(--text-3); }
+  .lib-search input:focus { outline:none; border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-subtle); }
+  .lib-count { font-size:0.82rem; color:var(--text-2); margin:0 0 14px; }
+  .lib-count b { color:var(--text); font-weight:600; }
   @media (min-width:980px){ .prompt-grid { grid-template-columns:1fr 1fr; } .prompt-card.wide { grid-column:1 / -1; } }
 </style>
 </head>
@@ -145,9 +153,15 @@
 
     <div class="lib-tip"><b>How to use these:</b> the best prompts give the model a role, the context it needs, the format you want back, and one example or constraint. Every prompt below follows that pattern — edit the brackets, keep the structure.</div>
 
+    <div class="lib-search">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 1 0-.7.7l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0A4.5 4.5 0 1 1 14 9.5 4.49 4.49 0 0 1 9.5 14z"/></svg>
+      <input id="pai-search" type="search" placeholder="Search 50 prompts by name, use case or text…" autocomplete="off" aria-label="Search prompts"/>
+    </div>
+
     <div class="chips" id="cat-filters"></div>
+    <div class="lib-count" id="lib-count"></div>
     <div class="prompt-grid" id="prompt-grid"></div>
-    <div class="empty-lib" id="empty-lib" style="display:none">No prompts in this category yet.</div>
+    <div class="empty-lib" id="empty-lib" style="display:none">No prompts match — try another word or category.</div>
   </main>
 </div>
 
@@ -159,6 +173,8 @@
     <a href="/terms.html">Terms</a>
     <a href="/prompts.html">Prompts</a>
     <a href="/education.html">Learn AI</a>
+    <a href="/glossary.html">Glossary</a>
+    <a href="/methodology.html">Editorial standards</a>
     <a href="/archive.html">Archive</a>
     <a href="/issues">Issues</a>
     <a href="/feed.xml">RSS</a>
@@ -179,6 +195,19 @@
   const PROMPTS = window.PAI_PROMPTS || [];
   const CATS = ['All', ...new Set(PROMPTS.map(p => p.cat))];
   let _cat = 'All';
+  let _q = '';
+
+  // ?cat= deep-link (shareable category)
+  try {
+    const c = (new URLSearchParams(location.search).get('cat') || '').trim();
+    if (c) { const hit = CATS.find(x => x.toLowerCase() === c.toLowerCase()); if (hit) _cat = hit; }
+  } catch (e) {}
+
+  function matches(p) {
+    if (_cat !== 'All' && p.cat !== _cat) return false;
+    if (!_q) return true;
+    return (p.title + ' ' + p.cat + ' ' + (p.why || '') + ' ' + (p.prompt || '')).toLowerCase().includes(_q);
+  }
 
   function chips() {
     const box = $('#cat-filters');
@@ -187,15 +216,22 @@
       const b = document.createElement('button');
       b.className = 'chip' + (c === _cat ? ' active' : '');
       b.textContent = c === 'All' ? `All (${PROMPTS.length})` : `${c} (${PROMPTS.filter(p => p.cat === c).length})`;
-      b.onclick = () => { _cat = c; chips(); render(); };
+      b.onclick = () => {
+        _cat = c; chips(); render();
+        try { history.replaceState(null, '', c === 'All' ? location.pathname : location.pathname + '?cat=' + encodeURIComponent(c)); } catch (e) {}
+      };
       box.appendChild(b);
     });
   }
 
   function render() {
     grid.innerHTML = '';
-    const list = _cat === 'All' ? PROMPTS : PROMPTS.filter(p => p.cat === _cat);
+    const list = PROMPTS.filter(matches);
     $('#empty-lib').style.display = list.length ? 'none' : 'block';
+    const cnt = $('#lib-count');
+    if (cnt) cnt.innerHTML = '<b>' + list.length + '</b> of ' + PROMPTS.length + ' prompts' +
+      (_q ? ' matching “' + _q.replace(/</g, '&lt;') + '”' : '') +
+      (_cat !== 'All' ? ' in ' + _cat : '');
     list.forEach(p => {
       const card = document.createElement('article');
       card.className = 'prompt-card';
@@ -220,6 +256,8 @@
     });
   }
 
+  const search = $('#pai-search');
+  if (search) search.addEventListener('input', () => { _q = search.value.trim().toLowerCase(); render(); });
   chips(); render();
 })();
 </script>

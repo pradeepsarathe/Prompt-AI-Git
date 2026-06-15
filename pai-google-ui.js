@@ -1021,6 +1021,10 @@
     const eff = (!t || t === 'auto') ? (systemDark() ? 'dark' : 'default') : t;
     if (eff === 'default') document.documentElement.removeAttribute('data-theme');
     else document.documentElement.setAttribute('data-theme', eff);
+    const THEME_BG = { 'default':'#ffffff', 'promptai':'#f3f6fc', 'slate':'#f7f5f1', 'dark':'#17181c' };
+    let mc = document.querySelector('meta[name="theme-color"]');
+    if (!mc) { mc = document.createElement('meta'); mc.setAttribute('name', 'theme-color'); document.head.appendChild(mc); }
+    mc.setAttribute('content', THEME_BG[eff] || '#ffffff');
     document.querySelectorAll('.theme-opt').forEach(o => o.classList.toggle('active', (o.dataset.theme || '') === t));
   }
   window.applyPaiTheme = applyTheme;
