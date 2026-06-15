@@ -122,6 +122,10 @@
 .freq-row label:has(input:checked) { border-color:var(--accent); background:var(--accent); color:#fff; font-weight:700; box-shadow:0 2px 8px color-mix(in srgb, var(--accent) 30%, transparent); }
 .freq-row label:has(input:checked)::before { content:'\2713'; font-weight:800; font-size:0.8rem; }
 :root[data-theme="dark"] .freq-row label:has(input:checked) { color:#17181c; }
+/* freq-row on the blue Briefing rail panel — white-on-blue treatment (matches home) */
+.news-promo .freq-row label { color:rgba(255,255,255,0.92); border-color:rgba(255,255,255,0.5); background:transparent; }
+.news-promo .freq-row label:hover { border-color:#fff; color:#fff; }
+.news-promo .freq-row label:has(input:checked) { background:#fff; border-color:#fff; color:var(--accent); box-shadow:0 3px 12px rgba(0,0,0,0.20); }
 
 /* ── TAB BAR ── */
 .tabs {

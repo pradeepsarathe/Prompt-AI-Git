@@ -59,8 +59,8 @@
     '<form onsubmit="return doTopSubscribe(event)">' +
       '<input id="top-email" type="email" placeholder="you@example.com" required aria-label="Email"/>' +
       '<div class="freq-row" role="radiogroup" aria-label="How often">' +
-        '<label><input type="radio" name="sub-freq" value="weekly" checked="checked"/> Weekly \u00b7 Tue</label>' +
-        '<label><input type="radio" name="sub-freq" value="daily"/> Daily</label>' +
+        '<label><input type="radio" name="sub-freq" value="daily" checked="checked"/> Daily</label>' +
+        '<label><input type="radio" name="sub-freq" value="weekly"/> Weekly \u00b7 Tue</label>' +
       '</div>' +
       '<button type="submit">Subscribe free</button>' +
     '</form>' +
@@ -80,8 +80,8 @@
     if (form.querySelector('input[name="rail-freq"]')) return;
     const row = document.createElement('div');
     row.className = 'freq-row'; row.setAttribute('role', 'radiogroup'); row.setAttribute('aria-label', 'How often');
-    row.innerHTML = '<label><input type="radio" name="rail-freq" value="weekly" checked="checked"/> Weekly \u00b7 Tue</label>' +
-                    '<label><input type="radio" name="rail-freq" value="daily"/> Daily</label>';
+    row.innerHTML = '<label><input type="radio" name="rail-freq" value="daily" checked="checked"/> Daily</label>' +
+                    '<label><input type="radio" name="rail-freq" value="weekly"/> Weekly \u00b7 Tue</label>';
     const btn = form.querySelector('button[type="submit"]') || form.querySelector('button');
     if (btn) form.insertBefore(row, btn); else form.appendChild(row);
   }
@@ -102,7 +102,7 @@
     const input = $('#top-email'), email = (input && input.value || '').trim();
     if (!email) return false;
     const fr = document.querySelector('input[name="sub-freq"]:checked');
-    const freq = fr ? fr.value : 'weekly';
+    const freq = fr ? fr.value : 'daily';
     subscribe(email, freq).then(r => {
       if (r && (r.ok || r.success || r.status === 'ok' || r.subscribed)) toast(freq === 'daily' ? '✓ Subscribed — daily. Check your inbox.' : '✓ Subscribed — weekly. Check your inbox.');
       else toast('✓ Thanks — you’re on the list.');
@@ -117,7 +117,7 @@
     const input = $('#rail-email'), email = (input && input.value || '').trim();
     if (!email) return false;
     const rf = document.querySelector('input[name="rail-freq"]:checked');
-    const freq = rf ? rf.value : 'weekly';
+    const freq = rf ? rf.value : 'daily';
     subscribe(email, freq).then(r => {
       if (r && (r.ok || r.success || r.status === 'ok' || r.subscribed)) toast('✓ Subscribed! Check your inbox.');
       else toast('✓ Thanks — you’re on the list.');

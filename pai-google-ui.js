@@ -955,7 +955,7 @@
     const email = $('#promo-email').value.trim();
     if (!email) return false;
     const pf = document.querySelector('input[name="promo-freq"]:checked');
-    const freq = pf ? pf.value : 'weekly';
+    const freq = pf ? pf.value : 'daily';
     toast('Subscribing…');
     P.event && P.event('subscribe_submit');
     P.subscribe(email, freq).then(r => {
@@ -1002,7 +1002,7 @@
     const input = $('#top-email'), email = (input && input.value || '').trim();
     if (!email) return false;
     const fr = document.querySelector('input[name="sub-freq"]:checked');
-    const freq = fr ? fr.value : 'weekly';
+    const freq = fr ? fr.value : 'daily';
     P.event && P.event('subscribe_submit');
     P.subscribe(email, freq).then(r => {
       if (r && (r.ok || r.success || r.status === 'ok' || r.subscribed)) {

@@ -225,8 +225,8 @@
   <form onsubmit="return doTopSubscribe(event)">
     <input id="top-email" type="email" placeholder="you@example.com" required aria-label="Email"/>
     <div class="freq-row" role="radiogroup" aria-label="How often">
-      <label><input type="radio" name="sub-freq" value="weekly" checked="checked"/> Weekly · Tue</label>
-      <label><input type="radio" name="sub-freq" value="daily"/> Daily</label>
+      <label><input type="radio" name="sub-freq" value="daily" checked="checked"/> Daily</label>
+      <label><input type="radio" name="sub-freq" value="weekly"/> Weekly · Tue</label>
     </div>
     <button type="submit">Subscribe free</button>
   </form>
@@ -522,6 +522,10 @@
       <p>The one story that matters, 5 headlines and the paper everyone's citing — daily or weekly, your call.</p>
       <form onsubmit="return doRailSubscribe(event)">
         <input type="email" id="rail-email" placeholder="you@example.com" required/>
+        <div class="freq-row" role="radiogroup" aria-label="How often">
+          <label><input type="radio" name="rail-freq" value="daily" checked="checked"/> Daily</label>
+          <label><input type="radio" name="rail-freq" value="weekly"/> Weekly · Tue</label>
+        </div>
         <button type="submit">Subscribe free</button>
         <span class="note">No spam. Unsubscribe anytime.</span>
       </form>
@@ -552,6 +556,7 @@
     <a href="/terms.html">Terms</a>
     <a href="/prompts.html">Prompts</a>
     <a href="/education.html">Learn AI</a>
+    <a href="/glossary.html">Glossary</a>
     <a href="/archive.html">Archive</a>
     <a href="/issues">Issues</a>
     <a href="/feed.xml">RSS</a>

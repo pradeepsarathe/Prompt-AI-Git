@@ -631,8 +631,8 @@ if(t!=='default')document.documentElement.setAttribute('data-theme',t);}catch(e)
   <form onsubmit="return doTopSubscribe(event)">
     <input id="top-email" type="email" placeholder="you@example.com" required aria-label="Email"/>
     <div class="freq-row" role="radiogroup" aria-label="How often">
-      <label><input type="radio" name="sub-freq" value="weekly" checked="checked"/> Weekly · Tue</label>
-      <label><input type="radio" name="sub-freq" value="daily"/> Daily</label>
+      <label><input type="radio" name="sub-freq" value="daily" checked="checked"/> Daily</label>
+      <label><input type="radio" name="sub-freq" value="weekly"/> Weekly · Tue</label>
     </div>
     <button type="submit">Subscribe free</button>
   </form>
@@ -760,8 +760,8 @@ if(t!=='default')document.documentElement.setAttribute('data-theme',t);}catch(e)
         <form onsubmit="return doSubscribe(event)">
           <input type="email" id="promo-email" placeholder="you@example.com" required/>
           <div class="freq-row" role="radiogroup" aria-label="How often">
-            <label><input type="radio" name="promo-freq" value="weekly" checked="checked"/> Weekly · Tue</label>
-            <label><input type="radio" name="promo-freq" value="daily"/> Daily</label>
+            <label><input type="radio" name="promo-freq" value="daily" checked="checked"/> Daily</label>
+            <label><input type="radio" name="promo-freq" value="weekly"/> Weekly · Tue</label>
           </div>
           <button type="submit">Subscribe free</button>
           <span class="note" data-social-proof>No spam. Unsubscribe anytime.</span>
