@@ -1,52 +1,51 @@
-# Deploy bundle — 2026-06-16b  (R-next-2: 15 changes, prompt-library + sharing + a11y/SEO)
+# Deploy bundle — 2026-06-16c  (R-next-3: 10 changes, prompt-library + glossary utility)
 
-Builds on the deployed `pai-v12` batch. All client-side / SEO — no keys or binaries.
-**Bumps `sw.js` → `pai-v13`.**
+Builds on the deployed `pai-v13` batch. All client-side / SEO — no keys or binaries.
+**Bumps `sw.js` → `pai-v14`.**
 
-## The 15 changes
-1. **"Open in ChatGPT / Claude / Gemini"** on all **50 prompt detail pages** — deep-links
-   that prefill the prompt (`chatgpt.com/?q=`, `claude.ai/new?q=`; Gemini = copy + open,
-   since it has no prefill param).
-2. **prompts.html cards: "↗ Open in ChatGPT"** quick-open on every card.
-3. **Glossary (16 pages): "✨ Ask ChatGPT to explain this further"** deep-link built from
-   the term.
-4. **Home article modal: WhatsApp + Telegram share** added (parity with prompt pages);
-   share moved to a dedicated icon row.
-5. **Modal "🔊 Listen"** — reads the AI summary aloud via the Web Speech API (toggles
-   to Stop; auto-stops on close; hidden if unsupported).
-6. **Semantic `<time datetime>`** for the modal timestamp (a11y + SEO).
-7. **FAQPage JSON-LD on methodology.html** (independence / AI use / sourcing / corrections)
-   — eligible for FAQ rich results.
-8. **Organization schema** gains `foundingDate` + `contactPoint` (E-E-A-T).
-9. **Focus trap** in the home article modal (Tab cycles within).
-10. **Offline banner** — site-wide toast when `navigator.onLine` is false (pai-chrome.js
-    for chrome/detail pages, inline on home).
-11. **LCP**: `fetchpriority="high"` + explicit dims on the lead/hero image.
-12. **Preconnect** to `images.weserv.nl` (the image proxy on the critical path).
-13. **In-modal next-story shortcut** — `n` / `→` opens the first "Up next" read; added to
-    the `?` keyboard-help overlay.
-14. **prompts.html "🎲 Surprise me"** — opens a random prompt.
-15. **`sw.js` → `pai-v13`.**
+Only **3 files** change — almost everything lands in the shared `pai-chrome.js`, which
+all 50 `/prompt/<slug>` and 16 `/glossary/<slug>` pages already load, so no per-page
+HTML edits were needed.
 
-## Files to push (73)
-index.html · pai-google-ui.js · pai-chrome.js · pai-chrome.css · methodology.html ·
-prompts.html · sw.js · **prompt/** (50 files) · **glossary/** (16 files)
+## The 10 changes
+1. **Prompt pages — `[bracketed]` placeholders are highlighted** in the prompt box
+   (accent chips) so it's obvious what to replace. Copy text is unchanged (round-trips).
+2. **Prompt pages — "N blanks to fill" badge** next to Copy, auto-derived from the unique
+   placeholders (hidden when there are none).
+3. **Prompt pages — press `c` to copy** the prompt (ignored while typing in a field).
+4. **Prompt pages — the category breadcrumb is now a link** to the filtered library
+   (`/prompts.html?cat=<Category>`) — real internal linking.
+5. **Glossary pages — a share row** (X · LinkedIn · WhatsApp · Copy link), parity with the
+   prompt pages, which glossary pages previously lacked.
+6. **Glossary pages — "🔊 Listen"** reads the definition aloud (Web Speech; toggles to Stop;
+   auto-stops on navigate; hidden if unsupported).
+7. **prompts.html — "Recently used" rail** (localStorage): the prompts you copied / opened,
+   as quick chips, with a Clear button. Hidden until you use one.
+8. **prompts.html — ItemList JSON-LD extended 25 → all 50 prompts** (richer CollectionPage
+   structured data for the full library).
+9. **prompts.html cards — "↗ Claude" open link** added next to "↗ ChatGPT" (both prefill
+   the prompt; both record into the Recently-used rail).
+10. **`sw.js` → `pai-v14`.**
+
+## Files to push (3)
+`pai-chrome.js` · `prompts.html` · `sw.js`
 
 ## How to deploy
-Push these to the repo root, preserving the `prompt/` and `glossary/` subfolders.
-Cloudflare auto-deploys on push to `main`. No env / KV / cron changes.
+Push these 3 to the repo root. Cloudflare auto-deploys on push to `main`.
+No env / KV / cron changes.
 
 ## Verify after deploy
-1. `view-source:/sw.js` → `pai-v13`.
-2. Any `/prompt/<slug>` → an **Open in: ChatGPT · Claude · Gemini** row; ChatGPT/Claude
-   open with the prompt prefilled.
-3. `/prompts.html` → each card has **↗ Open in ChatGPT**; header has **🎲 Surprise me**.
-4. `/glossary/<term>` → **✨ Ask ChatGPT to explain this further**.
-5. Home → open a story → modal has a **🔊 Listen** button and a **WhatsApp/Telegram**
-   share row; press `n` to jump to the next "Up next" read.
-6. Google Rich Results test on `/methodology.html` → FAQPage detected.
+1. `view-source:/sw.js` → `pai-v14`.
+2. Any `/prompt/<slug>` → the `[bracketed]` parts are highlighted, an "N blanks to fill"
+   badge sits by Copy, pressing `c` copies, and the "Coding" (etc.) breadcrumb links to
+   `/prompts.html?cat=Coding`.
+3. Any `/glossary/<slug>` → a **🔊 Listen** button + a **share row** under the answer.
+4. `/prompts.html` → cards show **↗ ChatGPT** and **↗ Claude**; after you copy/open one, a
+   **Recently used** rail appears at the top. Rich Results test → CollectionPage ItemList
+   with 50 items.
 
-> As before, the in-app preview's service worker serves cached JS until `pai-v13`
-> reinstalls, so home-modal engine wiring (WhatsApp/Telegram hrefs, `<time>`, next-key)
-> shows fresh only after deploy/hard-reload. Prompt/glossary deep-links are inline HTML
-> and render fresh immediately. All verified at source.
+> As always, the in-app preview's service worker serves the cached `pai-chrome.js` until
+> `pai-v14` reinstalls, so the prompt/glossary enhancements show in preview only after
+> deploy / hard-reload. The `prompts.html` changes (rail, Claude link, JSON-LD) are inline
+> in the network-first HTML and render immediately. All logic verified at source + by
+> executing it against the live DOM this session.

@@ -258,6 +258,137 @@
   function boot() {
     let saved = 'auto'; try { saved = localStorage.getItem('pai_theme') || 'auto'; } catch (e) {}
     ensureThemeOptions(); ensureSubMenu(); ensureRailFreq(); ensureSkipLink(); ensureBackToTop(); ensureOfflineBar(); markActiveTab(); applyTheme(saved); markActiveLang();
+    injectEnhStyles(); enhancePromptPage(); enhanceGlossaryPage();
   }
+  // ── PROMPT + GLOSSARY DETAIL ENHANCEMENTS (R-next-3) ───
+  // Run only on /prompt/<slug> and /glossary/<slug> pages, which all load this
+  // shared chrome — so no per-page HTML edits (50 + 16 pages) are needed.
+  function injectEnhStyles() {
+    if (document.getElementById('pai-enh-styles')) return;
+    var css =
+      '.ph-var{color:var(--accent);background:var(--accent-subtle);border-radius:5px;padding:0 4px;font-weight:600;}' +
+      ':root[data-theme="dark"] .ph-var{background:rgba(138,180,248,.18);}' +
+      '.ph-count{display:inline-flex;align-items:center;font-size:0.74rem;font-weight:600;color:var(--accent);background:var(--accent-subtle);border-radius:12px;padding:3px 10px;white-space:nowrap;}' +
+      '.listen-btn{display:inline-flex;align-items:center;gap:7px;padding:9px 16px;border-radius:18px;border:1px solid var(--border-soft);background:var(--card);color:var(--text-2);font-weight:600;font-size:0.84rem;font-family:inherit;cursor:pointer;margin-right:8px;}' +
+      '.listen-btn:hover,.listen-btn.on{color:var(--accent);border-color:var(--accent);}' +
+      '.g-share{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:14px 0 0;}' +
+      '.g-share-lbl{font-size:0.78rem;color:var(--text-3);font-weight:600;}' +
+      '.g-share-ic{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:50%;border:1px solid var(--border-soft);background:var(--card);color:var(--text-2);cursor:pointer;transition:color .15s,border-color .15s;}' +
+      '.g-share-ic:hover{color:var(--accent);border-color:var(--accent);}' +
+      '.g-share-ic svg{width:17px;height:17px;fill:currentColor;}' +
+      '.g-share-ic.ok{color:#188038;border-color:#188038;}';
+    var s = document.createElement('style'); s.id = 'pai-enh-styles'; s.textContent = css; document.head.appendChild(s);
+  }
+
+  function enhancePromptPage() {
+    var pre = document.getElementById('prompt-text');
+    if (!pre || pre.dataset.enh) return;
+    pre.dataset.enh = '1';
+    // (1)+(2) highlight [bracketed] placeholders + count the unique ones
+    try {
+      var raw = pre.textContent;
+      var esc = function (s) { return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); };
+      var seen = {}, count = 0, html = '', last = 0, m;
+      var re = /\[[^\]\n]+\]/g;
+      while ((m = re.exec(raw))) {
+        html += esc(raw.slice(last, m.index));
+        html += '<span class="ph-var">' + esc(m[0]) + '</span>';
+        var k = m[0].toLowerCase(); if (!seen[k]) { seen[k] = 1; count++; }
+        last = m.index + m[0].length;
+      }
+      html += esc(raw.slice(last));
+      if (count) pre.innerHTML = html;
+      var actions = document.querySelector('.p-actions');
+      if (count && actions && !actions.querySelector('.ph-count')) {
+        var badge = document.createElement('span');
+        badge.className = 'ph-count';
+        badge.textContent = count + (count === 1 ? ' blank to fill' : ' blanks to fill');
+        var copyBtn = actions.querySelector('#copy-btn');
+        if (copyBtn && copyBtn.nextSibling) actions.insertBefore(badge, copyBtn.nextSibling);
+        else actions.appendChild(badge);
+      }
+    } catch (e) {}
+    // (3) press "c" to copy the prompt
+    document.addEventListener('keydown', function (e) {
+      if (e.key !== 'c' || e.metaKey || e.ctrlKey || e.altKey) return;
+      var t = e.target, tag = t && t.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || (t && t.isContentEditable)) return;
+      var b = document.getElementById('copy-btn'); if (b) { e.preventDefault(); b.click(); }
+    });
+    // (4) make the category breadcrumb a link to the filtered library
+    try {
+      var crumbCur = document.querySelector('.crumbs span[aria-current="page"]');
+      if (crumbCur) {
+        var cat = crumbCur.textContent.trim();
+        var a = document.createElement('a');
+        a.href = '../prompts.html?cat=' + encodeURIComponent(cat);
+        a.textContent = cat;
+        crumbCur.parentNode.replaceChild(a, crumbCur);
+      }
+    } catch (e) {}
+  }
+
+  function enhanceGlossaryPage() {
+    if (!/\/glossary\//.test(location.pathname)) return;
+    var main = document.querySelector('main'); if (!main) return;
+    var def = document.querySelector('.g-def');
+    // (6) "Listen" — read the definition aloud via Web Speech
+    try {
+      if (def && 'speechSynthesis' in window) {
+        var row = document.querySelector('.ask-row');
+        if (row && !row.querySelector('.listen-btn')) {
+          var speakText = [].slice.call(main.querySelectorAll('.g-def, .g-p'))
+            .map(function (n) { return n.textContent.trim(); }).join('. ');
+          var btn = document.createElement('button');
+          btn.type = 'button'; btn.className = 'listen-btn';
+          btn.innerHTML = '\uD83D\uDD0A Listen';
+          var speaking = false;
+          var stop = function () { speaking = false; btn.classList.remove('on'); btn.innerHTML = '\uD83D\uDD0A Listen'; try { speechSynthesis.cancel(); } catch (e) {} };
+          btn.addEventListener('click', function () {
+            if (speaking) { stop(); return; }
+            try {
+              speechSynthesis.cancel();
+              var u = new SpeechSynthesisUtterance(speakText);
+              u.rate = 1; u.onend = stop; u.onerror = stop;
+              speechSynthesis.speak(u);
+              speaking = true; btn.classList.add('on'); btn.innerHTML = '\u23F9 Stop';
+            } catch (e) { stop(); }
+          });
+          window.addEventListener('beforeunload', stop);
+          row.insertBefore(btn, row.firstChild);
+        }
+      }
+    } catch (e) {}
+    // (5) compact share row — X / LinkedIn / WhatsApp / copy link (parity with prompt pages)
+    try { addGlossaryShare(main); } catch (e) {}
+  }
+
+  function addGlossaryShare(main) {
+    var row = document.querySelector('.ask-row');
+    if (!row || document.querySelector('.g-share')) return;
+    var canon = document.querySelector('link[rel="canonical"]');
+    var url = (canon && canon.getAttribute('href')) || location.href;
+    var h1 = document.querySelector('h1');
+    var title = (h1 ? h1.textContent.trim() : document.title) + ' \u2014 PromptAI glossary';
+    var u = encodeURIComponent(url), tt = encodeURIComponent(title);
+    var X = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24h-6.657l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231 5.451-6.231z"/></svg>';
+    var LI = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.45 20.45h-3.55v-5.57c0-1.33-.03-3.04-1.85-3.04-1.86 0-2.14 1.45-2.14 2.94v5.67H9.36V9h3.41v1.56h.05c.47-.9 1.63-1.85 3.36-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28zM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12zM7.12 20.45H3.55V9h3.57v11.45z"/></svg>';
+    var WA = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17.47 14.38c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.17-.17.2-.35.22-.65.07-.3-.15-1.25-.46-2.39-1.47-.88-.79-1.48-1.76-1.65-2.06-.17-.3-.02-.46.13-.61.13-.13.3-.35.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.02-.52-.07-.15-.67-1.62-.92-2.22-.24-.58-.49-.5-.67-.51l-.57-.01c-.2 0-.52.07-.8.37-.27.3-1.04 1.02-1.04 2.5 0 1.47 1.07 2.89 1.22 3.09.15.2 2.11 3.22 5.1 4.51.71.31 1.27.49 1.7.63.72.23 1.37.2 1.88.12.57-.09 1.76-.72 2.01-1.41.25-.7.25-1.29.17-1.41-.07-.12-.27-.2-.57-.35m-5.42 7.4h-.01a9.87 9.87 0 0 1-5.03-1.38l-.36-.21-3.74.98 1-3.65-.24-.37a9.86 9.86 0 0 1-1.51-5.26c0-5.45 4.44-9.88 9.9-9.88a9.83 9.83 0 0 1 7 2.9 9.83 9.83 0 0 1 2.89 7c0 5.45-4.44 9.88-9.9 9.88m8.42-18.3A11.82 11.82 0 0 0 12.05 0C5.5 0 .16 5.34.16 11.89c0 2.1.55 4.14 1.59 5.94L.06 24l6.33-1.66a11.88 11.88 0 0 0 5.66 1.44h.01c6.55 0 11.89-5.34 11.89-11.89 0-3.18-1.24-6.16-3.48-8.41z"/></svg>';
+    var LN = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 15l6-6M10.5 6.5l1-1a4 4 0 0 1 5.66 5.66l-1 1M13.5 17.5l-1 1a4 4 0 0 1-5.66-5.66l1-1" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
+    var box = document.createElement('div'); box.className = 'g-share';
+    box.innerHTML = '<span class="g-share-lbl">Share</span>' +
+      '<a class="g-share-ic" target="_blank" rel="noopener" aria-label="Share on X" title="Share on X" href="https://twitter.com/intent/tweet?text=' + tt + '&url=' + u + '">' + X + '</a>' +
+      '<a class="g-share-ic" target="_blank" rel="noopener" aria-label="Share on LinkedIn" title="Share on LinkedIn" href="https://www.linkedin.com/sharing/share-offsite/?url=' + u + '">' + LI + '</a>' +
+      '<a class="g-share-ic" target="_blank" rel="noopener" aria-label="Share on WhatsApp" title="Share on WhatsApp" href="https://wa.me/?text=' + tt + '%20' + u + '">' + WA + '</a>' +
+      '<button class="g-share-ic" type="button" id="g-copy-link" aria-label="Copy link" title="Copy link">' + LN + '</button>';
+    row.parentNode.insertBefore(box, row.nextSibling);
+    var cp = box.querySelector('#g-copy-link');
+    if (cp) cp.addEventListener('click', function () {
+      (navigator.clipboard && navigator.clipboard.writeText ? navigator.clipboard.writeText(url) : Promise.reject()).then(
+        function () { if (window.toast) toast('Link copied \u2014 share it anywhere'); cp.classList.add('ok'); setTimeout(function () { cp.classList.remove('ok'); }, 1500); },
+        function () { if (window.toast) toast('Copy failed \u2014 copy the address bar URL'); });
+    });
+  }
+
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
 })();
