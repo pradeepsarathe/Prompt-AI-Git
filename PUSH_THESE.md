@@ -41,7 +41,16 @@ on every page was aligned to `#f7f5f1` so the mobile address bar doesn't flash b
     (Feed images were already good: weserv→webp, `loading=lazy`, `decoding=async`,
     `fetchpriority=high` on the lead, explicit width/height — left as-is.)
 
+### E. Social-share fix — missing glossary link-preview images  (new)
+12. Every glossary page declared an Open Graph image at `og/glossary/<slug>.png`, but that
+    folder **did not exist** — so every glossary link shared to X / WhatsApp / LinkedIn
+    showed a **broken/blank preview**. Generated all **17 missing cards** (16 terms + the
+    `index.png` the glossary homepage points to), matching the existing 50 prompt OG cards
+    pixel-for-pixel (white card, PromptAI logo, pill, Georgia serif title, `promptai.in`
+    footer). They live in `og/glossary/`. (The 50 prompt cards already existed and are fine.)
+
 ## Files to push
+- `og/glossary/` (17 new PNGs) ← fixes broken glossary share previews
 - `prompt/` (all 50) · `glossary/` (all 16)
 - `index.html`, `prompts.html`, `prompts-hindi.html`, `glossary.html`, `education.html`,
   `archive.html`, `methodology.html`, `404.html`, `privacy.html`, `terms.html`
