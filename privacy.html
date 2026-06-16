@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
-<script>/* pre-paint theme + theme-color (parity with the rest of the site) */(function(){try{var t=localStorage.getItem('pai_theme')||'auto';if(t==='auto')t=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'default';if(t!=='default')document.documentElement.setAttribute('data-theme',t);var bg={'default':'#ffffff','promptai':'#f3f6fc','slate':'#f7f5f1','dark':'#17181c'}[t]||'#ffffff';var m=document.createElement('meta');m.name='theme-color';m.content=bg;document.head.appendChild(m);}catch(e){}})();</script>
+<script>/* pre-paint theme + theme-color (parity with the rest of the site) */(function(){try{var t=localStorage.getItem('pai_theme')||'slate';if(t==='auto')t=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'default';if(t!=='default')document.documentElement.setAttribute('data-theme',t);var bg={'default':'#ffffff','promptai':'#f3f6fc','slate':'#f7f5f1','dark':'#17181c'}[t]||'#ffffff';var m=document.createElement('meta');m.name='theme-color';m.content=bg;document.head.appendChild(m);}catch(e){}})();</script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <meta name="color-scheme" content="light dark"/>
 <title>Privacy Policy — PromptAI</title>
@@ -12,7 +12,7 @@
 <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"/>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&amp;family=Roboto+Serif:opsz,wght@8..144,400;8..144,600&amp;display=swap" rel="stylesheet"/>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&amp;family=Roboto+Serif:opsz,wght@8..144,400;8..144,600&amp;display=swap"/><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&amp;family=Roboto+Serif:opsz,wght@8..144,400;8..144,600&amp;display=swap" media="print" onload="this.media='all'"/><noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&amp;family=Roboto+Serif:opsz,wght@8..144,400;8..144,600&amp;display=swap"/></noscript>
 <style>
   :root { --accent:#1a73e8; --accent-2:#1967d2; --text:#202124; --text-2:#5f6368; --text-3:#6b7177; --border:#e8eaed; --bg:#ffffff; --bg-subtle:#f1f3f4; }
   :root[data-theme="promptai"] { --accent:#2563eb; --accent-2:#1d4ed8; --text:#0a1628; --text-2:#44546e; --text-3:#5b6b84; --border:#dde6f3; --bg:#f3f6fc; --bg-subtle:#e7edf8; }

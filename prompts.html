@@ -2,9 +2,9 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
-<script>/* pre-paint theme (R29) */(function(){try{var t=localStorage.getItem('pai_theme')||'auto';if(t==='auto')t=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'default';if(t!=='default')document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
+<script>/* pre-paint theme (R29) */(function(){try{var t=localStorage.getItem('pai_theme')||'slate';if(t==='auto')t=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'default';if(t!=='default')document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<meta name="theme-color" content="#ffffff"/>
+<meta name="theme-color" content="#f7f5f1"/>
 <title>Prompt Library — 50 battle-tested AI prompts | PromptAI</title>
 <meta name="description" content="50 copy-paste prompts that actually work — for writing, coding, research, marketing and learning. Tested with Claude, ChatGPT and Gemini. Free, no sign-up."/>
 <link rel="canonical" href="https://promptai.in/prompts.html"/>
@@ -27,7 +27,7 @@
 <link rel="manifest" href="manifest.webmanifest"/>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Roboto+Serif:opsz,wght@8..144,400;8..144,500;8..144,600&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Roboto+Serif:opsz,wght@8..144,400;8..144,500;8..144,600&family=Roboto+Mono:wght@400;500&display=swap"/><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Roboto+Serif:opsz,wght@8..144,400;8..144,500;8..144,600&family=Roboto+Mono:wght@400;500&display=swap" media="print" onload="this.media='all'"/><noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Roboto+Serif:opsz,wght@8..144,400;8..144,500;8..144,600&family=Roboto+Mono:wght@400;500&display=swap"/></noscript>
 <link rel="stylesheet" href="pai-chrome.css"/>
 <style>
   /* base reset (pai-chrome.css assumes the page provides this) */
@@ -92,6 +92,16 @@
   .ghost-btn:hover { border-color:var(--accent); color:var(--accent); }
   .lib-count { font-size:0.82rem; color:var(--text-2); margin:0; }
   .lib-count b { color:var(--text); font-weight:600; }
+  .prompt-card { position:relative; }
+  .prompt-card .ph { padding-right:42px; }
+  .fav-btn { position:absolute; top:14px; right:14px; width:34px; height:34px; border:1px solid var(--border-soft); background:var(--card); border-radius:50%; display:inline-flex; align-items:center; justify-content:center; font-size:1.02rem; line-height:1; color:var(--text-3); cursor:pointer; transition:color .15s,border-color .15s,background .15s; }
+  .fav-btn:hover { color:#c08a00; border-color:#e0b84d; }
+  .fav-btn.on { color:#e0a700; border-color:#e0b84d; background:#fef9e8; }
+  :root[data-theme="dark"] .fav-btn.on { background:rgba(224,167,0,.14); }
+  .chip.fav.active { background:#fef3c7; color:#92660a; border-color:#e7c45a; }
+  :root[data-theme="dark"] .chip.fav.active { background:rgba(224,167,0,.18); color:#f0c860; border-color:#7a5e1a; }
+  .reset-btn { font-size:0.8rem; color:var(--text-3); background:none; border:none; cursor:pointer; text-decoration:underline; font-family:inherit; padding:0; }
+  .reset-btn:hover { color:var(--accent); }
   @media (min-width:980px){ .prompt-grid { grid-template-columns:1fr 1fr; } .prompt-card.wide { grid-column:1 / -1; } }
 </style>
 </head>
@@ -234,6 +244,10 @@
   const CATS = ['All', ...new Set(PROMPTS.map(p => p.cat))];
   let _cat = 'All';
   let _q = '';
+  let _favOnly = false;
+  function loadFavs() { try { return JSON.parse(localStorage.getItem('pai_fav_prompts')) || []; } catch (e) { return []; } }
+  function isFav(slug) { return loadFavs().indexOf(slug) >= 0; }
+  function setFav(slug, on) { var a = loadFavs(); var i = a.indexOf(slug); if (on && i < 0) a.unshift(slug); else if (!on && i >= 0) a.splice(i, 1); try { localStorage.setItem('pai_fav_prompts', JSON.stringify(a)); } catch (e) {} }
 
   // ?q= + ?cat= deep-links (shareable search & category)
   try {
@@ -242,15 +256,18 @@
     if (c) { const hit = CATS.find(x => x.toLowerCase() === c.toLowerCase()); if (hit) _cat = hit; }
     const q = (sp.get('q') || '').trim();
     if (q) _q = q.toLowerCase();
+    if (sp.get('fav') === '1') _favOnly = true;
   } catch (e) {}
   function syncUrl() {
     const parts = [];
     if (_q) parts.push('q=' + encodeURIComponent(_q));
     if (_cat !== 'All') parts.push('cat=' + encodeURIComponent(_cat));
+    if (_favOnly) parts.push('fav=1');
     try { history.replaceState(null, '', parts.length ? location.pathname + '?' + parts.join('&') : location.pathname); } catch (e) {}
   }
 
   function matches(p) {
+    if (_favOnly && !isFav(slugOf(p.title))) return false;
     if (_cat !== 'All' && p.cat !== _cat) return false;
     if (!_q) return true;
     return (p.title + ' ' + p.cat + ' ' + (p.why || '') + ' ' + (p.prompt || '')).toLowerCase().includes(_q);
@@ -266,24 +283,60 @@
       b.onclick = () => { _cat = c; chips(); render(); syncUrl(); };
       box.appendChild(b);
     });
+    const favCount = loadFavs().length;
+    if (favCount) {
+      const fb = document.createElement('button');
+      fb.type = 'button';
+      fb.className = 'chip fav' + (_favOnly ? ' active' : '');
+      fb.textContent = '\u2605 Saved (' + favCount + ')';
+      fb.onclick = () => { _favOnly = !_favOnly; chips(); render(); syncUrl(); };
+      box.appendChild(fb);
+    }
   }
 
   function render() {
+    if (_favOnly && !loadFavs().length) _favOnly = false;
     grid.innerHTML = '';
     const list = PROMPTS.filter(matches);
     $('#empty-lib').style.display = list.length ? 'none' : 'block';
     const cnt = $('#lib-count');
-    if (cnt) cnt.innerHTML = '<b>' + list.length + '</b> of ' + PROMPTS.length + ' prompts' +
-      (_q ? ' matching “' + _q.replace(/</g, '&lt;') + '”' : '') +
-      (_cat !== 'All' ? ' in ' + _cat : '');
+    const active = !!_q || _cat !== 'All' || _favOnly;
+    if (cnt) {
+      cnt.innerHTML = '<b>' + list.length + '</b> of ' + PROMPTS.length + ' prompts' +
+        (_favOnly ? ' saved' : '') +
+        (_q ? ' matching “' + _q.replace(/</g, '&lt;') + '”' : '') +
+        (_cat !== 'All' ? ' in ' + _cat : '') +
+        (active ? ' · <button class="reset-btn" type="button" id="reset-filters">Clear</button>' : '');
+      const rb = document.getElementById('reset-filters');
+      if (rb) rb.onclick = function () { _q = ''; _cat = 'All'; _favOnly = false; if (search) search.value = ''; chips(); render(); syncUrl(); };
+    }
     const clr = $('#search-clear'); if (clr) clr.hidden = !_q;
     list.forEach(p => {
+      const slug = slugOf(p.title);
       const card = document.createElement('article');
       card.className = 'prompt-card';
+      const fav = document.createElement('button'); fav.type = 'button';
+      const paintFav = function () {
+        const on = isFav(slug);
+        fav.className = 'fav-btn' + (on ? ' on' : '');
+        fav.textContent = on ? '\u2605' : '\u2606';
+        fav.setAttribute('aria-label', on ? 'Remove from saved' : 'Save this prompt');
+        fav.title = on ? 'Saved — click to remove' : 'Save this prompt';
+      };
+      paintFav();
+      fav.onclick = function (e) {
+        e.preventDefault();
+        const now = !isFav(slug);
+        setFav(slug, now);
+        if (window.toast) toast(now ? 'Saved to your list' : 'Removed from saved');
+        paintFav();
+        if (_favOnly) render(); else chips();
+      };
+      card.appendChild(fav);
       const h = document.createElement('div'); h.className = 'ph';
       const pill = document.createElement('span'); pill.className = 'cat-pill'; pill.textContent = p.cat;
       const t = document.createElement('h3');
-      const ta = document.createElement('a'); ta.href = 'prompt/' + slugOf(p.title) + '.html'; ta.textContent = p.title; t.appendChild(ta);
+      const ta = document.createElement('a'); ta.href = 'prompt/' + slug + '.html'; ta.textContent = p.title; t.appendChild(ta);
       h.appendChild(pill); h.appendChild(t);
       const why = document.createElement('p'); why.className = 'why'; why.textContent = p.why;
       const pre = document.createElement('pre'); pre.textContent = p.prompt;
@@ -296,10 +349,16 @@
       };
       const hint = document.createElement('span'); hint.className = 'hint'; hint.textContent = p.hint || '';
       const open = document.createElement('a'); open.className = 'open-mini'; open.target = '_blank'; open.rel = 'noopener'; open.href = 'https://chatgpt.com/?q=' + encodeURIComponent(p.prompt); open.textContent = '↗ ChatGPT';
-      open.addEventListener('click', () => pushRecent(p.title, slugOf(p.title)));
+      open.addEventListener('click', () => pushRecent(p.title, slug));
       const openC = document.createElement('a'); openC.className = 'open-mini'; openC.target = '_blank'; openC.rel = 'noopener'; openC.href = 'https://claude.ai/new?q=' + encodeURIComponent(p.prompt); openC.textContent = '↗ Claude';
-      openC.addEventListener('click', () => pushRecent(p.title, slugOf(p.title)));
-      f.appendChild(btn); f.appendChild(open); f.appendChild(openC); if (p.hint) f.appendChild(hint);
+      openC.addEventListener('click', () => pushRecent(p.title, slug));
+      const openG = document.createElement('a'); openG.className = 'open-mini'; openG.target = '_blank'; openG.rel = 'noopener'; openG.href = 'https://gemini.google.com/app'; openG.textContent = '↗ Gemini';
+      openG.addEventListener('click', function () {
+        const done = function () { pushRecent(p.title, slug); };
+        if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(p.prompt).then(function () { if (window.toast) toast('Prompt copied — paste it into Gemini'); done(); }, done);
+        else done();
+      });
+      f.appendChild(btn); f.appendChild(open); f.appendChild(openC); f.appendChild(openG); if (p.hint) f.appendChild(hint);
       card.appendChild(h); card.appendChild(why); card.appendChild(pre); card.appendChild(f);
       grid.appendChild(card);
     });
@@ -316,6 +375,12 @@
   if (surprise) surprise.addEventListener('click', () => {
     const pick = PROMPTS[Math.floor(Math.random() * PROMPTS.length)];
     if (pick) window.location = 'prompt/' + slugOf(pick.title) + '.html';
+  });
+  document.addEventListener('keydown', function (e) {
+    const el = e.target, tag = el && el.tagName;
+    const typing = tag === 'INPUT' || tag === 'TEXTAREA' || (el && el.isContentEditable);
+    if (e.key === '/' && !typing && !e.metaKey && !e.ctrlKey && !e.altKey) { e.preventDefault(); if (search) { search.focus(); search.select(); } }
+    else if (e.key === 'Escape' && search && document.activeElement === search) { _q = ''; search.value = ''; render(); syncUrl(); search.blur(); }
   });
   chips(); render(); renderRecent();
 })();

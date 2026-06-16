@@ -37,7 +37,7 @@
   // keep following the OS while in auto mode
   try {
     matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
-      let s = 'auto'; try { s = localStorage.getItem('pai_theme') || 'auto'; } catch (e) {}
+      let s = 'slate'; try { s = localStorage.getItem('pai_theme') || 'slate'; } catch (e) {}
       if (s === 'auto') applyTheme('auto');
     });
   } catch (e) {}
@@ -256,7 +256,7 @@
 
   // ── BOOT ───────────────────────────────────────────────
   function boot() {
-    let saved = 'auto'; try { saved = localStorage.getItem('pai_theme') || 'auto'; } catch (e) {}
+    let saved = 'slate'; try { saved = localStorage.getItem('pai_theme') || 'slate'; } catch (e) {}
     ensureThemeOptions(); ensureSubMenu(); ensureRailFreq(); ensureSkipLink(); ensureBackToTop(); ensureOfflineBar(); markActiveTab(); applyTheme(saved); markActiveLang();
     injectEnhStyles(); enhancePromptPage(); enhanceGlossaryPage();
   }
@@ -276,7 +276,11 @@
       '.g-share-ic{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:50%;border:1px solid var(--border-soft);background:var(--card);color:var(--text-2);cursor:pointer;transition:color .15s,border-color .15s;}' +
       '.g-share-ic:hover{color:var(--accent);border-color:var(--accent);}' +
       '.g-share-ic svg{width:17px;height:17px;fill:currentColor;}' +
-      '.g-share-ic.ok{color:#188038;border-color:#188038;}';
+      '.g-share-ic.ok{color:#188038;border-color:#188038;}' +
+      '.save-btn{display:inline-flex;align-items:center;gap:7px;padding:9px 16px;border-radius:18px;border:1px solid var(--border-soft);background:var(--card);color:var(--text-2);font-weight:600;font-size:0.84rem;font-family:inherit;cursor:pointer;}' +
+      '.save-btn:hover{color:#c08a00;border-color:#e0b84d;}' +
+      '.save-btn.on{color:#e0a700;border-color:#e0b84d;background:#fef9e8;}' +
+      ':root[data-theme="dark"] .save-btn.on{background:rgba(224,167,0,.14);}';
     var s = document.createElement('style'); s.id = 'pai-enh-styles'; s.textContent = css; document.head.appendChild(s);
   }
 
@@ -324,6 +328,31 @@
         a.href = '../prompts.html?cat=' + encodeURIComponent(cat);
         a.textContent = cat;
         crumbCur.parentNode.replaceChild(a, crumbCur);
+      }
+    } catch (e) {}
+    // (5) Save/unsave toggle in the action row — synced with the library's pai_fav_prompts
+    try {
+      var slug = '';
+      var pcanon = document.querySelector('link[rel="canonical"]');
+      if (pcanon) { var sm = (pcanon.getAttribute('href') || '').match(/\/prompt\/([a-z0-9-]+)/); if (sm) slug = sm[1]; }
+      if (!slug) { var pm = location.pathname.match(/\/prompt\/([a-z0-9-]+)/); if (pm) slug = pm[1]; }
+      var pactions = document.querySelector('.p-actions');
+      if (slug && pactions && !pactions.querySelector('.save-btn')) {
+        var loadFavs = function () { try { return JSON.parse(localStorage.getItem('pai_fav_prompts')) || []; } catch (e) { return []; } };
+        var isFav = function () { return loadFavs().indexOf(slug) >= 0; };
+        var setFav = function (on) { var a2 = loadFavs(); var i = a2.indexOf(slug); if (on && i < 0) a2.unshift(slug); else if (!on && i >= 0) a2.splice(i, 1); try { localStorage.setItem('pai_fav_prompts', JSON.stringify(a2)); } catch (e) {} };
+        var sb = document.createElement('button'); sb.type = 'button'; sb.className = 'save-btn';
+        var paint = function () { var on = isFav(); sb.classList.toggle('on', on); sb.innerHTML = on ? '\u2605 Saved' : '\u2606 Save'; sb.setAttribute('aria-pressed', on ? 'true' : 'false'); };
+        paint();
+        var doToggle = function () { var now = !isFav(); setFav(now); paint(); if (window.toast) toast(now ? 'Saved \u2014 find it on the Prompts page' : 'Removed from saved'); };
+        sb.addEventListener('click', doToggle);
+        pactions.appendChild(sb);
+        document.addEventListener('keydown', function (e) {
+          if (e.key !== 'f' || e.metaKey || e.ctrlKey || e.altKey) return;
+          var t = e.target, tag = t && t.tagName;
+          if (tag === 'INPUT' || tag === 'TEXTAREA' || (t && t.isContentEditable)) return;
+          e.preventDefault(); doToggle();
+        });
       }
     } catch (e) {}
   }

@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
-<script>/* pre-paint theme */(function(){try{var t=localStorage.getItem('pai_theme')||'auto';if(t==='auto')t=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'default';if(t!=='default')document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
+<script>/* pre-paint theme + theme-color */(function(){try{var t=localStorage.getItem('pai_theme')||'slate';if(t==='auto')t=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'default';if(t!=='default')document.documentElement.setAttribute('data-theme',t);var bg={'default':'#ffffff','promptai':'#f3f6fc','slate':'#f7f5f1','dark':'#17181c'}[t]||'#ffffff';var m=document.createElement('meta');m.setAttribute('name','theme-color');m.setAttribute('content',bg);document.head.appendChild(m);}catch(e){}})();</script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Regex with receipts — AI prompt | PromptAI</title>
 <meta name="description" content="Regexes are write-only without tests. This makes the model prove its pattern works."/>
@@ -20,11 +20,10 @@
 <meta name="twitter:card" content="summary_large_image"/>
 <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"HowTo","name":"Regex with receipts — AI prompt","description":"Regexes are write-only without tests. This makes the model prove its pattern works.","step":[{"@type":"HowToStep","name":"Copy the prompt","text":"Copy the tested prompt template on this page."},{"@type":"HowToStep","name":"Customize it","text":"Replace the [bracketed] placeholders with your own details."},{"@type":"HowToStep","name":"Run it","text":"Paste into Claude, ChatGPT or Gemini and iterate on the result."}],"isPartOf":{"@type":"CollectionPage","name":"PromptAI Prompt Library","url":"https://promptai.in/prompts.html"}},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Prompt library","item":"https://promptai.in/prompts.html"},{"@type":"ListItem","position":2,"name":"Coding","item":"https://promptai.in/prompts.html"},{"@type":"ListItem","position":3,"name":"Regex with receipts","item":"https://promptai.in/prompt/regex-with-receipts"}]}]}</script>
 <meta name="color-scheme" content="light dark"/>
-<meta name="theme-color" content="#ffffff"/>
 <link rel="manifest" href="../manifest.webmanifest"/>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Roboto+Serif:opsz,wght@8..144,400;8..144,500;8..144,600&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Roboto+Serif:opsz,wght@8..144,400;8..144,500;8..144,600&family=Roboto+Mono:wght@400;500&display=swap"/><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Roboto+Serif:opsz,wght@8..144,400;8..144,500;8..144,600&family=Roboto+Mono:wght@400;500&display=swap" media="print" onload="this.media='all'"/><noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Roboto+Serif:opsz,wght@8..144,400;8..144,500;8..144,600&family=Roboto+Mono:wght@400;500&display=swap"/></noscript>
 <link rel="stylesheet" href="../pai-chrome.css"/>
 <style>
   * { margin:0; padding:0; box-sizing:border-box; }

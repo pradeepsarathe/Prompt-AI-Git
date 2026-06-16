@@ -1,51 +1,64 @@
-# Deploy bundle — 2026-06-16c  (R-next-3: 10 changes, prompt-library + glossary utility)
+# Deploy bundle — 2026-06-16d  (R-next-4: slate default + favorites + mobile-perf)
 
-Builds on the deployed `pai-v13` batch. All client-side / SEO — no keys or binaries.
-**Bumps `sw.js` → `pai-v14`.**
+Bumps `sw.js` → **pai-v15**. All client-side. Builds on deployed `pai-v14`.
 
-Only **3 files** change — almost everything lands in the shared `pai-chrome.js`, which
-all 50 `/prompt/<slug>` and 16 `/glossary/<slug>` pages already load, so no per-page
-HTML edits were needed.
+This batch touches **nearly every page** (the slate default + the font optimization are
+site-wide), so the bundle mirrors the live tree. Push the whole thing to the repo root.
 
-## The 10 changes
-1. **Prompt pages — `[bracketed]` placeholders are highlighted** in the prompt box
-   (accent chips) so it's obvious what to replace. Copy text is unchanged (round-trips).
-2. **Prompt pages — "N blanks to fill" badge** next to Copy, auto-derived from the unique
-   placeholders (hidden when there are none).
-3. **Prompt pages — press `c` to copy** the prompt (ignored while typing in a field).
-4. **Prompt pages — the category breadcrumb is now a link** to the filtered library
-   (`/prompts.html?cat=<Category>`) — real internal linking.
-5. **Glossary pages — a share row** (X · LinkedIn · WhatsApp · Copy link), parity with the
-   prompt pages, which glossary pages previously lacked.
-6. **Glossary pages — "🔊 Listen"** reads the definition aloud (Web Speech; toggles to Stop;
-   auto-stops on navigate; hidden if unsupported).
-7. **prompts.html — "Recently used" rail** (localStorage): the prompts you copied / opened,
-   as quick chips, with a Clear button. Hidden until you use one.
-8. **prompts.html — ItemList JSON-LD extended 25 → all 50 prompts** (richer CollectionPage
-   structured data for the full library).
-9. **prompts.html cards — "↗ Claude" open link** added next to "↗ ChatGPT" (both prefill
-   the prompt; both record into the Recently-used rail).
-10. **`sw.js` → `pai-v14`.**
+## What changed
 
-## Files to push (3)
-`pai-chrome.js` · `prompts.html` · `sw.js`
+### A. Slate & teal = the default appearance  (user request)
+"Slate & teal" already existed as a theme (warm paper canvas `#f7f5f1`, deep-teal accent
+`#0f766e`). It is now the **default for visitors with no saved preference** — the per-page
+pre-paint script and `pai-chrome.js` boot now fall back to `slate` instead of `auto`.
+Anyone can still pick Briefing white / PromptAI blue / Dark / Follow-system from the
+Appearance menu; an explicit choice is remembered as before. The static `theme-color` meta
+on every page was aligned to `#f7f5f1` so the mobile address bar doesn't flash blue first.
 
-## How to deploy
-Push these 3 to the repo root. Cloudflare auto-deploys on push to `main`.
-No env / KV / cron changes.
+### B. Prompt-library "Save" / favorites system  (new)
+1. **★ Save toggle on every library card** — persists in `localStorage.pai_fav_prompts`.
+2. **"★ Saved (N)" filter chip** — appears once you have favorites; filters the grid to them.
+3. **Filled-star state** on saved cards.
+4. **Prompt detail pages get a ★ Save button** in the action row (via `pai-chrome.js`),
+   reading/writing the **same store** — save on the library, it shows saved on the page,
+   and vice-versa.
+5. **`f` keyboard shortcut** saves/unsaves on a detail page (pairs with `c` = copy).
+6. Favorites are deep-linkable (`prompts.html?fav=1`).
+
+### C. Library polish
+7. **"↗ Gemini" link on every card** (copies prompt → opens Gemini), so cards now offer
+   ChatGPT · Claude · Gemini — parity with the detail pages.
+8. **Press `/`** to jump to the search box; **Esc** clears it.
+9. **"Clear" reset** in the count row whenever a search / category / saved filter is active.
+
+### D. Mobile performance  (user flagged PageSpeed mobile)
+10. **Google Fonts no longer render-blocking** on any page — switched to
+    `preload as=style` + `media="print" onload="this.media='all'"` swap, with a
+    `<noscript>` fallback. With `display=swap` already set, text paints immediately in
+    fallback fonts and swaps in Roboto when ready. This removes the main
+    "Eliminate render-blocking resources" item on the homepage.
+11. Removed a **duplicate `images.weserv.nl` preconnect** on the homepage.
+    (Feed images were already good: weserv→webp, `loading=lazy`, `decoding=async`,
+    `fetchpriority=high` on the lead, explicit width/height — left as-is.)
+
+## Files to push
+- `prompt/` (all 50) · `glossary/` (all 16)
+- `index.html`, `prompts.html`, `prompts-hindi.html`, `glossary.html`, `education.html`,
+  `archive.html`, `methodology.html`, `404.html`, `privacy.html`, `terms.html`
+- `pai-chrome.js`, `sw.js`
 
 ## Verify after deploy
-1. `view-source:/sw.js` → `pai-v14`.
-2. Any `/prompt/<slug>` → the `[bracketed]` parts are highlighted, an "N blanks to fill"
-   badge sits by Copy, pressing `c` copies, and the "Coding" (etc.) breadcrumb links to
-   `/prompts.html?cat=Coding`.
-3. Any `/glossary/<slug>` → a **🔊 Listen** button + a **share row** under the answer.
-4. `/prompts.html` → cards show **↗ ChatGPT** and **↗ Claude**; after you copy/open one, a
-   **Recently used** rail appears at the top. Rich Results test → CollectionPage ItemList
-   with 50 items.
+1. `view-source:/sw.js` → `pai-v15`.
+2. Open the site in a fresh/incognito window → it defaults to **slate & teal** (warm canvas,
+   teal accents); the Appearance menu still switches themes and remembers the pick.
+3. `/prompts.html` → each card has a ★ in the top-right and a ↗ Gemini link; star one →
+   a "★ Saved (N)" chip appears and filters; `/` focuses search; Clear resets.
+4. Any `/prompt/<slug>` → a **★ Save** button sits in the action row; pressing `f` toggles
+   it; the state matches what you saved on the library.
+5. Re-run PageSpeed mobile → "Eliminate render-blocking resources" should no longer flag the
+   fonts stylesheet; FCP/LCP improve.
 
-> As always, the in-app preview's service worker serves the cached `pai-chrome.js` until
-> `pai-v14` reinstalls, so the prompt/glossary enhancements show in preview only after
-> deploy / hard-reload. The `prompts.html` changes (rail, Claude link, JSON-LD) are inline
-> in the network-first HTML and render immediately. All logic verified at source + by
-> executing it against the live DOM this session.
+> Preview note: the in-app preview's service worker serves the cached `pai-chrome.js` until
+> `pai-v15` reinstalls, so the detail-page Save button shows after deploy / hard-reload.
+> Everything in `prompts.html` (favorites, Gemini, search) and the slate default + font
+> changes are inline and render immediately.

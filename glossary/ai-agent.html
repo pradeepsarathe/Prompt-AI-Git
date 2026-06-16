@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
-<script>/* pre-paint theme */(function(){try{var t=localStorage.getItem('pai_theme')||'auto';if(t==='auto')t=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'default';if(t!=='default')document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
+<script>/* pre-paint theme + theme-color */(function(){try{var t=localStorage.getItem('pai_theme')||'slate';if(t==='auto')t=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'default';if(t!=='default')document.documentElement.setAttribute('data-theme',t);var bg={'default':'#ffffff','promptai':'#f3f6fc','slate':'#f7f5f1','dark':'#17181c'}[t]||'#ffffff';var m=document.createElement('meta');m.setAttribute('name','theme-color');m.setAttribute('content',bg);document.head.appendChild(m);}catch(e){}})();</script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>What is an AI agent? — plain-English AI glossary | PromptAI</title>
 <meta name="description" content="An AI agent is a model that doesn’t just answer — it takes actions: browsing the web, running code, calling tools and working toward a goal across multiple steps."/>
@@ -20,11 +20,10 @@
 <meta name="twitter:card" content="summary_large_image"/>
 <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"FAQPage","mainEntity":[{"@type":"Question","name":"What is an AI agent?","acceptedAnswer":{"@type":"Answer","text":"An AI agent is a model that doesn’t just answer — it takes actions: browsing the web, running code, calling tools and working toward a goal across multiple steps."}}]},{"@type":"DefinedTerm","name":"AI agent","description":"An AI agent is a model that doesn’t just answer — it takes actions: browsing the web, running code, calling tools and working toward a goal across multiple steps.","url":"https://promptai.in/glossary/ai-agent","inDefinedTermSet":{"@type":"DefinedTermSet","name":"PromptAI AI Glossary","url":"https://promptai.in/glossary.html"}},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Learn AI","item":"https://promptai.in/education.html"},{"@type":"ListItem","position":2,"name":"AI Glossary","item":"https://promptai.in/glossary.html"},{"@type":"ListItem","position":3,"name":"AI agent","item":"https://promptai.in/glossary/ai-agent"}]}]}</script>
 <meta name="color-scheme" content="light dark"/>
-<meta name="theme-color" content="#ffffff"/>
 <link rel="manifest" href="../manifest.webmanifest"/>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Roboto+Serif:opsz,wght@8..144,400;8..144,500;8..144,600&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Roboto+Serif:opsz,wght@8..144,400;8..144,500;8..144,600&family=Roboto+Mono:wght@400;500&display=swap"/><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Roboto+Serif:opsz,wght@8..144,400;8..144,500;8..144,600&family=Roboto+Mono:wght@400;500&display=swap" media="print" onload="this.media='all'"/><noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Roboto+Serif:opsz,wght@8..144,400;8..144,500;8..144,600&family=Roboto+Mono:wght@400;500&display=swap"/></noscript>
 <link rel="stylesheet" href="../pai-chrome.css"/>
 <style>
   * { margin:0; padding:0; box-sizing:border-box; }

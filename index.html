@@ -23,11 +23,11 @@
 <link rel="alternate" type="application/rss+xml" title="PromptAI — AI Research Feed" href="/feed.xml"/>
 <link rel="sitemap" type="application/xml" href="/sitemap.xml"/>
 <meta name="color-scheme" content="light dark"/>
-<meta name="theme-color" content="#1a73e8"/>
+<meta name="theme-color" content="#f7f5f1"/>
 <link rel="manifest" href="manifest.webmanifest"/>
 <link rel="apple-touch-icon" href="icon-192.png"/>
 <script>/* pre-paint theme (R29): saved theme or system preference, before first paint */
-(function(){try{var t=localStorage.getItem('pai_theme')||'auto';
+(function(){try{var t=localStorage.getItem('pai_theme')||'slate';
 if(t==='auto')t=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'default';
 if(t!=='default')document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
 <script type="application/ld+json">
@@ -35,11 +35,10 @@ if(t!=='default')document.documentElement.setAttribute('data-theme',t);}catch(e)
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-<link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,300;0,400;0,500;0,700;1,400&family=Roboto+Serif:opsz,wght@8..144,400;8..144,500;8..144,600&display=swap" rel="stylesheet"/>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,300;0,400;0,500;0,700;1,400&family=Roboto+Serif:opsz,wght@8..144,400;8..144,500;8..144,600&display=swap"/><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,300;0,400;0,500;0,700;1,400&family=Roboto+Serif:opsz,wght@8..144,400;8..144,500;8..144,600&display=swap" media="print" onload="this.media='all'"/><noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,300;0,400;0,500;0,700;1,400&family=Roboto+Serif:opsz,wght@8..144,400;8..144,500;8..144,600&display=swap"/></noscript>
 <link rel="preconnect" href="https://images.weserv.nl"/>
 <link rel="preconnect" href="https://api.rss2json.com"/>
 <link rel="preconnect" href="https://hacker-news.firebaseio.com"/>
-<link rel="preconnect" href="https://images.weserv.nl"/>
 <link rel="preconnect" href="https://www.google.com"/>
 <style>
   /* ════ THEME TOKENS ════ */
@@ -427,6 +426,11 @@ if(t!=='default')document.documentElement.setAttribute('data-theme',t);}catch(e)
   .explain-out { font-size:0.9rem; line-height:1.7; background:var(--bg-subtle); border-radius:12px; padding:14px 16px; color:var(--text); }
   .explain-out strong { color:var(--accent); }
   .explain-note { font-size:0.7rem; color:var(--text-3); margin-top:8px; }
+  .paper-tools { display:flex; gap:8px; margin-top:8px; }
+  .paper-btn { flex:1; display:flex; align-items:center; justify-content:center; gap:6px; padding:9px; border-radius:10px; border:1px solid var(--border-soft); background:var(--bg); color:var(--text-2); font-weight:600; font-size:0.82rem; }
+  .paper-btn:hover { background:var(--bg-subtle); color:var(--accent); border-color:var(--accent); }
+  .md-btn { display:inline-flex; align-items:center; gap:6px; margin:0 0 14px; padding:7px 12px; border-radius:9px; border:1px solid var(--border-soft); background:var(--bg); color:var(--text-3); font-size:0.76rem; font-weight:600; cursor:pointer; }
+  .md-btn:hover { color:var(--accent); border-color:var(--accent); }
 
   /* ════ SERVER-RENDERED HEADLINES (R19) — visible until the app boots ════ */
   #ssr-home { padding:4px 0 10px; }
@@ -918,6 +922,7 @@ if(t!=='default')document.documentElement.setAttribute('data-theme',t);}catch(e)
       <div class="m-readtime" id="m-time" hidden></div>
       <div class="modal-text" id="m-text"></div>
       <div class="modal-note" id="m-note"></div>
+      <button id="m-md" class="md-btn" type="button">⧉ Copy as Markdown</button>
       <div id="m-explain" style="display:none"></div>
       <a class="modal-read" id="m-read" href="#" target="_blank" rel="noopener">Read full article ↗</a>
       <div class="modal-share">
@@ -1040,6 +1045,16 @@ if ('serviceWorker' in navigator) {
     var first = f[0], last = f[f.length - 1];
     if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
     else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+  });
+  var md = document.getElementById('m-md');
+  if (md) md.addEventListener('click', function () {
+    var title = ((document.getElementById('m-title') || {}).textContent || '').trim();
+    var body = ((document.getElementById('m-text') || {}).textContent || '').trim();
+    var url = (document.getElementById('m-read') || {}).href || '';
+    var out = '## ' + title + '\n\n' + body + '\n\nSource: ' + url + '\n\u2014 via PromptAI (promptai.in)';
+    (navigator.clipboard && navigator.clipboard.writeText ? navigator.clipboard.writeText(out) : Promise.reject()).then(function () {
+      md.textContent = '\u2713 Copied'; if (window.toast) toast('Summary copied as Markdown'); setTimeout(function () { md.textContent = '\u29c9 Copy as Markdown'; }, 1800);
+    }, function () { if (window.toast) toast('Copy failed'); });
   });
   var bar = document.createElement('div');
   bar.id = 'offline-bar'; bar.setAttribute('role', 'status'); bar.setAttribute('aria-live', 'polite');
