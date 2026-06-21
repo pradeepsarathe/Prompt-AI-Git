@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
 <title>Swipe — PromptAI</title>
 <meta name="description" content="Triage today's AI news one card at a time. Swipe to save, skip, or read — your daily AI briefing as a deck."/>
+<link rel="canonical" href="https://promptai.in/"/>
 <meta name="theme-color" content="#f7f5f1"/>
 <link rel="manifest" href="manifest.webmanifest"/>
 <link rel="icon" href="icon-192.png"/>
@@ -133,7 +134,11 @@
   .card-foot{display:flex;align-items:center;justify-content:space-between;padding:10px 0 13px;flex:none;border-top:1px solid var(--border-soft);}
   .card-foot .rt{display:flex;align-items:center;gap:7px;font-size:.73rem;color:var(--text-3);}
   .card-foot .rt .wc{color:var(--accent-2);font-weight:600;}
-  .card-foot .full{display:flex;align-items:center;gap:4px;font-size:.77rem;font-weight:600;color:var(--accent);}
+  .card-foot .full{display:flex;align-items:center;gap:4px;font-size:.77rem;font-weight:600;color:var(--accent);border:none;background:none;cursor:pointer;font-family:inherit;padding:0;}
+  .card-foot .full:hover{color:var(--accent-2);}
+  .card-foot .full:disabled{color:var(--text-3);cursor:default;}
+  .card-scroll.loading-full{opacity:.55;}
+  .full-note{font-size:.78rem;color:var(--text-3);font-style:italic;margin-top:6px;}
   .card-foot .full svg{width:14px;height:14px;fill:currentColor;}
 
   .stamp{position:absolute;top:22px;font-family:var(--serif);font-weight:700;font-size:1.45rem;letter-spacing:.04em;padding:5px 14px;border-radius:11px;border:3px solid;opacity:0;pointer-events:none;z-index:40;}
@@ -233,6 +238,7 @@
   #done-close{display:none;}
   .overlay.browse #restart{display:none;}
   .overlay.browse #done-close{display:inline-flex;}
+  .overlay.browse #load-more{display:none!important;}
   .spinner{width:42px;height:42px;border-radius:50%;border:3px solid var(--border-soft);border-top-color:var(--accent);animation:spin 1s linear infinite;margin-bottom:18px;}
   @keyframes spin{to{transform:rotate(360deg);}}
 
@@ -262,14 +268,14 @@
 
 <div class="app" id="app">
   <div class="appbar">
-    <a class="brand" href="index.html" aria-label="PromptAI home">
+    <a class="brand" href="/" aria-label="PromptAI home">
       <svg viewBox="0 0 32 32"><rect x="1.5" y="1.5" width="29" height="29" rx="8" fill="var(--accent)"/><path d="M9.5 10.5 14.5 16l-5 5.5" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/><line x1="16.5" y1="21.5" x2="23" y2="21.5" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/></svg>
       <b>Prompt<i>AI</i></b>
     </a>
     <span class="sp"></span>
     <button class="ab-btn ab-icon" id="theme-btn" aria-label="Switch theme" title="Switch theme"><svg viewBox="0 0 24 24"><path d="M12 3a9 9 0 1 0 9 9c0-.46-.04-.92-.1-1.36a5.39 5.39 0 0 1-4.4 2.26 5.4 5.4 0 0 1-5.4-5.4c0-1.81.89-3.41 2.26-4.4-.44-.06-.9-.1-1.36-.1z"/></svg></button>
     <button class="ab-btn saved" id="saved-btn" aria-label="Saved stories"><svg viewBox="0 0 24 24"><path d="M17 3H7a2 2 0 0 0-2 2v16l7-3 7 3V5a2 2 0 0 0-2-2z"/></svg><span id="saved-count">0</span></button>
-    <a class="ab-btn" id="full-site" href="index.html" title="Open the full PromptAI site">Full site
+    <a class="ab-btn" id="full-site" href="home.html" title="Open the full PromptAI site">Full site
       <svg viewBox="0 0 24 24"><path d="M14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3zM5 5h5V3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-5h-2v5H5z"/></svg>
     </a>
   </div>
@@ -291,25 +297,10 @@
   <div class="controls" id="controls" style="visibility:hidden">
     <button class="ctl skip" id="btn-skip" aria-label="Skip"><svg viewBox="0 0 24 24"><path d="M18.3 5.71 12 12l6.3 6.29-1.41 1.42L10.59 13.4 4.29 19.7 2.88 18.3 9.17 12 2.88 5.71 4.29 4.3l6.3 6.29 6.3-6.29z"/></svg></button>
     <button class="ctl undo" id="btn-undo" aria-label="Undo" disabled><svg viewBox="0 0 24 24"><path d="M12.5 8c-2.6 0-5 .96-6.88 2.54L2 7v9h9l-3.62-3.62A8 8 0 0 1 20 16h2a10 10 0 0 0-9.5-8z"/></svg></button>
-    <button class="ctl open" id="btn-open" aria-label="Read full story"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zm-1 7V3.5L18.5 9zM8 13h8v2H8zm0 4h8v2H8zm0-8h3v2H8z"/></svg></button>
+    <button class="ctl open" id="btn-open" aria-label="Read full article"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zm-1 7V3.5L18.5 9zM8 13h8v2H8zm0 4h8v2H8zm0-8h3v2H8z"/></svg></button>
     <button class="ctl read" id="btn-read" aria-label="Save & read"><svg viewBox="0 0 24 24"><path d="M17 3H7a2 2 0 0 0-2 2v16l7-3 7 3V5a2 2 0 0 0-2-2z"/></svg></button>
   </div>
-  <div class="hint" id="hint">Swipe ← → to skip / save · scroll the story · tap for full</div>
-
-  <!-- READER -->
-  <div class="reader" id="reader">
-    <div class="reader-bar">
-      <button class="rb-btn" id="reader-close" aria-label="Back"><svg viewBox="0 0 24 24"><path d="M16.6 7.4 15.2 6l-6 6 6 6 1.4-1.4-4.6-4.6z"/></svg></button>
-      <span class="rb-src" id="reader-src"></span>
-      <span class="sp"></span>
-      <button class="rb-btn" id="reader-share-top" aria-label="Share"><svg viewBox="0 0 24 24"><path d="M18 16a3 3 0 0 0-2 .8l-7-4a3 3 0 0 0 0-1.6l7-4a3 3 0 1 0-1-2.2L8 8a3 3 0 1 0 0 8l7 4a3 3 0 1 0 3-4z"/></svg></button>
-    </div>
-    <div class="reader-body" id="reader-body"></div>
-    <div class="reader-foot">
-      <button class="rf-skip" id="reader-skip"><svg viewBox="0 0 24 24"><path d="M18.3 5.71 12 12l6.3 6.29-1.41 1.42L10.59 13.4 4.29 19.7 2.88 18.3 9.17 12 2.88 5.71 4.29 4.3l6.3 6.29 6.3-6.29z"/></svg>Skip</button>
-      <button class="rf-save" id="reader-save"><svg viewBox="0 0 24 24"><path d="M17 3H7a2 2 0 0 0-2 2v16l7-3 7 3V5a2 2 0 0 0-2-2z"/></svg>Save &amp; next</button>
-    </div>
-  </div>
+  <div class="hint" id="hint">Swipe ← → to skip / save · tap a card to read the full article</div>
 
   <!-- LOADING (fallback if skeleton replaced) -->
   <div class="overlay" id="ov-loading">
@@ -325,7 +316,7 @@
     <p>We can't reach today's stories right now. Check your connection and try again.</p>
     <div class="ov-actions">
       <button class="btn-primary" id="retry-btn">Try again</button>
-      <a class="btn-ghost" href="index.html">Open full site</a>
+      <a class="btn-ghost" href="home.html">Open full site</a>
     </div>
   </div>
 
@@ -337,8 +328,9 @@
     <div class="reading-list" id="reading-list"></div>
     <div class="ov-actions">
       <button class="btn-ghost" id="done-close">Back to deck</button>
-      <button class="btn-primary" id="restart">Start over</button>
-      <a class="btn-ghost" href="index.html">Browse full site
+      <button class="btn-primary" id="load-more">Load more cards</button>
+      <button class="btn-ghost" id="restart">Start over</button>
+      <a class="btn-ghost" href="home.html">Browse full site
         <svg viewBox="0 0 24 24" width="15" height="15" style="fill:currentColor"><path d="M14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3zM5 5h5V3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-5h-2v5H5z"/></svg>
       </a>
     </div>
@@ -376,7 +368,6 @@
   var deck=document.getElementById('deck'),progressEl=document.getElementById('progress'),
       savedCountEl=document.getElementById('saved-count'),controlsEl=document.getElementById('controls'),
       hintEl=document.getElementById('hint'),btnUndo=document.getElementById('btn-undo'),
-      reader=document.getElementById('reader'),
       ovLoading=document.getElementById('ov-loading'),ovError=document.getElementById('ov-error'),ovDone=document.getElementById('ov-done');
 
   document.getElementById('date').textContent=new Date().toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric'});
@@ -407,24 +398,105 @@
   function timeOf(a){try{var ms=window.PAI&&PAI.storyMs?PAI.storyMs(a):0;return ms?PAI.timeAgo(ms):(a.date||'');}catch(e){return a.date||'';}}
   function topicOf(a){return a.topic||'AI';}
 
+  /* ── article text: fetched full body → sample full → feed summary ── */
+  var fullCache={};
+  function parasOf(a){
+    if(a._full&&a._full.length)return a._full;
+    if(a.full)return a.full.split(/\n\n+/).map(function(s){return s.trim();}).filter(Boolean);
+    return (a.desc||'').split(/\n\n+/).map(function(s){return s.trim();}).filter(Boolean);
+  }
+  function previewHTML(a,maxWords){
+    var all=parasOf(a).join(' ').replace(/\s+/g,' ').trim();
+    var w=all.split(' ').filter(Boolean);
+    if(w.length<=maxWords)return '<p>'+esc(all)+'</p>';
+    return '<p>'+esc(w.slice(0,maxWords).join(' '))+'…</p>';
+  }
+  function extractParas(html){
+    try{
+      var doc=new DOMParser().parseFromString(html,'text/html');
+      doc.querySelectorAll('script,style,nav,header,footer,aside,form,figure,figcaption,noscript').forEach(function(n){n.remove();});
+      var root=doc.querySelector('article')||doc.querySelector('main')||doc.body;
+      var out=[],seen={};
+      Array.prototype.forEach.call(root.querySelectorAll('p'),function(p){
+        var t=(p.textContent||'').replace(/\s+/g,' ').trim();
+        if(t.length>60&&/[.!?]/.test(t)&&!seen[t]){seen[t]=1;out.push(t);}
+      });
+      return out.slice(0,40);
+    }catch(e){return [];}
+  }
+  function fetchArticle(url){
+    if(fullCache[url])return Promise.resolve(fullCache[url]);
+    if(!url||/^#/.test(url)||/#sample-/.test(url))return Promise.resolve(null);
+    var proxies=['https://api.allorigins.win/raw?url='+encodeURIComponent(url),'https://corsproxy.io/?'+encodeURIComponent(url)];
+    function tryP(i){
+      if(i>=proxies.length)return Promise.resolve(null);
+      var ctrl=new AbortController();var to=setTimeout(function(){ctrl.abort();},7000);
+      return fetch(proxies[i],{signal:ctrl.signal}).then(function(r){clearTimeout(to);return r.ok?r.text():null;})
+        .then(function(html){if(!html||html.length<800)return tryP(i+1);var ps=extractParas(html);if(ps.length<2)return tryP(i+1);fullCache[url]=ps;return ps;})
+        .catch(function(){clearTimeout(to);return tryP(i+1);});
+    }
+    return tryP(0);
+  }
+  function ensureFull(a,cardEl){
+    if(a._full||a.full||a._nofull||a._loading)return;
+    a._loading=true;
+    fetchArticle(a.url).then(function(ps){
+      a._loading=false;
+      if(ps&&ps.length){a._full=ps;
+        if(cardEl&&cardEl.parentNode&&!cardEl.dataset.expanded){
+          var sc=cardEl.querySelector('.card-scroll');if(sc)sc.innerHTML=previewHTML(a,110);
+          var rt=cardEl.querySelector('.rt');if(rt)rt.textContent=readTime(ps.join(' '))+' read';
+        }
+      }else{a._nofull=true;}
+    });
+  }
+  function expandCard(cardEl,a){
+    if(!cardEl||!a||cardEl.dataset.expanded)return;
+    var sc=cardEl.querySelector('.card-scroll'),btn=cardEl.querySelector('[data-readmore]');
+    function fill(ps){
+      cardEl.dataset.expanded='1';
+      sc.innerHTML=ps.map(function(p){return '<p>'+esc(p)+'</p>';}).join('');
+      sc.classList.remove('loading-full');sc.scrollTop=0;
+      if(btn){btn.disabled=true;btn.textContent='Full article';}
+      ev('reader_open');try{if(window.PAI&&PAI.bumpReadCount)PAI.bumpReadCount(a.url);}catch(e){}
+    }
+    if(a._full&&a._full.length)return fill(a._full);
+    if(a.full)return fill(a.full.split(/\n\n+/));
+    sc.classList.add('loading-full');if(btn)btn.textContent='Loading…';
+    fetchArticle(a.url).then(function(ps){
+      if(ps&&ps.length){a._full=ps;fill(ps);}
+      else{a._nofull=true;sc.classList.remove('loading-full');
+        if(btn){btn.disabled=false;btn.textContent='Open original';}
+        var note=document.createElement('p');note.className='full-note';note.textContent='Couldn’t load the full text here — opening the original article.';sc.appendChild(note);
+        window.open(a.url,'_blank','noopener');
+      }
+    });
+  }
+
   /* ── sample fallback (used when the live feed is unreachable: preview, offline, first deploy) ── */
   var SAMPLE=[
     {src:'tc',topic:'Models',title:'Open 12B model matches frontier reasoning at a tenth of the cost',url:'https://promptai.in/#sample-1',date:'',
-      desc:"A newly released 12-billion-parameter open model is posting frontier-class scores on several math and code reasoning benchmarks, despite being small enough to run on a single 24GB consumer GPU. The authors credit a heavily filtered training corpus and an extended chain-of-thought curriculum rather than raw scale. The full weights, training recipe and evaluation harness have been published, so independent groups can reproduce the claims within days."},
+      desc:"A newly released 12-billion-parameter open model is posting frontier-class scores on several math and code reasoning benchmarks, despite being small enough to run on a single 24GB consumer GPU.",
+      full:"A newly released 12-billion-parameter open model is posting frontier-class scores on several math and code reasoning benchmarks, despite being small enough to run on a single 24GB consumer GPU. The authors credit a heavily filtered training corpus and an extended chain-of-thought curriculum rather than raw scale. The full weights, training recipe and evaluation harness have been published, so independent groups can reproduce the claims within days.\n\nIndependent researchers have begun reproducing the headline numbers, and early community runs broadly agree, though some note the model is more sensitive to prompt phrasing than larger systems. If the results hold, the release strengthens a growing argument that careful data curation and reasoning-focused fine-tuning can close much of the gap with frontier labs at a fraction of the cost — a meaningful shift for teams that cannot afford hosted frontier APIs."},
     {src:'arxiv',topic:'Research',title:'Long-context models forget the middle — and here is a fix',url:'https://promptai.in/#sample-2',date:'',
-      desc:"A new study quantifies the lost-in-the-middle problem: facts placed in the middle of a long prompt are recalled far less reliably than those at the start or end. The effect held across several model families even when the information was unambiguous. The authors propose a fine-tuning scheme that re-weights attention toward under-sampled positions, recovering most of the gap. The takeaway for builders is immediate: ordering matters, and the most important evidence belongs near the edges of the prompt."},
+      desc:"A new study quantifies the lost-in-the-middle problem: facts placed in the middle of a long prompt are recalled far less reliably than those at the start or end.",
+      full:"A new study quantifies the lost-in-the-middle problem: facts placed in the middle of a long prompt are recalled far less reliably than those at the start or end. The effect held across several model families even when the information was unambiguous. The authors propose a fine-tuning scheme that re-weights attention toward under-sampled positions, recovering most of the gap. The takeaway for builders is immediate: ordering matters, and the most important evidence belongs near the edges of the prompt.\n\nFor retrieval-augmented systems that routinely stuff long contexts with passages, the finding is a warning: models do not read every position evenly, so blindly enlarging the context window is no substitute for good retrieval and deliberate ordering. The authors note their fix costs a little accuracy on short prompts, a trade-off teams will want to measure against their own workloads before adopting it widely."},
     {src:'openai',topic:'Tools',title:'An open-source agent framework just crossed 50k stars',url:'https://promptai.in/#sample-3',date:'',
-      desc:"An open-source framework for building tool-using AI agents has crossed 50,000 GitHub stars. Its appeal is restraint: the core is deliberately small — a planning loop, a tool registry and a memory interface — with everything else pushed into optional plugins. The standout feature is first-class tracing: every step an agent takes is logged and replayable, turning black-box debugging into something engineers can inspect. It is MIT-licensed with no managed-cloud requirement."},
+      desc:"An open-source framework for building tool-using AI agents has crossed 50,000 GitHub stars. Its appeal is restraint: the core is deliberately small.",
+      full:"An open-source framework for building tool-using AI agents has crossed 50,000 GitHub stars. Its appeal is restraint: the core is deliberately small — a planning loop, a tool registry and a memory interface — with everything else pushed into optional plugins. The standout feature is first-class tracing: every step an agent takes is logged and replayable, turning black-box debugging into something engineers can inspect. It is MIT-licensed with no managed-cloud requirement.\n\nMaintainers say the next milestone is a stable plugin API so the ecosystem can grow without breaking existing deployments. For engineering teams evaluating agent stacks, the project has quickly become the lightweight default to beat, prized less for raw features than for being small enough to read, fork and trust in production."},
     {src:'google',topic:'Policy',title:'EU finalizes the audit timeline for high-risk AI systems',url:'https://promptai.in/#sample-4',date:'',
-      desc:"European regulators published the staged timeline that turns the AI Act's high-risk provisions into concrete deadlines, giving providers a roughly 24-month runway before conformity assessments fully apply. The practical burden is documentation: data lineage, risk assessments, post-market monitoring and clear human-oversight plans. Vendors based outside the EU will also need an in-region representative. 'We'll figure out the AI Act later' is no longer a viable plan for anyone selling into the European market."},
+      desc:"European regulators published the staged timeline that turns the AI Act's high-risk provisions into concrete deadlines, giving providers a roughly 24-month runway.",
+      full:"European regulators published the staged timeline that turns the AI Act's high-risk provisions into concrete deadlines, giving providers a roughly 24-month runway before conformity assessments fully apply. The practical burden is documentation: data lineage, risk assessments, post-market monitoring and clear human-oversight plans. Vendors based outside the EU will also need an in-region representative. 'We'll figure out the AI Act later' is no longer a viable plan for anyone selling into the European market.\n\nLarger companies are already staffing dedicated compliance functions, while smaller firms worry the paperwork could slow shipping or favour incumbents with the legal resources to absorb it. Regulators argue the phased timeline is meant to avoid exactly that, giving startups room to build compliance into their roadmaps rather than bolt it on at the end."},
     {src:'hf',topic:'Vision',title:'Distillation method shrinks vision models 8× with no accuracy drop',url:'https://promptai.in/#sample-5',date:'',
-      desc:"Researchers published a distillation recipe that shrinks large vision models roughly eight-fold while holding accuracy on standard benchmarks, aimed at phones, cameras and edge devices. The method pairs a large teacher network with a compact student and adds an intermediate feature-matching loss, so the smaller model learns the teacher's internal representations. The team released training code alongside the paper, lowering the barrier for others to apply the technique."},
+      desc:"Researchers published a distillation recipe that shrinks large vision models roughly eight-fold while holding accuracy on standard benchmarks, aimed at phones, cameras and edge devices.",
+      full:"Researchers published a distillation recipe that shrinks large vision models roughly eight-fold while holding accuracy on standard benchmarks, aimed at phones, cameras and edge devices. The method pairs a large teacher network with a compact student and adds an intermediate feature-matching loss, so the smaller model learns the teacher's internal representations. The team released training code alongside the paper, lowering the barrier for others to apply the technique.\n\nIndependent validation is still needed and the approach adds training-time complexity, but if it generalizes it could push capable vision models onto a far wider range of cheap hardware. That is precisely where edge AI has been heading: private, low-latency inference that runs on the device instead of round-tripping every frame to a server."},
     {src:'databricks',topic:'Agents',title:'New inference card targets on-prem LLMs for regulated industries',url:'https://promptai.in/#sample-6',date:'',
-      desc:"A chipmaker unveiled an accelerator built specifically for running large language models on-premises, trading peak training throughput for cheap, efficient inference. The pitch targets banks, hospitals and government agencies that cannot send sensitive data to cloud providers. The card draws notably less power than repurposed training GPUs and is priced to make private deployment competitive with renting cloud capacity. 'Private inference' is becoming a distinct, fast-growing segment rather than an afterthought."}
+      desc:"A chipmaker unveiled an accelerator built specifically for running large language models on-premises, trading peak training throughput for cheap, efficient inference.",
+      full:"A chipmaker unveiled an accelerator built specifically for running large language models on-premises, trading peak training throughput for cheap, efficient inference. The pitch targets banks, hospitals and government agencies that cannot send sensitive data to cloud providers. The card draws notably less power than repurposed training GPUs and is priced to make private deployment competitive with renting cloud capacity. 'Private inference' is becoming a distinct, fast-growing segment rather than an afterthought.\n\nSkeptics note the software ecosystem around the chip is still young, and that real-world performance will depend on how well popular model runtimes support it. Even so, the launch signals that regulated buyers now have a credible alternative to renting cloud capacity they are not permitted to use — and that vendors increasingly see private deployment as a market worth building silicon for."}
   ];
 
   /* ── state ── */
-  var ARTICLES=[];
+  var ARTICLES=[],POOL=[],shown=10,moreLoading=false;
   var todayKey=new Date().toISOString().slice(0,10);
   var state={day:todayKey,index:0,history:[]};
   var saved=[];
@@ -438,27 +510,19 @@
   /* ── card markup ── */
   function cardHTML(a){
     var tc=srcColorOf(a);
-    var paras=(a.desc||'').split(/\n\n+/).map(function(p){return '<p>'+esc(p)+'</p>';}).join('')||'<p>'+esc(a.desc||'')+'</p>';
-    var hasImg=!!a.image;
-    var media=hasImg
-      ? '<div class="card-media" style="background-image:url(\''+esc(a.image)+'\')">'+
-          '<span class="topic-chip" style="color:'+tc+'">'+esc(topicOf(a))+'</span>'+
-          '<span class="kind">'+esc(kindFor(a))+'</span></div>'
-      : '';
-    var tagrow=hasImg?'':'<div class="card-tags">'+
+    var tagrow='<div class="card-tags">'+
           '<span class="topic-chip2" style="color:'+tc+';background:color-mix(in srgb,'+tc+' 12%, transparent)">'+esc(topicOf(a))+'</span>'+
           '<span class="kind2">'+esc(kindFor(a))+'</span></div>';
     return ''+
       '<div class="tint read"></div><div class="tint skip"></div>'+
       '<div class="stamp read">SAVE</div><div class="stamp skip">SKIP</div>'+
-      media+
-      '<div class="card-content'+(hasImg?'':' noimg')+'">'+tagrow+
+      '<div class="card-content noimg">'+tagrow+
         '<div class="card-src">'+favHTML(a,'fav')+
           '<span class="nm">'+esc(srcName(a))+'</span><span class="dot"></span><span class="tm">'+esc(timeOf(a))+'</span></div>'+
         '<h2>'+esc(a.title)+'</h2>'+
-        '<div class="scroll-wrap"><div class="card-scroll">'+paras+'</div><div class="scroll-fade"></div></div>'+
-        '<div class="card-foot"><span class="rt">'+readTime(a.desc)+' read</span>'+
-          '<span class="full">Full story<svg viewBox="0 0 24 24"><path d="M14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3zM5 5h5V3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-5h-2v5H5z"/></svg></span></div>'+
+        '<div class="scroll-wrap"><div class="card-scroll">'+previewHTML(a,110)+'</div><div class="scroll-fade"></div></div>'+
+        '<div class="card-foot"><span class="rt">'+readTime(parasOf(a).join(' '))+' read</span>'+
+          '<button class="full" data-readmore type="button">Read full article<svg viewBox="0 0 24 24"><path d="M14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3zM5 5h5V3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-5h-2v5H5z"/></svg></button></div>'+
       '</div>';
   }
 
@@ -482,14 +546,20 @@
       el.innerHTML=cardHTML(ARTICLES[idx]);
       deck.appendChild(el);
     }
-    var top=deck.querySelector('.pos-0');if(top)attachDrag(top);
+    var top=deck.querySelector('.pos-0');
+    if(top){attachDrag(top);
+      var topA=ARTICLES[state.index];
+      var rm=top.querySelector('[data-readmore]');
+      if(rm)rm.addEventListener('click',function(e){e.stopPropagation();expandCard(top,topA);});
+      ensureFull(topA,top);
+      var nx=ARTICLES[state.index+1];if(nx)ensureFull(nx,null);
+    }
     buildProgress();
     btnUndo.disabled=state.history.length===0;
     savedCountEl.textContent=saved.length;
   }
 
   function decide(dir){
-    if(reader.classList.contains('open'))reader.classList.remove('open');
     var top=deck.querySelector('.pos-0'),a=ARTICLES[state.index];
     if(!a)return;
     state.history.push({index:state.index,dir:dir,wasSaved:isSaved(a.url)});
@@ -539,7 +609,7 @@
     function end(e){
       deck.classList.remove('dragging');
       if(axis==='y'){active=false;return;}
-      if(axis===null){if(active){active=false;openReader();}return;}
+      if(axis===null){if(active){active=false;expandCard(card,ARTICLES[state.index]);}return;}
       active=false;
       var dx=e.clientX-sx;
       if(Math.abs(dx)>105){decide(dx>0?'read':'skip');return;}
@@ -551,32 +621,7 @@
     card.addEventListener('pointercancel',end);
   }
 
-  function openReader(){
-    var a=ARTICLES[state.index];if(!a)return;
-    ev('reader_open');
-    var tc=srcColorOf(a);
-    document.getElementById('reader-src').innerHTML=favHTML(a,'fav')+esc(srcName(a));
-    var pts=wordCount(a.desc)>=65?keyPoints(a.desc).map(function(p){return '<li>'+esc(p)+'</li>';}).join(''):'';
-    var paras=(a.desc||'').split(/\n\n+/).map(function(p){return '<p>'+esc(p)+'</p>';}).join('')||'<p>'+esc(a.desc||'')+'</p>';
-    var media=a.image?'<div class="r-media" style="background-image:url(\''+esc(a.image)+'\')"></div>':'';
-    var keys=pts?'<div class="r-keys"><h4>Key points</h4><ul>'+pts+'</ul></div>':'';
-    document.getElementById('reader-body').innerHTML=''+media+
-      '<span class="r-topic" style="color:'+tc+'">'+esc(topicOf(a))+' · '+esc(kindFor(a))+'</span>'+
-      '<h2>'+esc(a.title)+'</h2>'+
-      '<div class="r-meta"><span>'+esc(srcName(a))+'</span><span>'+esc(timeOf(a))+'</span><span>'+readTime(a.desc)+' read</span></div>'+
-      keys+'<div class="r-text">'+paras+'</div>'+
-      '<a class="r-open" href="'+esc(a.url)+'" target="_blank" rel="noopener" id="r-open-link"><svg viewBox="0 0 24 24"><path d="M14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3zM5 5h5V3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-5h-2v5H5z"/></svg>Open original article</a>'+
-      '<div class="r-share"><button id="r-share-btn"><svg viewBox="0 0 24 24"><path d="M18 16a3 3 0 0 0-2 .8l-7-4a3 3 0 0 0 0-1.6l7-4a3 3 0 1 0-1-2.2L8 8a3 3 0 1 0 0 8l7 4a3 3 0 1 0 3-4z"/></svg>Share</button>'+
-        '<a href="https://chat.openai.com/?q='+encodeURIComponent('Tell me more about: '+a.title)+'" target="_blank" rel="noopener" style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;height:42px;border-radius:11px;border:1px solid var(--border-soft);background:var(--bg);color:var(--text-2);font-size:.8rem;font-weight:500;text-decoration:none"><svg viewBox="0 0 24 24" width="15" height="15" style="fill:currentColor"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6z"/></svg>Ask AI</a></div>';
-    document.getElementById('reader-body').scrollTop=0;
-    document.getElementById('r-open-link').addEventListener('click',function(){try{if(window.PAI&&PAI.bumpReadCount)PAI.bumpReadCount(a.url);}catch(e){}});
-    document.getElementById('r-share-btn').addEventListener('click',function(){doShare(a);});
-    reader.classList.add('open');
-  }
-  function doShare(a){
-    if(navigator.share){navigator.share({title:a.title,url:a.url}).catch(function(){});}
-    else{(navigator.clipboard&&navigator.clipboard.writeText?navigator.clipboard.writeText(a.url):Promise.reject()).then(function(){toast('Link copied');},function(){toast('Copy the address bar URL');});}
-  }
+  // full article now loads inline in the card — see expandCard()
 
   function buildList(browse){
     savedCountEl.textContent=saved.length;
@@ -597,6 +642,9 @@
     deck.querySelectorAll('.swipe-card,.sk-card').forEach(function(n){n.remove();});
     controlsEl.style.visibility='hidden';hintEl.style.visibility='hidden';buildProgress();
     buildList(false);
+    var lm=document.getElementById('load-more');
+    var canMore=(shown<POOL.length)||!!(window.PAI&&PAI.fetchBlogs);
+    lm.style.display=canMore?'inline-flex':'none';lm.disabled=false;lm.textContent='Load more cards';
     ovDone.classList.remove('browse');ovDone.classList.add('show');
   }
   // tapping the saved pill peeks the reading list without ending the deck
@@ -607,15 +655,12 @@
   }
 
   /* ── controls ── */
-  document.getElementById('reader-close').addEventListener('click',function(){reader.classList.remove('open');});
-  document.getElementById('reader-skip').addEventListener('click',function(){decide('skip');});
-  document.getElementById('reader-save').addEventListener('click',function(){decide('read');});
-  document.getElementById('reader-share-top').addEventListener('click',function(){var a=ARTICLES[state.index];if(a)doShare(a);});
   document.getElementById('btn-read').addEventListener('click',function(){decide('read');});
   document.getElementById('btn-skip').addEventListener('click',function(){decide('skip');});
-  document.getElementById('btn-open').addEventListener('click',openReader);
+  document.getElementById('btn-open').addEventListener('click',function(){var top=deck.querySelector('.pos-0');expandCard(top,ARTICLES[state.index]);});
   document.getElementById('saved-btn').addEventListener('click',showSaved);
   document.getElementById('done-close').addEventListener('click',function(){ovDone.classList.remove('show','browse');});
+  document.getElementById('load-more').addEventListener('click',onLoadMore);
   btnUndo.addEventListener('click',function(){
     if(!state.history.length)return;
     var last=state.history.pop();state.index=last.index;
@@ -628,13 +673,12 @@
   });
   document.getElementById('retry-btn').addEventListener('click',function(){ovError.classList.remove('show');boot();});
   document.addEventListener('keydown',function(e){
-    if(e.key==='Escape'){reader.classList.remove('open');ovDone.classList.remove('show','browse');return;}
+    if(e.key==='Escape'){ovDone.classList.remove('show','browse');return;}
     if(ovDone.classList.contains('browse'))return;
     if(state.index>=ARTICLES.length)return;
-    if(reader.classList.contains('open')){if(e.key==='ArrowRight')decide('read');else if(e.key==='ArrowLeft')decide('skip');return;}
     if(e.key==='ArrowRight')decide('read');
     else if(e.key==='ArrowLeft')decide('skip');
-    else if(e.key==='Enter'){e.preventDefault();openReader();}
+    else if(e.key==='Enter'){e.preventDefault();var top=deck.querySelector('.pos-0');expandCard(top,ARTICLES[state.index]);}
     else if((e.key==='z'||e.key==='Z')&&!btnUndo.disabled)btnUndo.click();
   });
 
@@ -650,10 +694,26 @@
     return out;
   }
   function startWith(list){
-    ARTICLES=list.slice(0,12);
+    POOL=list;shown=Math.min(10,POOL.length);ARTICLES=POOL.slice(0,shown);
     ovLoading.classList.remove('show');ovError.classList.remove('show');
     if(state.index>ARTICLES.length)state.index=ARTICLES.length;
     render();
+  }
+  function onLoadMore(){
+    if(shown<POOL.length){shown=Math.min(shown+8,POOL.length);ARTICLES=POOL.slice(0,shown);ovDone.classList.remove('show','browse');render();return;}
+    if(moreLoading)return;
+    var calls=[];try{if(window.PAI){if(PAI.fetchBlogs)calls.push(PAI.fetchBlogs());if(PAI.fetchPapers)calls.push(PAI.fetchPapers('all'));}}catch(e){}
+    if(!calls.length){toast('That’s everything for today');return;}
+    moreLoading=true;var lm=document.getElementById('load-more');lm.disabled=true;lm.textContent='Loading…';
+    Promise.allSettled(calls).then(function(res){
+      var add=[];res.forEach(function(r){if(r.status==='fulfilled'&&Array.isArray(r.value))add=add.concat(r.value);});
+      add=normalize(add);
+      var have={};POOL.forEach(function(x){have[x.url]=1;});
+      var fresh=add.filter(function(x){return !have[x.url];});
+      moreLoading=false;lm.disabled=false;lm.textContent='Load more cards';
+      if(fresh.length){POOL=POOL.concat(fresh);shown=Math.min(shown+8,POOL.length);ARTICLES=POOL.slice(0,shown);ovDone.classList.remove('show','browse');render();}
+      else{toast('That’s everything for today');lm.style.display='none';}
+    });
   }
   function boot(){
     ovError.classList.remove('show');ovDone.classList.remove('show');

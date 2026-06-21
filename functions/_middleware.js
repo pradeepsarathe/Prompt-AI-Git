@@ -19,7 +19,7 @@ export async function onRequest(context) {
   const { request, env, next } = context;
   const url = new URL(request.url);
 
-  if ((url.pathname !== '/' && url.pathname !== '/index.html') || request.method !== 'GET') {
+  if ((url.pathname !== '/' && url.pathname !== '/index.html' && url.pathname !== '/home.html') || request.method !== 'GET') {
     return next();
   }
 

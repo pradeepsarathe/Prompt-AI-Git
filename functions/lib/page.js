@@ -92,10 +92,10 @@ ${(breadcrumbs && breadcrumbs.length) ? `<script type="application/ld+json">${JS
 </head>
 <body>
 <header class="top">
-  <a class="brand" href="/"><span class="dot"></span>Prompt<b>AI</b></a>
+  <a class="brand" href="/home.html"><span class="dot"></span>Prompt<b>AI</b></a>
   <nav>
-    <a href="/#news">News</a>
-    <a href="/#research">Research</a>
+    <a href="/home.html#news">News</a>
+    <a href="/home.html#research">Research</a>
     <a href="/issues">Issues</a>
     <a href="/prompts.html">Prompts</a>
     <a href="/education.html">Learn AI</a>
@@ -107,7 +107,7 @@ ${(breadcrumbs && breadcrumbs.length) ? `<script type="application/ld+json">${JS
   <div class="cta">
     <h4>Get the briefing</h4>
     <p>The one story that matters, 5 headlines and the paper everyone's citing — every Tuesday, free.</p>
-    <a class="btn" href="/#newsletter">Subscribe free</a>
+    <a class="btn" href="/home.html#newsletter">Subscribe free</a>
   </div>
 </main>
 <footer>
@@ -150,7 +150,7 @@ export function notFound(msg) {
     title: 'Not found',
     description: 'Page not found.',
     canonical: 'https://promptai.in/',
-    breadcrumbs: [{ label: 'Home', href: '/' }, { label: 'Not found' }],
-    body: `<h1>Not found</h1><p class="lede">${esc(msg || "This page doesn't exist (yet).")} <a href="/">Back to the briefing →</a></p>`,
+    breadcrumbs: [{ label: 'Home', href: '/home.html' }, { label: 'Not found' }],
+    body: `<h1>Not found</h1><p class="lede">${esc(msg || "This page doesn't exist (yet).")} <a href="/home.html">Back to the briefing →</a></p>`,
   }), { status: 404, headers: { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store' } });
 }
