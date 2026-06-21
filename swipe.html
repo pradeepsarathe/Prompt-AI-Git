@@ -134,7 +134,7 @@
   .card-foot{display:flex;align-items:center;justify-content:space-between;padding:10px 0 13px;flex:none;border-top:1px solid var(--border-soft);}
   .card-foot .rt{display:flex;align-items:center;gap:7px;font-size:.73rem;color:var(--text-3);}
   .card-foot .rt .wc{color:var(--accent-2);font-weight:600;}
-  .card-foot .full{display:flex;align-items:center;gap:4px;font-size:.77rem;font-weight:600;color:var(--accent);border:none;background:none;cursor:pointer;font-family:inherit;padding:0;}
+  .card-foot .full{display:flex;align-items:center;gap:4px;font-size:.77rem;font-weight:600;color:var(--accent);border:none;background:none;cursor:pointer;font-family:inherit;padding:0;text-decoration:none;}
   .card-foot .full:hover{color:var(--accent-2);}
   .card-foot .full:disabled{color:var(--text-3);cursor:default;}
   .card-scroll.loading-full{opacity:.55;}
@@ -485,12 +485,13 @@
       }else{a._nofull=true;}
     });
   }
+  function capWords(ps,max){var out=[],used=0;for(var i=0;i<ps.length;i++){var w=(ps[i]||'').split(/\s+/).filter(Boolean);if(!w.length)continue;if(used+w.length<=max){out.push('<p>'+esc(ps[i])+'</p>');used+=w.length;}else{var rem=max-used;if(rem>12)out.push('<p>'+esc(w.slice(0,rem).join(' '))+'…</p>');break;}}return out.join('');}
   function expandCard(cardEl,a){
     if(!cardEl||!a||cardEl.dataset.expanded)return;
-    var sc=cardEl.querySelector('.card-scroll'),btn=cardEl.querySelector('[data-readmore]');
+    var sc=cardEl.querySelector('.card-scroll'),btn=null;
     function fill(ps){
       cardEl.dataset.expanded='1';
-      sc.innerHTML=ps.map(function(p){return '<p>'+esc(p)+'</p>';}).join('');
+      sc.innerHTML=capWords(ps,500);
       sc.classList.remove('loading-full');sc.scrollTop=0;
       if(btn){btn.disabled=true;btn.textContent='Full article';}
       ev('reader_open');try{if(window.PAI&&PAI.bumpReadCount)PAI.bumpReadCount(a.url);}catch(e){}
@@ -502,8 +503,7 @@
       if(ps&&ps.length){a._full=ps;fill(ps);}
       else{a._nofull=true;sc.classList.remove('loading-full');
         if(btn){btn.disabled=false;btn.textContent='Open original';}
-        var note=document.createElement('p');note.className='full-note';note.textContent='Couldn’t load the full text here — opening the original article.';sc.appendChild(note);
-        window.open(a.url,'_blank','noopener');
+        var note=document.createElement('p');note.className='full-note';note.textContent='Couldn’t load more text here — tap “Read full article” to open the original.';sc.appendChild(note);
       }
     });
   }
@@ -557,7 +557,7 @@
         '<h2>'+esc(a.title)+'</h2>'+
         '<div class="scroll-wrap"><div class="card-scroll">'+previewHTML(a,150)+'</div><div class="scroll-fade"></div></div>'+
         '<div class="card-foot"><span class="rt">'+readTime(parasOf(a).join(' '))+' read</span>'+
-          '<button class="full" data-readmore type="button">Read full article<svg viewBox="0 0 24 24"><path d="M14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3zM5 5h5V3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-5h-2v5H5z"/></svg></button></div>'+
+          '<a class="full" data-fulllink href="'+esc(a.url)+'" target="_blank" rel="noopener">Read full article<svg viewBox="0 0 24 24"><path d="M14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3zM5 5h5V3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-5h-2v5H5z"/></svg></a></div>'+
       '</div>';
   }
 
@@ -584,8 +584,7 @@
     var top=deck.querySelector('.pos-0');
     if(top){attachDrag(top);
       var topA=ARTICLES[state.index];
-      var rm=top.querySelector('[data-readmore]');
-      if(rm)rm.addEventListener('click',function(e){e.stopPropagation();expandCard(top,topA);});
+      // footer "Read full article" is a plain external link to the source now
       ensureFull(topA,top);
       var nx=ARTICLES[state.index+1];if(nx)ensureFull(nx,null);
     }
@@ -644,7 +643,7 @@
     function end(e){
       deck.classList.remove('dragging');
       if(axis==='y'){active=false;return;}
-      if(axis===null){if(active){active=false;expandCard(card,ARTICLES[state.index]);}return;}
+      if(axis===null){if(active){active=false;if(e.target&&e.target.closest&&e.target.closest('[data-fulllink]'))return;expandCard(card,ARTICLES[state.index]);}return;}
       active=false;
       var dx=e.clientX-sx;
       if(Math.abs(dx)>105){decide(dx>0?'read':'skip');return;}
