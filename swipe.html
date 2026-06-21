@@ -262,6 +262,29 @@
     body{background:radial-gradient(1200px 800px at 50% -10%, color-mix(in srgb,var(--accent) 9%,var(--bg)), var(--bg) 60%);}
     .app{height:min(900px,100dvh);margin-top:max(0px,calc((100dvh - 900px)/2));}
   }
+  /* control captions */
+  .controls{align-items:flex-start;}
+  .ctl-col{display:flex;flex-direction:column;align-items:center;gap:6px;}
+  .ctl-cap{font-size:.62rem;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--text-3);}
+  .ctl-cap.skip{color:var(--skip);} .ctl-cap.save{color:var(--read);}
+  /* first-run coach */
+  .coach{position:absolute;inset:0;z-index:120;display:flex;align-items:center;justify-content:center;padding:22px;background:color-mix(in srgb,var(--text) 42%,transparent);}
+  .coach[hidden]{display:none;}
+  .coach.out{opacity:0;transition:opacity .3s;}
+  .coach-card{background:var(--card);border:1px solid var(--border-soft);border-radius:20px;box-shadow:var(--shadow-card);padding:22px;width:min(338px,100%);animation:rise .32s cubic-bezier(.22,1,.36,1) both;}
+  .coach-card h3{font-family:var(--serif);font-size:1.2rem;font-weight:600;text-align:center;letter-spacing:-.2px;}
+  .coach-card .sub{font-size:.82rem;color:var(--text-2);text-align:center;margin:5px 0 14px;}
+  .coach-row{display:flex;align-items:center;gap:13px;padding:11px 2px;border-top:1px solid var(--border-soft);}
+  .coach-row .ic{width:38px;height:38px;border-radius:50%;flex:none;display:flex;align-items:center;justify-content:center;}
+  .coach-row .ic svg{width:18px;height:18px;fill:currentColor;}
+  .coach-row.skip .ic{color:var(--skip);background:var(--skip-bg);}
+  .coach-row.save .ic{color:var(--read);background:var(--read-bg);}
+  .coach-row.read .ic{color:var(--accent);background:var(--accent-subtle);}
+  .coach-row b{font-size:.9rem;display:block;}
+  .coach-row span{font-size:.77rem;color:var(--text-3);}
+  .coach-go{margin-top:16px;width:100%;height:46px;border-radius:13px;border:none;background:var(--accent);color:#fff;font-weight:600;font-size:.92rem;cursor:pointer;}
+  .coach-go:hover{background:var(--accent-2);}
+  :root[data-theme="dark"] .coach-go{color:#17181c;}
 </style>
 </head>
 <body>
@@ -295,12 +318,24 @@
   </div>
 
   <div class="controls" id="controls" style="visibility:hidden">
-    <button class="ctl skip" id="btn-skip" aria-label="Skip"><svg viewBox="0 0 24 24"><path d="M18.3 5.71 12 12l6.3 6.29-1.41 1.42L10.59 13.4 4.29 19.7 2.88 18.3 9.17 12 2.88 5.71 4.29 4.3l6.3 6.29 6.3-6.29z"/></svg></button>
-    <button class="ctl undo" id="btn-undo" aria-label="Undo" disabled><svg viewBox="0 0 24 24"><path d="M12.5 8c-2.6 0-5 .96-6.88 2.54L2 7v9h9l-3.62-3.62A8 8 0 0 1 20 16h2a10 10 0 0 0-9.5-8z"/></svg></button>
-    <button class="ctl open" id="btn-open" aria-label="Read full article"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zm-1 7V3.5L18.5 9zM8 13h8v2H8zm0 4h8v2H8zm0-8h3v2H8z"/></svg></button>
-    <button class="ctl read" id="btn-read" aria-label="Save & read"><svg viewBox="0 0 24 24"><path d="M17 3H7a2 2 0 0 0-2 2v16l7-3 7 3V5a2 2 0 0 0-2-2z"/></svg></button>
+    <div class="ctl-col"><button class="ctl skip" id="btn-skip" aria-label="Skip"><svg viewBox="0 0 24 24"><path d="M18.3 5.71 12 12l6.3 6.29-1.41 1.42L10.59 13.4 4.29 19.7 2.88 18.3 9.17 12 2.88 5.71 4.29 4.3l6.3 6.29 6.3-6.29z"/></svg></button><span class="ctl-cap skip">Skip</span></div>
+    <div class="ctl-col"><button class="ctl undo" id="btn-undo" aria-label="Undo" disabled><svg viewBox="0 0 24 24"><path d="M12.5 8c-2.6 0-5 .96-6.88 2.54L2 7v9h9l-3.62-3.62A8 8 0 0 1 20 16h2a10 10 0 0 0-9.5-8z"/></svg></button><span class="ctl-cap">Undo</span></div>
+    <div class="ctl-col"><button class="ctl open" id="btn-open" aria-label="Read full article"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zm-1 7V3.5L18.5 9zM8 13h8v2H8zm0 4h8v2H8zm0-8h3v2H8z"/></svg></button><span class="ctl-cap">Read</span></div>
+    <div class="ctl-col"><button class="ctl read" id="btn-read" aria-label="Save & read"><svg viewBox="0 0 24 24"><path d="M17 3H7a2 2 0 0 0-2 2v16l7-3 7 3V5a2 2 0 0 0-2-2z"/></svg></button><span class="ctl-cap save">Save</span></div>
   </div>
   <div class="hint" id="hint">Swipe ← → to skip / save · tap a card to read the full article</div>
+
+  <!-- first-run coach -->
+  <div class="coach" id="coach" hidden>
+    <div class="coach-card">
+      <h3>Today in AI, one card at a time</h3>
+      <p class="sub">Three ways to move through the deck:</p>
+      <div class="coach-row skip"><span class="ic"><svg viewBox="0 0 24 24"><path d="M18.3 5.71 12 12l6.3 6.29-1.41 1.42L10.59 13.4 4.29 19.7 2.88 18.3 9.17 12 2.88 5.71 4.29 4.3l6.3 6.29 6.3-6.29z"/></svg></span><div><b>Swipe left — Skip</b><span>Not for you? On to the next.</span></div></div>
+      <div class="coach-row save"><span class="ic"><svg viewBox="0 0 24 24"><path d="M17 3H7a2 2 0 0 0-2 2v16l7-3 7 3V5a2 2 0 0 0-2-2z"/></svg></span><div><b>Swipe right — Save</b><span>Keeps it in your reading list.</span></div></div>
+      <div class="coach-row read"><span class="ic"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zm-1 7V3.5L18.5 9zM8 13h8v2H8zm0 4h8v2H8zm0-8h3v2H8z"/></svg></span><div><b>Tap a card — Read</b><span>Opens the full story inline.</span></div></div>
+      <button class="coach-go" id="coach-go">Start swiping</button>
+    </div>
+  </div>
 
   <!-- LOADING (fallback if skeleton replaced) -->
   <div class="overlay" id="ov-loading">
@@ -444,7 +479,7 @@
       a._loading=false;
       if(ps&&ps.length){a._full=ps;
         if(cardEl&&cardEl.parentNode&&!cardEl.dataset.expanded){
-          var sc=cardEl.querySelector('.card-scroll');if(sc)sc.innerHTML=previewHTML(a,110);
+          var sc=cardEl.querySelector('.card-scroll');if(sc)sc.innerHTML=previewHTML(a,150);
           var rt=cardEl.querySelector('.rt');if(rt)rt.textContent=readTime(ps.join(' '))+' read';
         }
       }else{a._nofull=true;}
@@ -520,7 +555,7 @@
         '<div class="card-src">'+favHTML(a,'fav')+
           '<span class="nm">'+esc(srcName(a))+'</span><span class="dot"></span><span class="tm">'+esc(timeOf(a))+'</span></div>'+
         '<h2>'+esc(a.title)+'</h2>'+
-        '<div class="scroll-wrap"><div class="card-scroll">'+previewHTML(a,110)+'</div><div class="scroll-fade"></div></div>'+
+        '<div class="scroll-wrap"><div class="card-scroll">'+previewHTML(a,150)+'</div><div class="scroll-fade"></div></div>'+
         '<div class="card-foot"><span class="rt">'+readTime(parasOf(a).join(' '))+' read</span>'+
           '<button class="full" data-readmore type="button">Read full article<svg viewBox="0 0 24 24"><path d="M14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3zM5 5h5V3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-5h-2v5H5z"/></svg></button></div>'+
       '</div>';
@@ -734,6 +769,18 @@
   }
 
   boot();
+})();
+</script>
+
+<script>
+(function(){
+  var KEY='pai_swipe_coached',coach=document.getElementById('coach');
+  if(!coach)return;
+  try{if(localStorage.getItem(KEY))return;}catch(e){}
+  coach.hidden=false;
+  function dismiss(){coach.classList.add('out');try{localStorage.setItem(KEY,'1');}catch(e){}setTimeout(function(){coach.hidden=true;},300);}
+  document.getElementById('coach-go').addEventListener('click',dismiss);
+  coach.addEventListener('click',function(e){if(e.target===coach)dismiss();});
 })();
 </script>
 
