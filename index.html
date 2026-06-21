@@ -294,6 +294,11 @@
   .coach-go{margin-top:16px;width:100%;height:46px;border-radius:13px;border:none;background:var(--accent);color:#fff;font-weight:600;font-size:.92rem;cursor:pointer;}
   .coach-go:hover{background:var(--accent-2);}
   :root[data-theme="dark"] .coach-go{color:#17181c;}
+  /* dynamic cross-link: open the full site */
+  #full-site{color:#fff;border:none;font-weight:700;background:linear-gradient(90deg,#0f766e,#2563eb,#7c3aed,#2563eb,#0f766e);background-size:220% 100%;animation:linkflow 6s ease-in-out infinite alternate;box-shadow:0 3px 12px color-mix(in srgb,#2563eb 32%,transparent);}
+  #full-site:hover{color:#fff;filter:brightness(1.08);}
+  #full-site svg{fill:#fff;}
+  @keyframes linkflow{from{background-position:0% 50%;}to{background-position:100% 50%;}}
 </style>
 </head>
 <body>
