@@ -2,12 +2,13 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
+<script>/* pre-paint theme + theme-color (parity with the rest of the site) */(function(){try{var t=localStorage.getItem('pai_theme')||'slate';if(t==='auto')t=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'default';if(t!=='default')document.documentElement.setAttribute('data-theme',t);var bg={'default':'#ffffff','promptai':'#f3f6fc','slate':'#f7f5f1','dark':'#17181c'}[t]||'#ffffff';var m=document.createElement('meta');m.name='theme-color';m.content=bg;document.head.appendChild(m);}catch(e){}})();</script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<meta name="theme-color" content="#ffffff"/>
+<meta name="color-scheme" content="light dark"/>
 <title>Editorial Standards &amp; Methodology — PromptAI</title>
 <meta name="description" content="How PromptAI sources, curates, summarises and corrects AI news and research — our independence, our use of AI, and how to reach us."/>
 <link rel="canonical" href="https://promptai.in/methodology.html"/>
-<meta name="robots" content="index, follow"/>
+<meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"/>
 <meta property="og:type" content="website"/>
 <meta property="og:url" content="https://promptai.in/methodology.html"/>
 <meta property="og:site_name" content="PromptAI"/>
@@ -20,11 +21,17 @@
 <script type="application/ld+json">
 {"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://promptai.in/"},{"@type":"ListItem","position":2,"name":"Editorial standards"}]}
 </script>
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Is PromptAI independent?","acceptedAnswer":{"@type":"Answer","text":"Yes. PromptAI is not owned, funded or editorially controlled by any AI lab, vendor or investor. Where a link is an affiliate link or a placement is sponsored we label it; sponsorship never buys favourable coverage or a place in the news feed."}},{"@type":"Question","name":"Does PromptAI use AI to write its summaries?","acceptedAnswer":{"@type":"Answer","text":"Yes. The \u201cToday in 60 seconds\u201d digest and the per-article summaries are AI-generated from the source\u2019s own text and labelled as such on screen. Every summary sits next to a direct link to the original, which is always the authority."}},{"@type":"Question","name":"Where does PromptAI get its content?","acceptedAnswer":{"@type":"Answer","text":"From a fixed, public allow-list of reputable sources \u2014 arXiv for research; Hacker News, TechCrunch, Ars Technica and lab blogs for news; and explainer publications like The Gradient and Distill for deep dives \u2014 filtered for AI-relevance, de-duped and recency-limited."}},{"@type":"Question","name":"How do I report an error?","acceptedAnswer":{"@type":"Answer","text":"Email hello@promptai.in with the story and the issue. We aim to review reports within a few days and will correct or remove content that\u2019s wrong."}}]}
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&amp;family=Roboto+Serif:opsz,wght@8..144,400;8..144,600&amp;display=swap" rel="stylesheet"/>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&amp;family=Roboto+Serif:opsz,wght@8..144,400;8..144,600&amp;display=swap"/><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&amp;family=Roboto+Serif:opsz,wght@8..144,400;8..144,600&amp;display=swap" media="print" onload="this.media='all'"/><noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&amp;family=Roboto+Serif:opsz,wght@8..144,400;8..144,600&amp;display=swap"/></noscript>
 <style>
-  :root { --accent:#1a73e8; --text:#202124; --text-2:#5f6368; --text-3:#6b7177; --border:#e8eaed; --bg:#ffffff; --bg-subtle:#f1f3f4; }
+  :root { --accent:#1a73e8; --accent-2:#1967d2; --text:#202124; --text-2:#5f6368; --text-3:#6b7177; --border:#e8eaed; --bg:#ffffff; --bg-subtle:#f1f3f4; }
+  :root[data-theme="promptai"] { --accent:#2563eb; --accent-2:#1d4ed8; --text:#0a1628; --text-2:#44546e; --text-3:#5b6b84; --border:#dde6f3; --bg:#f3f6fc; --bg-subtle:#e7edf8; }
+  :root[data-theme="slate"] { --accent:#0f766e; --accent-2:#0d5d57; --text:#1c1917; --text-2:#57534e; --text-3:#6f6a64; --border:#e5e1d8; --bg:#f7f5f1; --bg-subtle:#edeae3; }
+  :root[data-theme="dark"] { --accent:#8ab4f8; --accent-2:#aecbfa; --text:#e8eaed; --text-2:#9aa0a6; --text-3:#969ba2; --border:#2d2f33; --bg:#17181c; --bg-subtle:#222327; color-scheme:dark; }
   * { margin:0; padding:0; box-sizing:border-box; }
   body { font-family:'Roboto',system-ui,sans-serif; color:var(--text); background:var(--bg); line-height:1.65; font-size:15.5px; }
   a { color:var(--accent); text-decoration:none; }
@@ -48,14 +55,35 @@
   .principles li { padding:12px 16px; border:1px solid var(--border); border-radius:10px; margin-bottom:8px; }
   .principles b { color:var(--text); }
   footer { border-top:1px solid var(--border); margin-top:50px; padding-top:18px; font-size:0.84rem; color:var(--text-2); display:flex; gap:18px; flex-wrap:wrap; }
+  .skip-link { position:absolute; left:-9999px; top:0; z-index:100; background:var(--accent); color:#fff; padding:10px 18px; border-radius:0 0 10px 0; font-weight:600; text-decoration:none; }
+  .skip-link:focus { left:0; }
+  :focus-visible { outline:2px solid var(--accent); outline-offset:2px; border-radius:4px; }
+  #to-top { position:fixed; right:20px; bottom:20px; z-index:60; width:46px; height:46px; border-radius:50%; border:1px solid var(--border); background:var(--bg); color:var(--accent); box-shadow:0 4px 14px rgba(0,0,0,0.14); display:flex; align-items:center; justify-content:center; cursor:pointer; opacity:0; transform:translateY(12px); pointer-events:none; transition:opacity .2s, transform .2s, background .15s, border-color .15s; }
+  #to-top.show { opacity:1; transform:none; pointer-events:auto; }
+  #to-top:hover { background:var(--accent); color:#fff; border-color:var(--accent); }
+  :root[data-theme="dark"] #to-top:hover { color:#17181c; }
+  #to-top svg { width:24px; height:24px; fill:currentColor; }
+  @media (prefers-reduced-motion:reduce){ #to-top { transition:opacity .2s; transform:none; } }
+  .topbar-spacer { flex:1; }
+  .topbar-actions { display:flex; align-items:center; gap:4px; }
+  .swipe-return { display:inline-flex; align-items:center; gap:6px; height:36px; padding:0 16px; border-radius:18px; border:none; color:#fff; font-weight:700; font-size:0.85rem; text-decoration:none; white-space:nowrap; background:linear-gradient(90deg,#0f766e,#2563eb,#7c3aed,#2563eb,#0f766e); background-size:220% 100%; animation:swipeflow 6s ease-in-out infinite alternate; box-shadow:0 3px 12px color-mix(in srgb,#2563eb 32%,transparent); }
+  .swipe-return svg { fill:#fff; width:16px; height:16px; }
+  .swipe-return:hover { filter:brightness(1.08); text-decoration:none; color:#fff; }
+  @keyframes swipeflow { from { background-position:0% 50%; } to { background-position:100% 50%; } }
+  @media (prefers-reduced-motion:reduce){ .swipe-return { animation:none; } }
 </style>
 </head>
 <body>
+<a class="skip-link" href="#main">Skip to content</a>
 <header class="topbar">
-  <a class="brand" href="/"><span class="brand-dot"></span>Prompt<b>AI</b></a>
+  <a class="brand" href="/home.html"><span class="brand-dot"></span>Prompt<b>AI</b></a>
+  <div class="topbar-spacer"></div>
+  <div class="topbar-actions">
+    <a class="swipe-return" href="/" aria-label="Back to the Swipe deck" title="Back to the daily Swipe deck"><svg viewBox="0 0 24 24" width="16" height="16"><path d="M16 4H8a3 3 0 0 0-3 3v10a3 3 0 0 0 3 3h8a3 3 0 0 0 3-3V7a3 3 0 0 0-3-3zm1 13a1 1 0 0 1-1 1H8a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h8a1 1 0 0 1 1 1z"/></svg>Swipe</a>
+  </div>
 </header>
-<main class="wrap">
-  <nav class="crumbs" aria-label="Breadcrumb"><a href="/">Home</a> › <span aria-current="page">Editorial standards</span></nav>
+<main class="wrap" id="main">
+  <nav class="crumbs" aria-label="Breadcrumb"><a href="/home.html">Home</a> › <span aria-current="page">Editorial standards</span></nav>
   <div class="kick">How we work</div>
   <h1>Editorial Standards &amp; Methodology</h1>
   <p class="updated">Last updated: June 14, 2026</p>
@@ -117,5 +145,7 @@
   <a href="/feed.xml">RSS</a>
 </footer>
 </main>
+<button id="to-top" type="button" aria-label="Back to top" title="Back to top"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 8.3l-6 6 1.4 1.4 4.6-4.6 4.6 4.6 1.4-1.4z"></path></svg></button>
+<script>(function(){var b=document.getElementById('to-top');if(!b)return;b.addEventListener('click',function(){var rm=matchMedia('(prefers-reduced-motion: reduce)').matches;window.scrollTo({top:0,behavior:rm?'auto':'smooth'});});var f=function(){b.classList.toggle('show',window.pageYOffset>480);};window.addEventListener('scroll',f,{passive:true});f();})();</script>
 </body>
 </html>

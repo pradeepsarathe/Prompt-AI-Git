@@ -2,12 +2,13 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
-<script>/* pre-paint theme */(function(){try{var t=localStorage.getItem('pai_theme')||'auto';if(t==='auto')t=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'default';if(t!=='default')document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
+<script>/* pre-paint theme */(function(){try{var t=localStorage.getItem('pai_theme')||'slate';if(t==='auto')t=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'default';if(t!=='default')document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<meta name="theme-color" content="#ffffff"/>
+<meta name="theme-color" content="#f7f5f1"/>
 <title>AI Glossary — 16 AI terms explained in plain English | PromptAI</title>
 <meta name="description" content="What is an LLM? A token? RAG? Hallucination? 16 AI terms explained in plain English, with analogies and concrete examples. Free, no sign-up."/>
 <link rel="canonical" href="https://promptai.in/glossary.html"/>
+<meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"/>
 <meta property="og:type" content="website"/>
 <meta property="og:url" content="https://promptai.in/glossary.html"/>
 <meta property="og:site_name" content="PromptAI"/>
@@ -23,7 +24,7 @@
 <link rel="manifest" href="manifest.webmanifest"/>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Roboto+Serif:opsz,wght@8..144,400;8..144,500;8..144,600&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Roboto+Serif:opsz,wght@8..144,400;8..144,500;8..144,600&family=Roboto+Mono:wght@400;500&display=swap"/><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Roboto+Serif:opsz,wght@8..144,400;8..144,500;8..144,600&family=Roboto+Mono:wght@400;500&display=swap" media="print" onload="this.media='all'"/><noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Roboto+Serif:opsz,wght@8..144,400;8..144,500;8..144,600&family=Roboto+Mono:wght@400;500&display=swap"/></noscript>
 <link rel="stylesheet" href="pai-chrome.css"/>
 <style>
   * { margin:0; padding:0; box-sizing:border-box; }
@@ -41,7 +42,7 @@
   .g-grid { display:grid; gap:14px; margin:22px 0 30px; }
   .g-search { position:relative; display:flex; align-items:center; margin:18px 0 10px; }
   .g-search svg { position:absolute; left:15px; width:18px; height:18px; fill:var(--text-3); pointer-events:none; }
-  .g-search input { width:100%; height:44px; border:1px solid var(--border); border-radius:22px; background:var(--card); padding:0 16px 0 44px; font-size:0.9rem; color:var(--text); font-family:inherit; }
+  .g-search input { width:100%; height:44px; border:1px solid var(--border); border-radius:22px; background:var(--card); padding:0 44px 0 44px; font-size:0.9rem; color:var(--text); font-family:inherit; }
   .g-search input::placeholder { color:var(--text-3); }
   .g-search input:focus { outline:none; border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-subtle); }
   .g-count { font-size:0.82rem; color:var(--text-2); margin:0; }
@@ -60,12 +61,13 @@
 </head>
 <body>
 <header class="topbar">
-  <a class="brand" href="index.html" aria-label="PromptAI home" data-no-translate>
+  <a class="brand" href="home.html" aria-label="PromptAI home" data-no-translate>
     <span class="brand-mark"><svg viewBox="0 0 32 32"><rect x="1.5" y="1.5" width="29" height="29" rx="8" fill="var(--accent)"/><path d="M9.5 10.5 14.5 16l-5 5.5" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/><line x1="16.5" y1="21.5" x2="23" y2="21.5" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/></svg></span>
     <span class="brand-text">Prompt<b>AI</b></span>
   </a>
   <div class="topbar-spacer"></div>
   <div class="topbar-actions">
+    <a class="swipe-return" href="/" aria-label="Back to the Swipe deck" title="Back to the daily Swipe deck"><svg viewBox="0 0 24 24" width="16" height="16"><path d="M16 4H8a3 3 0 0 0-3 3v10a3 3 0 0 0 3 3h8a3 3 0 0 0 3-3V7a3 3 0 0 0-3-3zm1 13a1 1 0 0 1-1 1H8a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h8a1 1 0 0 1 1 1z"/></svg>Swipe</a>
     <button class="icon-btn" onclick="toggleThemeMenu(event)" aria-label="Theme" title="Appearance"><svg viewBox="0 0 24 24"><path d="M12 22a10 10 0 0 1 0-20c5.51 0 10 4.04 10 9 0 3.31-2.69 6-6 6h-1.77c-.28 0-.5.22-.5.5 0 .12.05.23.13.33.41.47.64 1.06.64 1.67A2.5 2.5 0 0 1 12 22zm0-18a8 8 0 0 0 0 16c.28 0 .5-.22.5-.5a.54.54 0 0 0-.14-.35c-.41-.46-.63-1.05-.63-1.65a2.5 2.5 0 0 1 2.5-2.5H16a4 4 0 0 0 4-4c0-3.86-3.59-7-8-7zm-5.5 6a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3zm3-4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3zm5 0a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3z"/></svg></button>
     <button class="subscribe-cta" id="subscribe-btn" onclick="toggleSubscribe(event)">Subscribe</button>
   </div>
@@ -90,12 +92,12 @@
   <p class="sub-note">No spam. Unsubscribe anytime.</p>
 </div>
 <nav class="tabs" aria-label="Sections">
-  <a class="tab" href="index.html#home">Home</a>
-  <a class="tab" href="index.html#news">News</a>
-  <a class="tab" href="index.html#deepdives">Deep dives</a>
-  <a class="tab" href="index.html#research">Research</a>
+  <a class="tab" href="home.html#home">Home</a>
+  <a class="tab" href="home.html#news">News</a>
+  <a class="tab" href="home.html#deepdives">Deep dives</a>
+  <a class="tab" href="home.html#research">Research</a>
   <a class="tab active" href="education.html">Learn AI</a>
-  <a class="tab" href="index.html#tools">Tools</a>
+  <a class="tab" href="home.html#tools">Tools</a>
   <a class="tab" href="prompts.html">Prompts</a>
   <a class="tab" href="archive.html">Archive</a>
 </nav>
@@ -108,8 +110,12 @@
     <div class="g-search">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 1 0-.7.7l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0A4.5 4.5 0 1 1 14 9.5 4.49 4.49 0 0 1 9.5 14z"/></svg>
       <input id="pai-search" type="search" placeholder="Filter 16 terms…" autocomplete="off" aria-label="Filter glossary terms"/>
+      <button class="search-clear" id="search-clear" type="button" aria-label="Clear filter" hidden>✕</button>
     </div>
-    <div class="g-count" id="g-count"></div>
+    <div class="count-row">
+      <div class="g-count" id="g-count"></div>
+      <button class="ghost-btn" type="button" onclick="window.print()" title="Print or save the glossary as PDF">⎙ Save as PDF</button>
+    </div>
     <div class="g-grid">
       <a class="g-card" href="glossary/llm.html"><h2>What is an LLM?</h2><p>An LLM — large language model — is an AI system trained on enormous amounts of text to predict the next word, and through that to write, summarize, translate and reason.</p></a>
       <a class="g-card" href="glossary/token.html"><h2>What is a token in AI?</h2><p>A token is the small chunk of text — roughly three-quarters of an English word — that an AI model reads and writes, one at a time.</p></a>
@@ -129,7 +135,7 @@
       <a class="g-card" href="glossary/agi.html"><h2>What is AGI?</h2><p>AGI — artificial general intelligence — is a hypothetical AI that matches or exceeds humans across most intellectual work, not just one narrow skill. It does not exist yet.</p></a>
     </div>
     <p class="g-empty" id="g-empty" hidden>No terms match — try another word.</p>
-    <div class="cta"><b>Now put the vocabulary to work:</b> the <a href="prompts.html">prompt library</a> has 50 tested prompts, and the free <a href="index.html">daily briefing</a> keeps you current in 2 minutes.</div>
+    <div class="cta"><b>Now put the vocabulary to work:</b> the <a href="prompts.html">prompt library</a> has 50 tested prompts, and the free <a href="home.html">daily briefing</a> keeps you current in 2 minutes.</div>
   </main>
 </div>
 <footer class="site-footer">
@@ -156,7 +162,11 @@
   var cards = [].slice.call(document.querySelectorAll('.g-grid .g-card'));
   var count = document.getElementById('g-count');
   var empty = document.getElementById('g-empty');
+  var clear = document.getElementById('search-clear');
   var total = cards.length;
+  function syncUrl(q) {
+    try { history.replaceState(null, '', q ? location.pathname + '?q=' + encodeURIComponent(q) : location.pathname); } catch (e) {}
+  }
   function apply() {
     var q = (input.value || '').trim().toLowerCase();
     var shown = 0;
@@ -168,8 +178,12 @@
     if (count) count.innerHTML = '<b>' + shown + '</b> of ' + total + ' terms' +
       (q ? ' matching \u201c' + q.replace(/</g, '&lt;') + '\u201d' : '');
     if (empty) empty.hidden = shown > 0;
+    if (clear) clear.hidden = !q;
   }
-  if (input) { input.addEventListener('input', apply); apply(); }
+  // ?q= deep-link (e.g. /glossary.html?q=token)
+  try { var q0 = (new URLSearchParams(location.search).get('q') || '').trim(); if (q0 && input) input.value = q0; } catch (e) {}
+  if (input) { input.addEventListener('input', function () { apply(); syncUrl((input.value || '').trim()); }); apply(); }
+  if (clear) clear.addEventListener('click', function () { input.value = ''; input.focus(); apply(); syncUrl(''); });
 })();
 </script>
 </body>

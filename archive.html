@@ -2,13 +2,13 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
-<script>/* pre-paint theme (R29) */(function(){try{var t=localStorage.getItem('pai_theme')||'auto';if(t==='auto')t=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'default';if(t!=='default')document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
+<script>/* pre-paint theme (R29) */(function(){try{var t=localStorage.getItem('pai_theme')||'slate';if(t==='auto')t=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'default';if(t!=='default')document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<meta name="theme-color" content="#ffffff"/>
+<meta name="theme-color" content="#f7f5f1"/>
 <title>AI News Archive — Every Paper, Story & Tool | PromptAI</title>
 <meta name="description" content="Browse the full PromptAI archive — every curated AI research paper, news story, and tool review, searchable and filterable by topic, source, and date."/>
 <link rel="canonical" href="https://promptai.in/archive.html"/>
-<meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1"/>
+<meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"/>
 
 <!-- ── Open Graph ── -->
 <meta property="og:type"        content="website"/>
@@ -52,7 +52,7 @@
 }
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
-<link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,300;0,400;0,500;0,700;1,400&family=Roboto+Serif:opsz,wght@8..144,400;8..144,500;8..144,600&display=swap" rel="stylesheet"/>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,300;0,400;0,500;0,700;1,400&family=Roboto+Serif:opsz,wght@8..144,400;8..144,500;8..144,600&display=swap"/><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,300;0,400;0,500;0,700;1,400&family=Roboto+Serif:opsz,wght@8..144,400;8..144,500;8..144,600&display=swap" media="print" onload="this.media='all'"/><noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,300;0,400;0,500;0,700;1,400&family=Roboto+Serif:opsz,wght@8..144,400;8..144,500;8..144,600&display=swap"/></noscript>
 <link rel="stylesheet" href="pai-chrome.css"/>
 <style>
   * { margin:0; padding:0; box-sizing:border-box; }
@@ -127,7 +127,7 @@
 
 <!-- ════ TOP BAR ════ -->
 <header class="topbar">
-  <a class="brand" href="index.html" aria-label="PromptAI home" data-no-translate>
+  <a class="brand" href="home.html" aria-label="PromptAI home" data-no-translate>
     <span class="brand-mark"><svg viewBox="0 0 32 32"><rect x="1.5" y="1.5" width="29" height="29" rx="8" fill="var(--accent)"/><path d="M9.5 10.5 14.5 16l-5 5.5" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/><line x1="16.5" y1="21.5" x2="23" y2="21.5" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/></svg></span>
     <span class="brand-text">Prompt<b>AI</b></span>
   </a>
@@ -137,6 +137,7 @@
   </div>
   <div class="topbar-spacer"></div>
   <div class="topbar-actions">
+    <a class="swipe-return" href="/" aria-label="Back to the Swipe deck" title="Back to the daily Swipe deck"><svg viewBox="0 0 24 24" width="16" height="16"><path d="M16 4H8a3 3 0 0 0-3 3v10a3 3 0 0 0 3 3h8a3 3 0 0 0 3-3V7a3 3 0 0 0-3-3zm1 13a1 1 0 0 1-1 1H8a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h8a1 1 0 0 1 1 1z"/></svg>Swipe</a>
     <button class="icon-btn" id="search-toggle" onclick="toggleMobileSearch(event)" aria-label="Search" title="Search"><svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 1 0-.7.7l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0A4.5 4.5 0 1 1 14 9.5 4.49 4.49 0 0 1 9.5 14z"/></svg></button>
     <button class="icon-btn" onclick="toggleThemeMenu(event)" aria-label="Theme" title="Appearance"><svg viewBox="0 0 24 24"><path d="M12 22a10 10 0 0 1 0-20c5.51 0 10 4.04 10 9 0 3.31-2.69 6-6 6h-1.77c-.28 0-.5.22-.5.5 0 .12.05.23.13.33.41.47.64 1.06.64 1.67A2.5 2.5 0 0 1 12 22zm0-18a8 8 0 0 0 0 16c.28 0 .5-.22.5-.5a.54.54 0 0 0-.14-.35c-.41-.46-.63-1.05-.63-1.65a2.5 2.5 0 0 1 2.5-2.5H16a4 4 0 0 0 4-4c0-3.86-3.59-7-8-7zm-5.5 6a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3zm3-4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3zm5 0a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3z"/></svg></button>
     <button class="icon-btn" id="lang-btn" onclick="toggleLangMenu(event)" aria-label="Language" title="Language"><svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zm6.93 6h-2.95a15.65 15.65 0 0 0-1.38-3.56A8.03 8.03 0 0 1 18.92 8zM12 4.04c.83 1.2 1.48 2.53 1.91 3.96h-3.82c.43-1.43 1.08-2.76 1.91-3.96zM4.26 14C4.1 13.36 4 12.69 4 12s.1-1.36.26-2h3.38c-.08.66-.14 1.32-.14 2 0 .68.06 1.34.14 2H4.26zm.82 2h2.95c.32 1.25.78 2.45 1.38 3.56A7.99 7.99 0 0 1 5.08 16zm2.95-8H5.08a7.99 7.99 0 0 1 4.33-3.56A15.65 15.65 0 0 0 8.03 8zM12 19.96c-.83-1.2-1.48-2.53-1.91-3.96h3.82c-.43 1.43-1.08 2.76-1.91 3.96zM14.34 14H9.66c-.09-.66-.16-1.32-.16-2 0-.68.07-1.35.16-2h4.68c.09.65.16 1.32.16 2 0 .68-.07 1.34-.16 2zm.25 5.56c.6-1.11 1.06-2.31 1.38-3.56h2.95a8.03 8.03 0 0 1-4.33 3.56zM16.36 14c.08-.66.14-1.32.14-2 0-.68-.06-1.34-.14-2h3.38c.16.64.26 1.31.26 2s-.1 1.36-.26 2h-3.38z"/></svg></button>
@@ -186,12 +187,12 @@
 
 <!-- ════ TAB BAR ════ -->
 <nav class="tabs" aria-label="Sections">
-  <a class="tab" href="index.html#home">Home</a>
-  <a class="tab" href="index.html#news">News</a>
-  <a class="tab" href="index.html#deepdives">Deep dives</a>
-  <a class="tab" href="index.html#research">Research</a>
+  <a class="tab" href="home.html#home">Home</a>
+  <a class="tab" href="home.html#news">News</a>
+  <a class="tab" href="home.html#deepdives">Deep dives</a>
+  <a class="tab" href="home.html#research">Research</a>
   <a class="tab" href="education.html">Learn AI</a>
-  <a class="tab" href="index.html#tools">Tools</a>
+  <a class="tab" href="home.html#tools">Tools</a>
   <a class="tab" href="prompts.html">Prompts</a>
   <a class="tab active" href="archive.html">Archive</a>
 </nav>
@@ -354,7 +355,7 @@ function renderArchive(reset) {
       <div class="empty">
         <div class="icon">📭</div>
         <h3>No articles found</h3>
-        <p>Visit the <a href="index.html" style="color:var(--accent);">home page</a> to load fresh content — it gets archived automatically.</p>
+        <p>Visit the <a href="home.html" style="color:var(--accent);">home page</a> to load fresh content — it gets archived automatically.</p>
       </div>`;
     document.getElementById('load-more-archive').style.display = 'none';
     return;
