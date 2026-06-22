@@ -1,10 +1,14 @@
 // sw.js — PromptAI service worker (R10).
 // Strategy:
-//   • HTML + /api/* + data endpoints → network-first (fresh content), with
-//     cache fallback so the briefing still opens offline.
-//   • Static assets (js/css/images/fonts) → stale-while-revalidate.
-// Bump VERSION whenever cached assets change shape.
-const VERSION = 'pai-v15';
+//   • HTML + CSS + /api/* + data endpoints → network-first (fresh content),
+//     with cache fallback so the briefing still opens offline.
+//   • JS / images / fonts → stale-while-revalidate.
+// CSS is network-first so a deploy that changes the layout (e.g. the sticky
+// top bar in pai-chrome.css) takes effect on the SAME load instead of one
+// load late — previously a stale cached stylesheet made the header look
+// unfrozen until a hard refresh.
+// Bump VERSION whenever cached assets change shape (purges old caches on activate).
+const VERSION = 'pai-v17';
 const STATIC = [
   '/', '/index.html',
   '/pai-feed-engine.js', '/pai-google-ui.js', '/pai-account.js', '/pai-translate.js',
@@ -34,8 +38,9 @@ self.addEventListener('fetch', (e) => {
   const isData = url.pathname.startsWith('/api/') || url.pathname === '/archive-data'
     || url.pathname === '/stats' || url.pathname === '/feed';
   const isHTML = req.mode === 'navigate' || (req.headers.get('accept') || '').includes('text/html');
+  const isCSS = req.destination === 'style' || url.pathname.endsWith('.css');
 
-  if (isData || isHTML) {
+  if (isData || isHTML || isCSS) {
     // network-first
     e.respondWith(
       fetch(req).then(res => {

@@ -85,6 +85,15 @@
   display:none; align-items:center; justify-content:center; background:var(--accent); cursor:pointer;
 }
 
+/* "Swipe" return button — injected into .topbar-actions by pai-chrome.js so every
+   chrome page links back to the daily Swipe deck, matching the home page. */
+.swipe-return { display:inline-flex; align-items:center; gap:6px; height:36px; padding:0 16px; margin-right:4px; border-radius:18px; border:none; color:#fff; font-weight:700; font-size:0.85rem; text-decoration:none; white-space:nowrap; background:linear-gradient(90deg,#0f766e,#2563eb,#7c3aed,#2563eb,#0f766e); background-size:220% 100%; animation:swipeflow 6s ease-in-out infinite alternate; box-shadow:0 3px 12px color-mix(in srgb,#2563eb 32%,transparent); flex:none; }
+.swipe-return svg { fill:#fff; }
+.swipe-return:hover { filter:brightness(1.08); text-decoration:none; color:#fff; }
+@keyframes swipeflow { from { background-position:0% 50%; } to { background-position:100% 50%; } }
+@media (prefers-reduced-motion:reduce){ .swipe-return { animation:none; } }
+@media (max-width:560px){ .swipe-return span { display:none; } }
+
 /* ── menus (theme / subscribe / language) ──
    FIXED so they stay glued under the sticky top bar after scrolling
    (they used to be absolute → opened off-screen once you scrolled). */

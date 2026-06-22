@@ -249,6 +249,20 @@
     window.addEventListener('online', sync); window.addEventListener('offline', sync); sync();
   }
 
+  // add the "Swipe" return button to every chrome page's top bar (matches home.html)
+  // — injected here so all 60+ chrome pages stay consistent with no per-page edits.
+  function ensureSwipeReturn() {
+    var actions = document.querySelector('.topbar-actions');
+    if (!actions || actions.querySelector('.swipe-return')) return;
+    var a = document.createElement('a');
+    a.className = 'swipe-return';
+    a.href = '/';
+    a.setAttribute('aria-label', 'Back to the Swipe deck');
+    a.title = 'Back to the daily Swipe deck';
+    a.innerHTML = '<svg viewBox="0 0 24 24" width="16" height="16"><path d="M16 4H8a3 3 0 0 0-3 3v10a3 3 0 0 0 3 3h8a3 3 0 0 0 3-3V7a3 3 0 0 0-3-3zm1 13a1 1 0 0 1-1 1H8a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h8a1 1 0 0 1 1 1z"/></svg>Swipe';
+    actions.insertBefore(a, actions.firstChild);
+  }
+
   // a11y: flag the current page's nav tab for assistive tech
   function markActiveTab() {
     document.querySelectorAll('.tab.active').forEach(el => el.setAttribute('aria-current', 'page'));
@@ -257,7 +271,7 @@
   // ── BOOT ───────────────────────────────────────────────
   function boot() {
     let saved = 'slate'; try { saved = localStorage.getItem('pai_theme') || 'slate'; } catch (e) {}
-    ensureThemeOptions(); ensureSubMenu(); ensureRailFreq(); ensureSkipLink(); ensureBackToTop(); ensureOfflineBar(); markActiveTab(); applyTheme(saved); markActiveLang();
+    ensureThemeOptions(); ensureSubMenu(); ensureRailFreq(); ensureSkipLink(); ensureBackToTop(); ensureOfflineBar(); ensureSwipeReturn(); markActiveTab(); applyTheme(saved); markActiveLang();
     injectEnhStyles(); enhancePromptPage(); enhanceGlossaryPage();
   }
   // ── PROMPT + GLOSSARY DETAIL ENHANCEMENTS (R-next-3) ───
