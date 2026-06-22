@@ -254,9 +254,16 @@
   function ensureSwipeReturn() {
     var actions = document.querySelector('.topbar-actions');
     if (!actions || actions.querySelector('.swipe-return')) return;
+    // Build a RELATIVE href so the link resolves in both production and the
+    // editor preview (where the site is served under a deep base path, so a
+    // bare "/" would jump out of the project). Subpages load "../pai-chrome.js",
+    // top-level pages load "pai-chrome.js" — mirror that depth for index.html.
+    var scr = document.querySelector('script[src*="pai-chrome.js"]');
+    var src = scr ? (scr.getAttribute('src') || '') : '';
+    var base = /(^|\/)\.\.\//.test(src) ? '../' : '';
     var a = document.createElement('a');
     a.className = 'swipe-return';
-    a.href = '/';
+    a.href = base + 'index.html';
     a.setAttribute('aria-label', 'Back to the Swipe deck');
     a.title = 'Back to the daily Swipe deck';
     a.innerHTML = '<svg viewBox="0 0 24 24" width="16" height="16"><path d="M16 4H8a3 3 0 0 0-3 3v10a3 3 0 0 0 3 3h8a3 3 0 0 0 3-3V7a3 3 0 0 0-3-3zm1 13a1 1 0 0 1-1 1H8a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h8a1 1 0 0 1 1 1z"/></svg>Swipe';
