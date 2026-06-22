@@ -807,6 +807,24 @@
 })();
 </script>
 
+<script>
+(function(){
+  // Desktop / mouse users: the swipe copy reads mobile-only, but the deck is
+  // fully usable with a mouse and keyboard — surface that so it's discoverable.
+  try{
+    if(!matchMedia('(hover: hover) and (pointer: fine)').matches) return; // touch devices keep the swipe wording
+    var h=document.getElementById('hint');
+    if(h) h.innerHTML='Drag a card \u00b7 or press \u2190 / \u2192 to skip \u2215 save \u00b7 click to read \u00b7 Z to undo';
+    [['.coach-row.skip b','Drag left or press \u2190 \u2014 Skip'],
+     ['.coach-row.save b','Drag right or press \u2192 \u2014 Save'],
+     ['.coach-row.read b','Click a card \u2014 Read']].forEach(function(m){
+      var el=document.querySelector(m[0]); if(el) el.textContent=m[1];
+    });
+    var sub=document.querySelector('#coach .sub'); if(sub) sub.textContent='Three ways to move through the deck \u2014 drag, click, or arrow keys:';
+  }catch(e){}
+})();
+</script>
+
 <template id="__bundler_thumbnail">
 <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><rect width="100" height="100" rx="20" fill="#0f766e"/><rect x="34" y="26" width="40" height="52" rx="7" fill="#fffefb" transform="rotate(8 50 52)"/><rect x="26" y="22" width="40" height="52" rx="7" fill="#fffefb"/><path d="M34 32h24M34 40h24M34 48h16" stroke="#0f766e" stroke-width="3" stroke-linecap="round"/></svg>
 </template>
