@@ -149,7 +149,7 @@
     opts = opts || {};
     const c = el('article', 'card');
     const img = (s.image && !opts.noThumb)
-      ? `<img class="card-thumb" src="${thumb(s.image)}" alt="" width="128" height="96" loading="lazy" onerror="this.remove()"/>` : '';
+      ? `<img class="card-thumb" src="${thumb(s.image)}" alt="" width="128" height="96" loading="lazy" decoding="async" onerror="this.remove()"/>` : '';
     const topic = (s.topic && s.topic !== 'General')
       ? `<span class="dot"></span><span class="topic">${esc(s.topic)}</span>` : '';
     const time = P.timeAgo(P.storyMs(s));
@@ -177,7 +177,7 @@
     const c = el('article', 'vis-card');
     const time = P.timeAgo(P.storyMs(s));
     c.innerHTML =
-      `<img class="vis-img" src="${thumb(s.image, 520, 290)}" alt="" loading="lazy" data-direct="${esc(s.image)}" onerror="paiImgFallback(this)"/>
+      `<img class="vis-img" src="${thumb(s.image, 520, 290)}" alt="" width="520" height="290" loading="lazy" decoding="async" data-direct="${esc(s.image)}" onerror="paiImgFallback(this)"/>
        <div class="vis-body">
          <div class="card-src">
            <img src="${P.srcFavicon(s.src, s.url)}" alt="" loading="lazy" onerror="this.style.visibility='hidden'"/>
@@ -195,7 +195,7 @@
   function leadCard(s) {
     const c = el('article', 'lead');
     const media = s.image
-      ? `<img class="lead-img" src="${thumb(s.image, 760, 360)}" alt="" data-direct="${esc(s.image)}" onerror="paiImgFallback(this)"/>`
+      ? `<img class="lead-img" src="${thumb(s.image, 760, 360)}" alt="" width="760" height="360" fetchpriority="high" decoding="async" data-direct="${esc(s.image)}" onerror="paiImgFallback(this)"/>`
       : GRAD();
     c.innerHTML =
       media +
@@ -833,19 +833,20 @@
     if (s.topic && s.topic !== 'General') { pill.style.display = 'inline-block'; pill.className = 'pill cat-ai'; pill.textContent = s.topic; }
     else pill.style.display = 'none';
     $('#m-title').textContent = s.title;
-    const time = P.timeAgo(P.storyMs(s));
-    $('#m-meta').innerHTML = (s.score ? `<span>▲ ${s.score} points</span>` : '') + (time ? `<span>🕐 ${time}</span>` : '') + `<span>🌐 ${P.domainOf(s.url)}</span>`;
+    const _ms = P.storyMs(s); const time = P.timeAgo(_ms);
+    $('#m-meta').innerHTML = (s.score ? `<span>▲ ${s.score} points</span>` : '') + (time ? `<time datetime="${_ms ? new Date(_ms).toISOString() : ''}">🕐 ${time}</time>` : '') + `<span>🌐 ${P.domainOf(s.url)}</span>`;
     $('#m-text').innerHTML = goodExcerpt(s.desc, 80) ? esc(goodExcerpt(s.desc, 80)) : 'Open the original article to read the full story on the source site.';
     $('#m-note').innerHTML = `Summary from <strong>${P.domainOf(s.url)}</strong> · open the source for the full article.`;
     $('#m-read').href = s.url;
     const su = encodeURIComponent(s.url), st = encodeURIComponent(s.title + ' via @promptai_in');
     $('#m-x').href = `https://twitter.com/intent/tweet?url=${su}&text=${st}`;
     $('#m-li').href = `https://www.linkedin.com/sharing/share-offsite/?url=${su}`;
-    $('#m-copy').textContent = '🔗 Copy';
+    { const wa = $('#m-wa'); if (wa) wa.href = `https://wa.me/?text=${st}%20${su}`; const tg = $('#m-tg'); if (tg) tg.href = `https://t.me/share/url?url=${su}&text=${st}`; }
+    { const _cl = document.querySelector('#m-copy .lbl'); if (_cl) _cl.textContent = 'Copy'; }
     // save / like state (R28)
     const ms = $('#m-save'), ml = $('#m-like');
-    if (ms) { ms.classList.toggle('on', inList('saved', s.url)); ms.onclick = () => window.paiToggle('saved', ms, s); }
-    if (ml) { ml.classList.toggle('on', inList('liked', s.url)); ml.onclick = () => window.paiToggle('liked', ml, s); }
+    if (ms) { const on = inList('saved', s.url); ms.classList.toggle('on', on); ms.setAttribute('aria-pressed', on); ms.onclick = () => { window.paiToggle('saved', ms, s); ms.setAttribute('aria-pressed', ms.classList.contains('on')); }; }
+    if (ml) { const on = inList('liked', s.url); ml.classList.toggle('on', on); ml.setAttribute('aria-pressed', on); ml.onclick = () => { window.paiToggle('liked', ml, s); ml.setAttribute('aria-pressed', ml.classList.contains('on')); }; }
     // "Explain this paper" — AI explainer for arXiv items (R30)
     const ex = $('#m-explain');
     if (ex) {
@@ -881,7 +882,7 @@
       const d = await r.json().catch(() => null);
       if (_modalUrl !== s.url) return; // a different story was opened meanwhile
       if (d && d.summary) {
-        $('#m-text').innerHTML = esc(d.summary);
+        $('#m-text').innerHTML = d.summary.split(/\n\s*\n/).map(p => p.trim()).filter(Boolean).map(p => '<p>' + esc(p) + '</p>').join('') || esc(d.summary);
         if (note) note.innerHTML = `✨ AI summary — may miss nuance · source: <strong>${P.domainOf(s.url)}</strong>`;
       } else if (note) {
         note.innerHTML = fallbackNote;
@@ -917,8 +918,21 @@
     _modalOpener = null;
   };
   window.copyLink = function () {
-    navigator.clipboard.writeText(_modalUrl).then(() => { $('#m-copy').textContent = '✓ Copied'; setTimeout(() => $('#m-copy').textContent = '🔗 Copy', 1800); }).catch(() => toast('Copy failed'));
+    const lbl = document.querySelector('#m-copy .lbl');
+    const url = _modalUrl, title = (_modalStory && _modalStory.title) || document.title;
+    if (navigator.share) {
+      navigator.share({ title: title, url: url }).then(() => { P.event && P.event('web_share'); }).catch(() => {});
+      return;
+    }
+    navigator.clipboard.writeText(url).then(() => { if (lbl) { lbl.textContent = 'Copied'; setTimeout(() => { lbl.textContent = 'Copy'; }, 1800); } }).catch(() => toast('Copy failed'));
   };
+  // n / → opens the first "Up next" related read (keeps the session going)
+  document.addEventListener('keydown', e => {
+    if (!$('#modal').classList.contains('open') || e.metaKey || e.ctrlKey || e.altKey) return;
+    const t = e.target, tag = t && t.tagName;
+    if (tag === 'INPUT' || tag === 'TEXTAREA' || (t && t.isContentEditable)) return;
+    if (e.key === 'n' || e.key === 'ArrowRight') { const first = document.querySelector('#m-next .m-next-item'); if (first) { e.preventDefault(); first.click(); } }
+  });
   document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeModal(); window.closeSheet && window.closeSheet(); $('#theme-menu').classList.remove('open'); $('#sub-menu').classList.remove('open'); $('#lang-menu').classList.remove('open'); const sg = $('#search-suggest'); if (sg) sg.classList.remove('open'); } });
   // "/" focuses the search box from anywhere (power-user shortcut). Ignored
   // while typing in a field, and won't fire with a modifier held.

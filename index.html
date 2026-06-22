@@ -388,6 +388,17 @@
       </a>
     </div>
   </div>
+
+  <!-- in-app article reader — opens from the reading list; the parent/source
+       site is reached ONLY via the explicit "Read full article" button. -->
+  <div class="reader" id="reader" aria-hidden="true">
+    <div class="reader-bar">
+      <button class="rb-btn" id="reader-close" aria-label="Back to deck"><svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20z"/></svg></button>
+      <div class="rb-src" id="reader-src"></div>
+      <span class="sp"></span>
+    </div>
+    <div class="reader-body" id="reader-body"></div>
+  </div>
 </div>
 
 <!-- SEO: server-rendered AI headlines for crawlers at the site root "/".
@@ -687,7 +698,7 @@
         ? saved.length+' '+(saved.length===1?'story':'stories')+' saved on this device — no account needed.'
         : 'You have '+saved.length+' '+(saved.length===1?'story':'stories')+' in your reading list.';
       var html='<div class="rl-h"><svg viewBox="0 0 24 24"><path d="M17 3H7a2 2 0 0 0-2 2v16l7-3 7 3V5a2 2 0 0 0-2-2z"/></svg>Your reading list</div>';
-      saved.forEach(function(a){html+='<a class="rl-item" href="'+esc(a.url)+'" target="_blank" rel="noopener">'+favHTML(a,'fav')+'<div><h4>'+esc(a.title)+'</h4><span>'+esc(srcName(a))+' · '+readTime(a.desc)+'</span></div></a>';});
+      saved.forEach(function(a,i){html+='<a class="rl-item" role="button" tabindex="0" data-rl-idx="'+i+'">'+favHTML(a,'fav')+'<div><h4>'+esc(a.title)+'</h4><span>'+esc(srcName(a))+' · '+readTime(a.desc)+'</span></div></a>';});
       rl.innerHTML=html;
     }else{
       sub.textContent='You skipped everything today — nothing saved.';
@@ -730,8 +741,46 @@
     state={day:todayKey,index:0,history:[]};persist();ovDone.classList.remove('show','browse');render();
   });
   document.getElementById('retry-btn').addEventListener('click',function(){ovError.classList.remove('show');boot();});
+  /* ── in-app reader: opens a saved story inside the swipe site (not the
+     source site). The parent/source article opens only when the reader's
+     “Read full article” button is clicked. ── */
+  var readerEl=document.getElementById('reader'),
+      readerBody=document.getElementById('reader-body'),
+      readerSrc=document.getElementById('reader-src');
+  function closeReader(){readerEl.classList.remove('open');readerEl.setAttribute('aria-hidden','true');}
+  function openReader(a){
+    if(!a)return;
+    readerSrc.innerHTML=favHTML(a,'fav')+'<span>'+esc(srcName(a))+'</span>';
+    var full=parasOf(a),joined=full.join(' ');
+    var keys=keyPoints(joined);
+    var keysHTML=keys.length>1?('<div class="r-keys"><h4>Key points</h4><ul>'+keys.map(function(k){return '<li>'+esc(k)+'</li>';}).join('')+'</ul></div>'):'';
+    readerBody.scrollTop=0;
+    readerBody.innerHTML=
+      '<span class="r-topic">'+esc(topicOf(a))+'</span>'+
+      '<h2>'+esc(a.title)+'</h2>'+
+      '<div class="r-meta"><span>'+esc(srcName(a))+'</span><span>'+esc(timeOf(a))+'</span><span>'+readTime(joined)+' read</span></div>'+
+      keysHTML+
+      '<div class="r-text" id="reader-text">'+capWords(full,500)+'</div>'+
+      '<a class="r-open" href="'+esc(a.url)+'" target="_blank" rel="noopener" onclick="try{window.PAI&&PAI.event&&PAI.event(\'reader_open_source\')}catch(e){}">Read full article<svg viewBox="0 0 24 24"><path d="M14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3zM5 5h5V3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-5h-2v5H5z"/></svg></a>';
+    readerEl.classList.add('open');readerEl.setAttribute('aria-hidden','false');
+    ev('reader_open');
+    if(!a._full&&!a._nofull&&!/#sample-/.test(a.url)){
+      fetchArticle(a.url).then(function(ps){
+        if(ps&&ps.length){a._full=ps;var t=document.getElementById('reader-text');if(t&&readerEl.classList.contains('open'))t.innerHTML=capWords(ps,520);}
+        else{a._nofull=true;}
+      });
+    }
+  }
+  document.getElementById('reader-close').addEventListener('click',closeReader);
+  document.getElementById('reading-list').addEventListener('click',function(e){
+    var it=e.target.closest('.rl-item');if(!it)return;
+    e.preventDefault();
+    var i=parseInt(it.getAttribute('data-rl-idx'),10);
+    if(!isNaN(i)&&saved[i])openReader(saved[i]);
+  });
+
   document.addEventListener('keydown',function(e){
-    if(e.key==='Escape'){ovDone.classList.remove('show','browse');return;}
+    if(e.key==='Escape'){if(readerEl.classList.contains('open')){closeReader();return;}ovDone.classList.remove('show','browse');return;}
     if(ovDone.classList.contains('browse'))return;
     if(state.index>=ARTICLES.length)return;
     if(e.key==='ArrowRight')decide('read');

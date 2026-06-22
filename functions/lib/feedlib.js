@@ -307,11 +307,11 @@ export async function aiStorySummary(env, title, text) {
   try {
     const r = await withTimeout(env.AI.run(AI_MODEL, {
       messages: [
-        { role: 'system', content: 'You summarize articles for PromptAI, a daily AI briefing. Be factual and plain-spoken. Use ONLY the material given — if it is thin, summarize what is there; never invent specifics, numbers or quotes.' },
-        { role: 'user', content: `Title: ${title}\nMaterial:\n${(text || '').slice(0, 3500)}\n\nWrite a single-paragraph summary of about 100 words (90–110). No preamble, no bullet points, no "This article…" opener — start directly with the substance.` },
+        { role: 'system', content: 'You write the in-depth summary for PromptAI, a daily AI briefing. Be factual and plain-spoken. Use ONLY the material given — if it is thin, summarize what is there as fully as possible; never invent specifics, numbers or quotes.' },
+        { role: 'user', content: `Title: ${title}\nMaterial:\n${(text || '').slice(0, 7000)}\n\nWrite a thorough summary of about 350–450 words that lets the reader understand the story without leaving the page. Cover what happened, the key details and context, and why it matters. Use 2–4 short paragraphs separated by a blank line. No preamble, no bullet points, no "This article…" opener — start directly with the substance.` },
       ],
-      max_tokens: 260,
-    }), 18000, null);
+      max_tokens: 900,
+    }), 22000, null);
     const out = r && (r.response || '').trim();
     if (!out || out.length < 60) return null;
     return out;

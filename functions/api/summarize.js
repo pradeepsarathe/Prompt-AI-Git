@@ -1,6 +1,6 @@
 // functions/api/summarize.js
 // ═══════════════════════════════════════════════════════════════════
-// POST /api/summarize — ~100-word AI summary for ANY opened item
+// POST /api/summarize — ~400-word in-depth AI summary for ANY opened item
 // (news, research, blogs, HN…). Shown in the story modal.
 //
 // Body: { url, title, desc }
@@ -93,7 +93,7 @@ async function fetchArticleText(url) {
       .replace(/&[a-z#0-9]+;/gi, ' ')
       .replace(/\s+/g, ' ')
       .trim();
-    return text.slice(0, 4000);
+    return text.slice(0, 8000);
   } catch (e) { return ''; }
 }
 
@@ -111,7 +111,9 @@ export async function onRequest(context) {
   if (!url || !title || !/^https?:\/\//.test(url)) return json({ error: 'url and title required' }, 400);
   if (!safeRemoteUrl(url)) return json({ error: 'URL not allowed' }, 400);
 
-  const key = 'sum:' + await urlHash(url);
+  // 'sum2:' — bumped from 'sum:' when the summary length grew to ~400 words,
+  // so old short cached summaries are regenerated instead of served.
+  const key = 'sum2:' + await urlHash(url);
 
   // Cache first — published items don't change.
   try {

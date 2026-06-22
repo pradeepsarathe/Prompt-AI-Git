@@ -9,7 +9,7 @@
 // late — a stale cached stylesheet/script used to make those changes appear
 // missing until a hard refresh.
 // Bump VERSION whenever cached assets change shape (purges old caches on activate).
-const VERSION = 'pai-v21';
+const VERSION = 'pai-v22';
 const STATIC = [
   '/', '/index.html',
   '/pai-feed-engine.js', '/pai-google-ui.js', '/pai-account.js', '/pai-translate.js',
